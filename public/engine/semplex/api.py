@@ -445,6 +445,29 @@ def _model_data(syntax, part, missing="listwise"):
     return d, None, len(d), spec.obs, len(d)
 
 
+def _collinearity(f, pt, r_cut=0.90):
+    """Latent correlations >= r_cut and standardized paths with |beta| > 1 (suppression / multicollinearity)."""
+    out = []
+    lat = list(f.spec.lat)
+    if not lat:
+        return out
+    C = np.asarray(f.C)
+    idx = f.spec.idx
+    sd = {v: float(np.sqrt(max(C[idx[v], idx[v]], 1e-12))) for v in lat}
+    for i, a in enumerate(lat):
+        for b in lat[i + 1:]:
+            r = float(C[idx[a], idx[b]] / (sd[a] * sd[b]))
+            if abs(r) >= r_cut:
+                out.append({"kind": "latent_r", "a": a, "b": b, "r": r})
+    for p in pt:
+        if p["op"] == "~" and p.get("std") is not None and abs(p["std"]) > 1:
+            preds = [q["rhs"] for q in pt if q["op"] == "~" and q["lhs"] == p["lhs"] and q["rhs"] != p["rhs"]]
+            rs = [(q, float(C[idx[p["rhs"]], idx[q]] / np.sqrt(C[idx[p["rhs"]], idx[p["rhs"]]] * C[idx[q], idx[q]]))) for q in preds if q in idx]
+            partner = max(rs, key=lambda t: abs(t[1])) if rs else (None, None)
+            out.append({"kind": "std_path", "lhs": p["lhs"], "rhs": p["rhs"], "value": float(p["std"]), "partner": partner[0], "r": partner[1]})
+    return out
+
+
 def fit(syntax, estimator="ML", part="cfa", missing="listwise", mi=True, std_lv=False):
     _require()
     d, C, n, obs, n_complete = _model_data(syntax, part, missing)
@@ -460,7 +483,7 @@ def fit(syntax, estimator="ML", part="cfa", missing="listwise", mi=True, std_lv=
     return {"syntax": syntax, "estimator": est, "requested_estimator": estimator, "missing": missing, "n": n, "n_complete": n_complete,
             "part": part, "fit": f.fit, "params": pt, "r2": f.r2, "defined": f.defined, "mi": getattr(f, "mi", []),
             "converged": f.converged, "iterations": f.iterations, "heywood": f.heywood, "nodes": nodes,
-            "latent": f.spec.lat, "observed": f.spec.obs, "df": f.df, "npar": f.npar, "warnings": f.spec.warnings,
+            "latent": f.spec.lat, "observed": f.spec.obs, "df": f.df, "npar": f.npar, "warnings": f.spec.warnings, "collinearity": _collinearity(f, pt),
             "scales_used": {lv: [p["rhs"] for p in f.spec.params if p["op"] == "=~" and p["lhs"] == lv] for lv in f.spec.lat}}
 
 
@@ -529,8 +552,19 @@ def compare_models(models, part="cfa", estimator="ML"):
                 d = a["fit"]["chi2"] - b["fit"]["chi2"]
                 ddf = a["df"] - b["df"]
                 from scipy import stats as st
-                tests.append({"restricted": a["id"], "general": b["id"], "dchi2": d, "ddf": ddf, "p": float(st.chi2.sf(max(d, 0), ddf)),
-                              "dcfi": a["fit"]["cfi"] - b["fit"]["cfi"]})
+                t = {"restricted": a["id"], "general": b["id"], "dchi2": d, "ddf": ddf, "p": float(st.chi2.sf(max(d, 0), ddf)),
+                     "dcfi": a["fit"]["cfi"] - b["fit"]["cfi"], "scaled": False}
+                ca, cb = a["fit"].get("scaling"), b["fit"].get("scaling")
+                if ca and cb:
+                    # Satorra-Bentler (2001) scaled difference, as lavaan::anova() for MLM
+                    cd = (a["df"] * ca - b["df"] * cb) / ddf
+                    if cd > 0:
+                        ds = d / cd
+                        t.update({"dchi2": ds, "dchi2_ml": d, "cd": cd, "p": float(st.chi2.sf(max(ds, 0), ddf)), "scaled": True,
+                                  "method": "Satorra-Bentler 2001"})
+                    if "cfi_scaled" in a["fit"] and "cfi_scaled" in b["fit"]:
+                        t["dcfi"] = a["fit"]["cfi_scaled"] - b["fit"]["cfi_scaled"]
+                tests.append(t)
     return {"models": fits, "tests": tests}
 
 

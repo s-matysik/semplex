@@ -1,0 +1,585 @@
+{
+ "SAT_QUAL": {
+  "rows": [
+   {
+    "id": "sum",
+    "label": "Regresja na sumach pozycji",
+    "sub": "obserwowalne \u00b7 punkt wyj\u015bcia",
+    "est": 0.1969395066141741,
+    "lo": 0.03586385377981199,
+    "hi": 0.3732474376442887,
+    "se": 0.0865732711047985,
+    "delta": -1.7299738804041265,
+    "corrects_error": false,
+    "cross_loadings": false,
+    "agrees": false
+   },
+   {
+    "id": "fscore",
+    "label": "Wyniki czynnikowe (regresyjne)",
+    "sub": "obserwowalne \u00b7 wyniki z CFA",
+    "est": -0.45503083106446673,
+    "lo": -0.9325953308859446,
+    "hi": -0.00816949949390592,
+    "se": 0.23676780802280356,
+    "delta": 0.6866124383381446,
+    "corrects_error": false,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "croon",
+    "label": "Korekta Croona",
+    "sub": "korekta \u00b7 Croon (2002)",
+    "est": -0.269789748889153,
+    "lo": -1.0012815547261193,
+    "hi": 0.12055151782662724,
+    "se": 0.3292928162670682,
+    "delta": -1.864750492021401e-07,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "single",
+    "label": "Pojedynczy wska\u017anik z korekt\u0105 \u03b1",
+    "sub": "korekta \u00b7 wariancja b\u0142\u0119du = (1 \u2212 \u03b1)\u00b7\u03c3\u00b2",
+    "est": -0.1989536256852249,
+    "lo": -0.9182529214888562,
+    "hi": 0.1863410264669358,
+    "se": 0.3305998258364212,
+    "delta": -0.2625606072709579,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "sam",
+    "label": "SAM (lokalny)",
+    "sub": "latentne \u00b7 najpierw pomiar, potem struktura",
+    "est": -0.1083395036632621,
+    "lo": -0.5643948886710932,
+    "hi": 0.3966353249473325,
+    "se": 0.24278210952475598,
+    "delta": -0.5984299481105909,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "esem",
+    "label": "ESEM (target)",
+    "sub": "latentne \u00b7 \u0142adunki krzy\u017cowe dopuszczone",
+    "est": 0.6246514082287259,
+    "lo": 0.38337508037221457,
+    "hi": 0.7926405890456423,
+    "se": 0.10432545903326214,
+    "delta": -3.3153262654300133,
+    "corrects_error": true,
+    "cross_loadings": true,
+    "agrees": false
+   },
+   {
+    "id": "sem",
+    "label": "Pe\u0142ny SEM",
+    "sub": "latentne \u00b7 estymacja \u0142\u0105czna",
+    "est": -0.2697897991982191,
+    "lo": -1.0012814386553943,
+    "hi": 0.12055149048729416,
+    "se": 0.3292927862776896,
+    "delta": -0.0,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   }
+  ],
+  "spread": 1.0796822392931926,
+  "underestimate": -1.7299738804041265,
+  "share_measurement": 0.8482285713992265,
+  "agree": 5,
+  "waterfall": [
+   {
+    "label": "Sumy pozycji",
+    "value": 0.1969395066141741,
+    "kind": "start"
+   },
+   {
+    "label": "Korekta b\u0142\u0119du pomiaru",
+    "value": -0.395893132299399,
+    "kind": "step"
+   },
+   {
+    "label": "Estymacja dwuetapowa",
+    "value": 0.0906141220219628,
+    "kind": "step"
+   },
+   {
+    "label": "Estymacja \u0142\u0105czna",
+    "value": -0.161450295534957,
+    "kind": "step"
+   },
+   {
+    "label": "Pe\u0142ny SEM",
+    "value": -0.2697897991982191,
+    "kind": "end"
+   },
+   {
+    "label": "\u0141adunki krzy\u017cowe",
+    "value": 0.894441207426945,
+    "kind": "aside"
+   }
+  ],
+  "recommended": "sam",
+  "reasons": [
+   "Przy N = 250 SAM jest stabilniejszy ni\u017c pe\u0142ny SEM, a b\u0142\u0105d specyfikacji jednej skali nie przenosi si\u0119 na pozosta\u0142e.",
+   "Model pomiarowy: CFI = 0.967."
+  ],
+  "n": 250,
+  "alpha": {
+   "QUAL": 0.8685179483641731,
+   "VAL": 0.8319666067452305,
+   "SAT": 0.8942951879313618
+  },
+  "mean_alpha": 0.8649265810135884,
+  "cfa_fit": {
+   "chi2": 133.98464335486838,
+   "df": 62,
+   "pvalue": 3.25061532355294e-07,
+   "cfi": 0.9667789253197827,
+   "tli": 0.958205744757146,
+   "rmsea": 0.06814815139843315,
+   "rmsea_lo": 0.05230600078659969,
+   "rmsea_hi": 0.08397769673326919,
+   "pclose": 0.030925269278782475,
+   "srmr": 0.03531888282914032,
+   "aic": 11846.199652950922,
+   "bic": 11948.322019568926,
+   "abic": 11856.389535408662,
+   "loglik": -5894.099826475461,
+   "npar": 29,
+   "chi2_base": 2244.836685681763,
+   "df_base": 78,
+   "n": 250
+  },
+  "sem_fit": {
+   "chi2": 133.98464335487014,
+   "df": 62,
+   "pvalue": 3.250615323551385e-07,
+   "cfi": 0.9667789253197819,
+   "tli": 0.958205744757145,
+   "rmsea": 0.06814815139843398,
+   "rmsea_lo": 0.052306000786600575,
+   "rmsea_hi": 0.08397769673326998,
+   "pclose": 0.030925269278776257,
+   "srmr": 0.03531888121403785,
+   "aic": 11846.199652950923,
+   "bic": 11948.322019568928,
+   "abic": 11856.389535408664,
+   "loglik": -5894.099826475462,
+   "npar": 29,
+   "chi2_base": 2244.836685681763,
+   "df_base": 78,
+   "n": 250
+  },
+  "esem_max_cross": 0.4704975686473758,
+  "R": 500,
+  "R_done": 500,
+  "R_ok": 500,
+  "seed": 1,
+  "y": "SAT",
+  "xs": [
+   "QUAL",
+   "VAL"
+  ],
+  "x": "QUAL",
+  "syntax": "QUAL =~ qual1 + qual2 + qual3 + qual4 + qual5\nVAL =~ val1 + val2 + val3 + val4\nSAT =~ sat1 + sat2 + sat3 + sat4\nSAT ~ QUAL + VAL"
+ },
+ "SAT_VAL": {
+  "rows": [
+   {
+    "id": "sum",
+    "label": "Regresja na sumach pozycji",
+    "sub": "obserwowalne \u00b7 punkt wyj\u015bcia",
+    "est": 0.6572051729533471,
+    "lo": 0.4891421376979131,
+    "hi": 0.7990067353107299,
+    "se": 0.07908103653003816,
+    "delta": -0.4503766464928934,
+    "corrects_error": false,
+    "cross_loadings": false,
+    "agrees": false
+   },
+   {
+    "id": "fscore",
+    "label": "Wyniki czynnikowe (regresyjne)",
+    "sub": "obserwowalne \u00b7 wyniki z CFA",
+    "est": 1.405054030336343,
+    "lo": 0.9734066811580894,
+    "hi": 1.8693940069354111,
+    "se": 0.23007871898327734,
+    "delta": 0.17505238819377997,
+    "corrects_error": false,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "croon",
+    "label": "Korekta Croona",
+    "sub": "korekta \u00b7 Croon (2002)",
+    "est": 1.1957373082413174,
+    "lo": 0.8358050007845502,
+    "hi": 1.9221098526027172,
+    "se": 0.32350051941649083,
+    "delta": -3.603774650839698e-08,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "single",
+    "label": "Pojedynczy wska\u017anik z korekt\u0105 \u03b1",
+    "sub": "korekta \u00b7 wariancja b\u0142\u0119du = (1 \u2212 \u03b1)\u00b7\u03c3\u00b2",
+    "est": 1.1103608200740693,
+    "lo": 0.7484111937841201,
+    "hi": 1.8321775476661675,
+    "se": 0.32366158428782027,
+    "delta": -0.07140073960535787,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "sam",
+    "label": "SAM (lokalny)",
+    "sub": "latentne \u00b7 najpierw pomiar, potem struktura",
+    "est": 1.039991035367103,
+    "lo": 0.5550427498177865,
+    "hi": 1.486406916455482,
+    "se": 0.23730992074951154,
+    "delta": -0.13025127616216847,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "esem",
+    "label": "ESEM (target)",
+    "sub": "latentne \u00b7 \u0142adunki krzy\u017cowe dopuszczone",
+    "est": 0.20840212424579196,
+    "lo": -0.0906064517193037,
+    "hi": 0.44773593237981196,
+    "se": 0.13837423980523245,
+    "delta": -0.8257124576618208,
+    "corrects_error": true,
+    "cross_loadings": true,
+    "agrees": false
+   },
+   {
+    "id": "sem",
+    "label": "Pe\u0142ny SEM",
+    "sub": "latentne \u00b7 estymacja \u0142\u0105czna",
+    "est": 1.195737351332997,
+    "lo": 0.8358050008571832,
+    "hi": 1.9221097127967877,
+    "se": 0.3235004887656441,
+    "delta": 0.0,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   }
+  ],
+  "spread": 1.1966519060905512,
+  "underestimate": -0.4503766464928934,
+  "share_measurement": 0.8414643828418743,
+  "agree": 5,
+  "waterfall": [
+   {
+    "label": "Sumy pozycji",
+    "value": 0.6572051729533471,
+    "kind": "start"
+   },
+   {
+    "label": "Korekta b\u0142\u0119du pomiaru",
+    "value": 0.4531556471207222,
+    "kind": "step"
+   },
+   {
+    "label": "Estymacja dwuetapowa",
+    "value": -0.07036978470696642,
+    "kind": "step"
+   },
+   {
+    "label": "Estymacja \u0142\u0105czna",
+    "value": 0.15574631596589406,
+    "kind": "step"
+   },
+   {
+    "label": "Pe\u0142ny SEM",
+    "value": 1.195737351332997,
+    "kind": "end"
+   },
+   {
+    "label": "\u0141adunki krzy\u017cowe",
+    "value": -0.987335227087205,
+    "kind": "aside"
+   }
+  ],
+  "recommended": "sam",
+  "reasons": [
+   "Przy N = 250 SAM jest stabilniejszy ni\u017c pe\u0142ny SEM, a b\u0142\u0105d specyfikacji jednej skali nie przenosi si\u0119 na pozosta\u0142e.",
+   "Model pomiarowy: CFI = 0.967."
+  ],
+  "n": 250,
+  "alpha": {
+   "QUAL": 0.8685179483641731,
+   "VAL": 0.8319666067452305,
+   "SAT": 0.8942951879313618
+  },
+  "mean_alpha": 0.8649265810135884,
+  "cfa_fit": {
+   "chi2": 133.98464335486838,
+   "df": 62,
+   "pvalue": 3.25061532355294e-07,
+   "cfi": 0.9667789253197827,
+   "tli": 0.958205744757146,
+   "rmsea": 0.06814815139843315,
+   "rmsea_lo": 0.05230600078659969,
+   "rmsea_hi": 0.08397769673326919,
+   "pclose": 0.030925269278782475,
+   "srmr": 0.03531888282914032,
+   "aic": 11846.199652950922,
+   "bic": 11948.322019568926,
+   "abic": 11856.389535408662,
+   "loglik": -5894.099826475461,
+   "npar": 29,
+   "chi2_base": 2244.836685681763,
+   "df_base": 78,
+   "n": 250
+  },
+  "sem_fit": {
+   "chi2": 133.98464335487014,
+   "df": 62,
+   "pvalue": 3.250615323551385e-07,
+   "cfi": 0.9667789253197819,
+   "tli": 0.958205744757145,
+   "rmsea": 0.06814815139843398,
+   "rmsea_lo": 0.052306000786600575,
+   "rmsea_hi": 0.08397769673326998,
+   "pclose": 0.030925269278776257,
+   "srmr": 0.03531888121403785,
+   "aic": 11846.199652950923,
+   "bic": 11948.322019568928,
+   "abic": 11856.389535408664,
+   "loglik": -5894.099826475462,
+   "npar": 29,
+   "chi2_base": 2244.836685681763,
+   "df_base": 78,
+   "n": 250
+  },
+  "esem_max_cross": 0.4704975686473758,
+  "R": 500,
+  "R_done": 500,
+  "R_ok": 500,
+  "seed": 1,
+  "y": "SAT",
+  "xs": [
+   "QUAL",
+   "VAL"
+  ],
+  "x": "VAL",
+  "syntax": "QUAL =~ qual1 + qual2 + qual3 + qual4 + qual5\nVAL =~ val1 + val2 + val3 + val4\nSAT =~ sat1 + sat2 + sat3 + sat4\nSAT ~ QUAL + VAL"
+ },
+ "LOY_SAT": {
+  "rows": [
+   {
+    "id": "sum",
+    "label": "Regresja na sumach pozycji",
+    "sub": "obserwowalne \u00b7 punkt wyj\u015bcia",
+    "est": 0.6499177667923922,
+    "lo": 0.5563301107345084,
+    "hi": 0.7324885356263402,
+    "se": 0.04420211885168706,
+    "delta": -0.16692894937720845,
+    "corrects_error": false,
+    "cross_loadings": false,
+    "agrees": false
+   },
+   {
+    "id": "fscore",
+    "label": "Wyniki czynnikowe (regresyjne)",
+    "sub": "obserwowalne \u00b7 wyniki z CFA",
+    "est": 0.8421006726592587,
+    "lo": 0.7389923833808034,
+    "hi": 0.925086610367672,
+    "se": 0.04727684815856167,
+    "delta": 0.07941300876377283,
+    "corrects_error": false,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "croon",
+    "label": "Korekta Croona",
+    "sub": "korekta \u00b7 Croon (2002)",
+    "est": 0.7801468619047162,
+    "lo": 0.6780517369716154,
+    "hi": 0.8699357348709162,
+    "se": 0.04913994509825322,
+    "delta": -1.393032308182742e-09,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "single",
+    "label": "Pojedynczy wska\u017anik z korekt\u0105 \u03b1",
+    "sub": "korekta \u00b7 wariancja b\u0142\u0119du = (1 \u2212 \u03b1)\u00b7\u03c3\u00b2",
+    "est": 0.7586509430974321,
+    "lo": 0.6618169296387107,
+    "hi": 0.8564191614912046,
+    "se": 0.05102674304085201,
+    "delta": -0.02755368368928307,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "sam",
+    "label": "SAM (lokalny)",
+    "sub": "latentne \u00b7 najpierw pomiar, potem struktura",
+    "est": 0.7733181411880891,
+    "lo": 0.6618776474881078,
+    "hi": 0.8628012173876017,
+    "se": 0.051081369319711585,
+    "delta": -0.008753123453207312,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   },
+   {
+    "id": "esem",
+    "label": "ESEM (target)",
+    "sub": "latentne \u00b7 \u0142adunki krzy\u017cowe dopuszczone",
+    "est": 0.692225692074836,
+    "lo": 0.5617401052315137,
+    "hi": 0.7844672225016803,
+    "se": 0.05616502779888306,
+    "delta": -0.11269823040691954,
+    "corrects_error": true,
+    "cross_loadings": true,
+    "agrees": true
+   },
+   {
+    "id": "sem",
+    "label": "Pe\u0142ny SEM",
+    "sub": "latentne \u00b7 estymacja \u0142\u0105czna",
+    "est": 0.780146862991486,
+    "lo": 0.6780517424530362,
+    "hi": 0.8699357322392166,
+    "se": 0.04913994501577132,
+    "delta": 0.0,
+    "corrects_error": true,
+    "cross_loadings": false,
+    "agrees": true
+   }
+  ],
+  "spread": 0.19218290586686648,
+  "underestimate": -0.16692894937720845,
+  "share_measurement": 0.8349376558584805,
+  "agree": 6,
+  "waterfall": [
+   {
+    "label": "Sumy pozycji",
+    "value": 0.6499177667923922,
+    "kind": "start"
+   },
+   {
+    "label": "Korekta b\u0142\u0119du pomiaru",
+    "value": 0.10873317630503987,
+    "kind": "step"
+   },
+   {
+    "label": "Estymacja dwuetapowa",
+    "value": 0.014667198090656974,
+    "kind": "step"
+   },
+   {
+    "label": "Estymacja \u0142\u0105czna",
+    "value": 0.006828721803396887,
+    "kind": "step"
+   },
+   {
+    "label": "Pe\u0142ny SEM",
+    "value": 0.780146862991486,
+    "kind": "end"
+   },
+   {
+    "label": "\u0141adunki krzy\u017cowe",
+    "value": -0.08792117091664997,
+    "kind": "aside"
+   }
+  ],
+  "recommended": "sam",
+  "reasons": [
+   "Przy N = 250 SAM jest stabilniejszy ni\u017c pe\u0142ny SEM, a b\u0142\u0105d specyfikacji jednej skali nie przenosi si\u0119 na pozosta\u0142e.",
+   "Model pomiarowy: CFI = 0.977."
+  ],
+  "n": 250,
+  "alpha": {
+   "SAT": 0.8942951879313618,
+   "LOY": 0.8206385643938777
+  },
+  "mean_alpha": 0.8574668761626197,
+  "cfa_fit": {
+   "chi2": 46.553754901518474,
+   "df": 19,
+   "pvalue": 0.00041357573993952985,
+   "cfi": 0.9765582706380531,
+   "tli": 0.9654542935718678,
+   "rmsea": 0.07616292080522409,
+   "rmsea_lo": 0.048677366046016114,
+   "rmsea_hi": 0.10416406756940372,
+   "pclose": 0.05777274809203825,
+   "srmr": 0.04557617117618898,
+   "aic": 7624.920880869966,
+   "bic": 7684.785716473624,
+   "abic": 7630.894260241745,
+   "loglik": -3795.460440434983,
+   "npar": 17,
+   "chi2_base": 1203.4147689396455,
+   "df_base": 28,
+   "n": 250
+  },
+  "sem_fit": {
+   "chi2": 46.55375490151581,
+   "df": 19,
+   "pvalue": 0.00041357573993989094,
+   "cfi": 0.9765582706380554,
+   "tli": 0.9654542935718711,
+   "rmsea": 0.07616292080522041,
+   "rmsea_lo": 0.048677366046011895,
+   "rmsea_hi": 0.10416406756940032,
+   "pclose": 0.0577727480920639,
+   "srmr": 0.04557617226245693,
+   "aic": 7624.920880869963,
+   "bic": 7684.7857164736215,
+   "abic": 7630.894260241742,
+   "loglik": -3795.4604404349816,
+   "npar": 17,
+   "chi2_base": 1203.4147689396455,
+   "df_base": 28,
+   "n": 250
+  },
+  "esem_max_cross": 0.23432487178095107,
+  "R": 500,
+  "R_done": 500,
+  "R_ok": 500,
+  "seed": 1,
+  "y": "LOY",
+  "xs": [
+   "SAT"
+  ],
+  "x": "SAT",
+  "syntax": "SAT =~ sat1 + sat2 + sat3 + sat4\nLOY =~ loy1 + loy2 + loy3 + loy4\nLOY ~ SAT"
+ }
+}

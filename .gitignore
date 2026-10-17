@@ -13,3 +13,7 @@ Thumbs.db
 .claude/
 semplex-design-system*.zip
 specyfikacja-semplex.md
+
+# dane zewnętrzne (GPL-3, pobierane przez validation/lavaan_reference.R) i manuskrypt
+validation/data/
+paper/

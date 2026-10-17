@@ -7,7 +7,7 @@ import { Head, Screen, NeedData, EngineErrorView, Loading, StaleNote, SeedBadge 
 import { n2, n3, pTxt, int, ci } from '../lib/fit.js';
 import { autoLayout, canvasEstimates, codeSnippets, cfaSyntaxFromScales } from '../lib/model.js';
 import { scaleMap } from '../lib/analysis.js';
-import { useModelRunner, syntaxDiagnostics, FitBlock, fitInterpretation, MiTable, useMiApply } from './Cfa.jsx';
+import { useModelRunner, syntaxDiagnostics, FitBlock, fitInterpretation, MiTable, useMiApply, CollinearityNote } from './Cfa.jsx';
 
 function defaultSem() {
   const s = getState();
@@ -201,6 +201,7 @@ export default function SemScreen() {
         <>
           <StaleNote stale={stale} onRun={runNow} running={running} />
           <FitBlock res={r} />
+          <CollinearityNote res={r} />
           <Interpretation tone={interp.tone} title={interp.title} source="Progi: Hu i Bentler (1999)">
             {interp.text} {sigPaths.length ? `Istotne ścieżki: ${sigPaths.map((p) => `${p.path} (β = ${n2(p.b)}, ${pTxt(p.p)})`).join('; ')}.` : 'Żadna ścieżka strukturalna nie jest istotna przy α = 0,05.'}
             {r2.length ? ` Model wyjaśnia ${r2.map(([v, x]) => `${format.num(100 * x, 0)}% wariancji ${v}`).join(', ')}.` : ''}

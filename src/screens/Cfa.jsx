@@ -38,6 +38,24 @@ export function syntaxDiagnostics(text, vars) {
   return { parsed, diags, ident, lat };
 }
 
+export function CollinearityNote({ res }) {
+  const c = (res && res.collinearity) || [];
+  if (!c.length) return null;
+  const paths = c.filter((x) => x.kind === 'std_path');
+  const rs = c.filter((x) => x.kind === 'latent_r');
+  const what = [
+    ...rs.map((x) => `korelacja czynników ${x.a} i ${x.b} = ${n2(x.r)}`),
+    ...paths.map((x) => `β ${x.rhs} → ${x.lhs} = ${n2(x.value)}${x.partner ? ` (predyktor skorelowany z ${x.partner}: r = ${n2(x.r)})` : ''}`),
+  ].join('; ');
+  return (
+    <Diagnosis level={paths.length ? 'poor' : 'warn'} title={paths.length ? 'Współliniowość czynników: współczynniki standaryzowane powyżej 1' : 'Bardzo silnie skorelowane czynniki'}
+      what={what}
+      effect={paths.length ? 'Ścieżki z |β| > 1 i przeciwnymi znakami są artefaktem współliniowości (supresji); nie interpretuj ich osobno.' : 'Czynniki mogą mierzyć ten sam konstrukt — trafność różnicowa jest wątpliwa.'}
+      fixes={[{ title: 'Sprawdź HTMT w module Rzetelność i trafność', recommended: true }, { title: 'Połącz czynniki albo usuń jedną ze ścieżek' }, { title: 'Sprawdź, czy pary pozycji nie mają wspólnego sformułowania (kowariancja reszt)' }]}
+      source="Henseler i in. (2015); Grewal i in. (2004)" />
+  );
+}
+
 export function FitBlock({ res }) {
   const scaled = res.estimator === 'MLM';
   const fits = fitIndices(res.fit, scaled);
@@ -182,6 +200,7 @@ export default function CfaScreen() {
         <Diagnosis level="poor" title="Rozwiązanie niedopuszczalne (przypadek Heywooda)" what={r.heywood.map((h) => h.kind === 'negative_variance' ? `Ujemna wariancja ${h.var} = ${n3(h.value)}` : `Ładunek standaryzowany ${h.var} = ${n2(h.value)} > 1`).join('; ')}
           effect="Oszacowania i dopasowanie nie nadają się do interpretacji." fixes={[{ title: 'Sprawdź czynnik z dwiema pozycjami albo bardzo silnie skorelowane czynniki', recommended: true }, { title: 'Połącz czynniki albo dodaj pozycje' }]} source="Kolenikov i Bollen (2012)" />
       ) : null}
+      <CollinearityNote res={r} />
       <div className="editor">
         <Panel title="Model" subtitle="Składnia lavaan · Ctrl Enter uruchamia" actions={<Button size="sm" variant="ghost" icon="refresh" onClick={() => setText(cfaSyntaxFromScales(scaleMap(), getState().efaSkip))}>Ze skal</Button>}>
           <SyntaxEditor value={text} onChange={setText} diagnostics={diags} height={220} label="Składnia modelu CFA"
@@ -229,7 +248,7 @@ export default function CfaScreen() {
                         rows={cmp.models.filter((m) => m.ok).map((m) => ({ name: m.name, df: m.df, chi2: m.fit.chi2, cfi: m.fit.cfi, rmsea: m.fit.rmsea, aic: m.fit.aic, bic: m.fit.bic }))} note="Niższe AIC i BIC — lepszy kompromis dopasowania i złożoności." />
                       {cmp.tests.length ? <ResultTable dense columns={[{ key: 't', label: 'Porównanie', type: 'text' }, { key: 'd', label: 'Δχ²', type: 'num', digits: 2 }, { key: 'ddf', label: 'Δdf', type: 'num', digits: 0 }, { key: 'p', label: 'p', type: 'p' }, { key: 'dcfi', label: 'ΔCFI', type: 'num', digits: 3 }]}
                         rows={cmp.tests.map((t) => ({ t: `${(cmp.models.find((m) => m.id === t.restricted) || {}).name} vs ${(cmp.models.find((m) => m.id === t.general) || {}).name}`, d: t.dchi2, ddf: t.ddf, p: t.p, dcfi: t.dcfi }))}
-                        note="Test różnicy χ² jest poprawny tylko dla modeli zagnieżdżonych (estymacja ML). ΔCFI ≤ −0,01 oznacza istotne pogorszenie (Cheung i Rensvold, 2002)." /> : null}
+                        note={(cmp.tests.some((t) => t.scaled) ? "Δχ² skalowane metodą Satorry–Bentlera (2001) dla estymatora MLM. " : "") + "Test różnicy χ² jest poprawny tylko dla modeli zagnieżdżonych. ΔCFI ≤ −0,01 oznacza istotne pogorszenie (Cheung i Rensvold, 2002)."} /> : null}
                     </> : null}
                   </div>
                 ) : null}

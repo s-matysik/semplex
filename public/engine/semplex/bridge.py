@@ -65,6 +65,11 @@ def _target_rotate(L, T):
     return efamod._gpf_oblq(L, vgq)
 
 
+def _pl(x, fmt):
+    """Liczba w polskim zapisie (przecinek dziesiętny)."""
+    return format(x, fmt).replace('.', ',')
+
+
 def estimate_all(D, scales, y, xs, theta_cache=None):
     """D: DataFrame kompletnych przypadków. Zwraca słownik id → β (lista dla predyktorów) oraz dodatki."""
     factors = [*xs, y]
@@ -92,6 +97,9 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
     Ceta = np.linalg.solve(AL, np.linalg.solve(AL, (covF - A @ Theta @ A.T)).T).T
     out["croon"] = _beta_from_cov(Ceta, ypos, xpos)
     extra["cfa_fit"] = cfa.fit
+    dphi = np.sqrt(np.clip(np.diag(Phi), 1e-12, None))
+    Rphi = Phi / np.outer(dphi, dphi)
+    extra["pred_r"] = float(max((abs(Rphi[i, j]) for i in xpos for j in xpos if i < j), default=0.0))
     extra["cfa_converged"] = cfa.converged
 
     # 4. pojedynczy wskaźnik z korektą α
@@ -224,16 +232,21 @@ class CompareJob:
         if n < 300 or cfi < 0.90:
             rec = "sam"
             reasons = [f"Przy N = {n} SAM jest stabilniejszy niż pełny SEM, a błąd specyfikacji jednej skali nie przenosi się na pozostałe.",
-                       f"Model pomiarowy: CFI = {cfi:.3f}."]
+                       f"Model pomiarowy: CFI = {_pl(cfi, '.3f')}."]
         elif abs(g["esem"] - g["sem"]) > 0.05 and self.extra.get("esem_max_cross", 0) >= 0.20:
             rec = "esem"
-            reasons = [f"ESEM różni się od pełnego SEM o {g['esem'] - g['sem']:+.2f}, a największy ładunek krzyżowy wynosi {self.extra['esem_max_cross']:.2f}."]
+            reasons = [f"ESEM różni się od pełnego SEM o {_pl(g['esem'] - g['sem'], '+.2f')}, a największy ładunek krzyżowy wynosi {_pl(self.extra['esem_max_cross'], '.2f')}."]
         else:
             rec = "sem"
-            reasons = [f"Model pomiarowy dobrze pasuje (CFI = {cfi:.3f}) i próba jest wystarczająca (N = {n})."]
+            reasons = [f"Model pomiarowy dobrze pasuje (CFI = {_pl(cfi, '.3f')}) i próba jest wystarczająca (N = {n})."]
+        pred_r = self.extra.get("pred_r", 0.0)
+        collinear = pred_r >= 0.85
+        if collinear:
+            reasons = [f"Predyktory są bardzo silnie skorelowane na poziomie latentnym (r = {_pl(pred_r, '.2f')}). Efekty cząstkowe są niestabilne "
+                       "i zależą od podejścia — interpretuj łączny efekt predyktorów albo połącz konstrukty."] + reasons
         mean_alpha = float(np.mean(list(self.extra["alpha"].values())))
         return {"rows": rows, "spread": spread, "underestimate": rows[0]["delta"], "share_measurement": share_me,
                 "agree": sum(r["agrees"] for r in rows), "waterfall": steps, "recommended": rec, "reasons": reasons,
                 "n": n, "alpha": self.extra["alpha"], "mean_alpha": mean_alpha, "cfa_fit": self.extra["cfa_fit"],
                 "sem_fit": self.extra["sem_fit"], "esem_max_cross": self.extra.get("esem_max_cross"), "R": self.R, "R_done": self.done,
-                "R_ok": len(self.draws["sem"]), "seed": self.seed, "y": self.y, "xs": self.xs, "x": self.xs[xi], "syntax": self.extra["syntax"]}
+                "R_ok": len(self.draws["sem"]), "pred_r": pred_r, "collinear": collinear, "seed": self.seed, "y": self.y, "xs": self.xs, "x": self.xs[xi], "syntax": self.extra["syntax"]}

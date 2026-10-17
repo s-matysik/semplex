@@ -120,3 +120,39 @@ def test_api_end_to_end_on_sample():
     assert fr["converged"] and fr["df"] == 8
     bad = json.loads(api.call("fit", json.dumps({"syntax": "SAT =~ Q1 + NIEMA", "part": "all"})))
     assert not bad["ok"] and bad["kind"] == "model"
+
+
+def test_satorra_bentler_2001_difference_matches_lavaan(hs, monkeypatch):
+    # lavaan 0.7.2: anova(cfa(m + visual=~x9, estimator="MLM"), cfa(m, estimator="MLM"))
+    m3 = "visual =~ x1 + x2 + x3\ntextual =~ x4 + x5 + x6\nspeed =~ x7 + x8 + x9"
+    fits = {}
+    for key, syn in (("m1", m3), ("m2", m3 + "\nvisual =~ x9")):
+        f = S.fit_model(syn, data=hs, estimator="MLM")
+        fits[key] = {"fit": f.fit, "df": f.df, "n": f.n}
+    monkeypatch.setattr(api, "_require", lambda: None)
+    monkeypatch.setattr(api, "fit", lambda syntax, *a, **k: fits["m2" if "visual =~ x9" in syntax else "m1"])
+    res = api.compare_models([{"id": "m1", "syntax": m3}, {"id": "m2", "syntax": m3 + "\nvisual =~ x9"}], estimator="MLM")
+    t = res["tests"][0]
+    assert t["scaled"] and t["ddf"] == 1
+    assert t["dchi2"] == pytest.approx(32.229203, abs=1e-3)
+    assert t["p"] == pytest.approx(1.370158575e-08, rel=1e-3)
+
+
+def test_collinearity_flags_std_paths_above_one():
+    rng = np.random.default_rng(3)
+    n = 400
+    a = rng.standard_normal(n)
+    b = 0.97 * a + np.sqrt(1 - 0.97 ** 2) * rng.standard_normal(n)   # near-collinear predictors
+    y = 1.2 * b - 0.7 * a + 0.4 * rng.standard_normal(n)
+    cols = {}
+    for name, f in (("a", a), ("b", b), ("y", y / y.std())):
+        for k in range(3):
+            cols[f"{name}{k}"] = 0.8 * f + 0.6 * rng.standard_normal(n)
+    df = pd.DataFrame(cols)
+    syn = "A =~ a0 + a1 + a2\nB =~ b0 + b1 + b2\nY =~ y0 + y1 + y2\nY ~ A + B"
+    f = S.fit_model(syn, data=df)
+    flags = api._collinearity(f, S.param_table(f))
+    assert any(x["kind"] == "latent_r" and {x["a"], x["b"]} == {"A", "B"} for x in flags)
+    assert any(x["kind"] == "std_path" and abs(x["value"]) > 1 for x in flags)
+    f2 = S.fit_model("A =~ a0 + a1 + a2\nY =~ y0 + y1 + y2\nY ~ A", data=df)
+    assert not [x for x in api._collinearity(f2, S.param_table(f2)) if x["kind"] == "std_path"]

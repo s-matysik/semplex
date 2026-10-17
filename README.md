@@ -76,11 +76,26 @@ Budowanie (`tools/build.mjs`) używa esbuild-wasm w jednym procesie Node, bez bi
 
 | Polecenie | Co sprawdza |
 |---|---|
-| `npm run test:engine` | zgodność z lavaan na zbiorach Holzinger–Swineford (CFA: χ² = 85,306, df = 24, CFI = 0,931, RMSEA = 0,092 [0,071; 0,114], SRMR = 0,065, ładunki i SE) i Political Democracy (SEM z kowariancjami reszt: χ² = 38,125, df = 35, ścieżki i SE); parser składni; EFA; ścieżkę API na danych przykładowych |
+| `npm run test:engine` | test różnicy χ² Satorry–Bentlera i diagnostyka współliniowości; zgodność z lavaan na zbiorach Holzinger–Swineford (CFA: χ² = 85,306, df = 24, CFI = 0,931, RMSEA = 0,092 [0,071; 0,114], SRMR = 0,065, ładunki i SE) i Political Democracy (SEM z kowariancjami reszt: χ² = 38,125, df = 35, ścieżki i SE); parser składni; EFA; ścieżkę API na danych przykładowych |
 | `npm run test:ui` | zbudowaną aplikację w happy-dom: import przykładu, wszystkie moduły i główne przyciski, szablony mediacji, raport PL/EN, decyzja i jej cofnięcie — na nagranych odpowiedziach silnika (`tests/fixtures/engine.json`) |
 | `npm run test:wasm <folder_pyodide>` | prawdziwy `worker.js` z Pyodide w Node: wyniki w WebAssembly porównane z CPython (wymaga lokalnej kopii Pyodide 0.29.5 z kołami numpy, scipy, pandas) |
 
 Czasy w WebAssembly (Node 20, Pyodide 0.29.5 z plików lokalnych, dane przykładowe N = 512): start silnika ok. 25 s (w przeglądarce dochodzi pierwsze pobranie ok. 25 MB, kolejne uruchomienia korzystają z pamięci podręcznej), CFA 0,1 s, EFA z konsensusem 2,3 s, bootstrap CFA ok. 0,06 s na próbę, porównanie podejść ok. 0,2 s na próbę bootstrap.
+
+## Walidacja (validation)
+
+Folder `validation/` odtwarza wyniki walidacji opisane w artykule o SEMplex.
+
+| Skrypt | Co robi |
+|---|---|
+| `Rscript validation/lavaan_reference.R` | pobiera dane ECSI (`satisfaction`, N = 250 klientów banku, 27 wskaźników; pakiet cSEM 0.7.1 z CRAN, GPL-3 — dane nie są przechowywane w repozytorium) i liczy wartości referencyjne w lavaan 0.7.2, semTools 0.5.9 i psych 2.6.9 |
+| `Rscript validation/lavaan_definitions.R` | wartości referencyjne dla definicji stosowanych w SEMplex (ω z jednoczynnikowej CFA, AVE Fornella–Larckera, HTMT w wersji oryginalnej, analiza równoległa na składowych) oraz test różnicy χ² Satorry–Bentlera (2001) |
+| `python validation/semplex_vs_lavaan.py` | porównuje 1158 wielkości (dopasowanie, oszacowania, błędy standardowe, MI, R², ładunki EFA, rzetelność, podejścia porównawcze) → `validation/results/agreement.csv` |
+| `python validation/monte_carlo.py 500` | badanie symulacyjne modelu z zarządzania zasobami ludzkimi (autonomia → zaangażowanie → wypalenie → intencja odejścia; pozycje Likerta 1–7; N = 150, 300, 600; 500 replikacji) → `validation/results/monte_carlo_summary.csv` |
+
+Wynik: największa różnica względna wobec lavaan/semTools/psych wynosi 3,3·10⁻⁵; w symulacji obciążenie standaryzowanych ścieżek SEM nie przekracza 6% (N = 150), a pokrycie 95% CI mieści się w przedziale 0,92–0,96.
+
+*English:* `validation/` reproduces the agreement study against lavaan, semTools and psych on the ECSI customer-satisfaction data and the Monte Carlo recovery study reported in the SEMplex software paper.
 
 ## Dane przykładowe
 
