@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Panel, ResultTable, CorrMatrix, Interpretation, Field, Select, RadioGroup, Badge, Distribution, Verdict, Term, Button, format } from 'semplex-ui';
-import { useStore, engine, setResult, setState, logDecision, markStale, toast } from '../store.js';
+import { useStore, engine, setResult, setState, logDecision, markStale, toast, withDependents } from '../store.js';
 import { Head, Screen, NeedData, EngineErrorView, useRun, Loading, StaleNote } from '../ui.jsx';
 import { n2, n3, pTxt, pct, int } from '../lib/fit.js';
 
@@ -33,7 +33,7 @@ export default function StatsScreen() {
     if (v === estimator) return;
     const before = estimator;
     setState({ estimator: v });
-    markStale(['cfa', 'sem']);
+    markStale(withDependents(['cfa', 'sem']));
     const d = logDecision({ module: 'Opisowe i testy', moduleIcon: 'stats', kind: 'change', origin: v === recommended ? 'proposal' : 'manual', action: `Estymator ${before} → ${v}`,
       reason: mar ? `Test Mardii: kurtoza z = ${n2(mar.kurt_z)}, ${pTxt(mar.kurt_p)}.` : 'Wybór badacza.', undo: { type: 'estimator', before } });
     toast(`Estymator: ${v}. CFA i SEM czekają na przeliczenie.`, { actionLabel: 'Cofnij', onAction: () => import('../store.js').then((m) => m.revertDecision(d.id)) });

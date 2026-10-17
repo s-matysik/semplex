@@ -1,6 +1,7 @@
 /* Projekt: wczytanie pliku, przykład, zapis i odczyt .sxp (JSON z danymi źródłowymi). */
 import { engine, getState, setState, toast, logDecision, newId } from '../store.js';
 import { download } from './model.js';
+import { ENGINE_VERSION } from '../engine/client.js';
 
 function toB64(bytes) {
   let s = '';
@@ -18,14 +19,14 @@ function fromB64(b64) {
 /* Krok 1 importu: rozpoznanie pliku (kodowanie, separator, typy, dane osobowe). */
 export async function sniffFile(name, bytes, opts) {
   const res = await engine.uploadFile(name, bytes, opts || {});
-  setState({ importDraft: Object.assign({}, res, { opts: opts || {} }), rawFile: { name, b64: toB64(bytes) } });
+  setState({ importDraft: Object.assign({}, res, { opts: opts || {} }), rawFile: { name, b64: toB64(bytes), opts: opts || {} } });
   return res;
 }
 
 export async function resniff(opts) {
   const s = getState();
   const res = await engine.call('sniff', Object.assign({ filename: s.rawFile.name }, opts));
-  setState({ importDraft: Object.assign({}, res, { opts }) });
+  setState({ importDraft: Object.assign({}, res, { opts }), rawFile: Object.assign({}, s.rawFile, { opts: opts || {} }) });
   return res;
 }
 
@@ -57,19 +58,34 @@ export async function loadSample() {
   return sniffFile('lojalnosc_2026.csv', csv);
 }
 
-export function saveProject() {
+function utf8B64(text) { return toB64(new TextEncoder().encode(text)); }
+
+/* Zapis projektu. mode 'clean' (domyślnie): plik źródłowy bez kolumn pominiętych przy imporcie, w tym kolumn
+   z danymi osobowymi. mode 'full': oryginalny plik w całości (Base64 to nie szyfrowanie). */
+export async function saveProject(mode = 'clean') {
   const s = getState();
   if (!s.rawFile || !s.data) { toast('Wczytaj dane, aby zapisać projekt.', { icon: 'info' }); return; }
+  let rawFile = s.rawFile;
+  let importConfig = s.importConfig;
+  let dropped = [];
+  if (mode === 'clean') {
+    const cl = await engine.call('clean_source', { columns: s.importConfig.columns });
+    dropped = cl.dropped;
+    rawFile = { name: s.rawFile.name.replace(/\.[^.]+$/, '') + '_bez_pominietych.csv', b64: utf8B64(cl.csv), opts: cl.opts, cleaned: true, original: s.rawFile.name };
+    importConfig = Object.assign({}, s.importConfig, { columns: s.importConfig.columns.filter((c) => c.type !== 'skip') });
+  }
   const payload = {
-    format: 'semplex-project', version: 1, savedAt: new Date().toISOString(),
-    project: s.project, rawFile: s.rawFile, importConfig: s.importConfig, sampleMeta: s.sampleMeta,
+    format: 'semplex-project', version: 2, app: 'SEMplex ' + ENGINE_VERSION, savedAt: new Date().toISOString(), sourceMode: mode,
+    project: s.project, rawFile, importConfig, sampleMeta: s.sampleMeta, settings: s.settings,
     changes: s.changes, decisions: s.decisions, syntax: s.syntax, efaSkip: s.efaSkip, split: Object.assign({}, s.split, { info: null }),
     estimator: s.estimator, models: s.models, layout: s.layout, results: s.results, scales: s.data.scales.map((x) => ({ id: x.id, name: x.name, items: x.items })),
   };
   const name = (s.project.name || 'projekt').replace(/[^\p{L}\p{N}_-]+/gu, '_') + '.sxp';
   download(name, JSON.stringify(payload), 'application/json');
   setState({ project: Object.assign({}, s.project, { saved: true }) });
-  toast(`Zapisano ${name}. Plik zawiera dane źródłowe — przechowuj go jak same dane.`, { icon: 'download' });
+  toast(mode === 'clean'
+    ? `Zapisano ${name}. Plik zawiera dane analizowanych kolumn${dropped.length ? `; usunięto ${dropped.length} kolumn pominiętych przy imporcie` : ''}. Przechowuj go jak same dane.`
+    : `Zapisano ${name} z pełnym plikiem źródłowym, także z kolumnami pominiętymi przy imporcie (np. danymi osobowymi). Nie udostępniaj go bez sprawdzenia zawartości.`, { icon: 'download' });
 }
 
 export function openProjectFile() {
@@ -86,7 +102,7 @@ export function openProjectFile() {
 export async function openProject(p) {
   if (p.format !== 'semplex-project') throw new Error('to nie jest plik projektu SEMplex');
   const bytes = fromB64(p.rawFile.b64);
-  await engine.uploadFile(p.rawFile.name, bytes, {});
+  await engine.uploadFile(p.rawFile.name, bytes, p.rawFile.opts || {});
   await engine.call('import_data', { columns: p.importConfig.columns, missing_codes: p.importConfig.missingCodes, sample_meta: p.sampleMeta || null });
   if (p.scales) {
     const sc = {}, names = {};
@@ -100,6 +116,7 @@ export async function openProject(p) {
     decisions: p.decisions || [], syntax: p.syntax || { cfa: '', sem: '' }, efaSkip: p.efaSkip || [], split: p.split || getState().split,
     estimator: p.estimator || 'MLM', models: p.models || [], layout: p.layout || {}, results: p.results || {}, importDraft: null,
     project: Object.assign({}, p.project, { saved: true }), module: 'data',
+    settings: p.settings ? Object.assign({}, getState().settings, p.settings) : getState().settings,
   });
   toast(`Otwarto projekt „${p.project.name}”. Wyniki pochodzą z zapisu; przelicz je, jeśli zmieniasz ustawienia.`, { icon: 'folder' });
 }

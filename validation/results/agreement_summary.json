@@ -1,5 +1,10 @@
 {
- "n_quantities": 1158,
+ "n_quantities": 1988,
+ "metric": "|SEMplex - reference| / max(1, |reference|)",
+ "tolerance": 0.0001,
+ "max_scaled_diff": 3.333340554105086e-05,
+ "max_abs_diff": 0.006002139830769693,
+ "unmatched_reference_parameters": 0,
  "definition_rows": [
   {
    "block": "Definitions",
@@ -7,7 +12,8 @@
    "kind": "AVE (semTools default)",
    "semplex": 0.5220560643706696,
    "reference": 0.51840852004,
-   "abs_diff": 0.0036475443306696054
+   "abs_diff": 0.0036475443306696054,
+   "scaled_diff": 0.0036475443306696054
   },
   {
    "block": "Definitions",
@@ -15,7 +21,8 @@
    "kind": "AVE (semTools default)",
    "semplex": 0.5240745245677034,
    "reference": 0.52887170721,
-   "abs_diff": 0.00479718264229656
+   "abs_diff": 0.00479718264229656,
+   "scaled_diff": 0.00479718264229656
   },
   {
    "block": "Definitions",
@@ -23,7 +30,8 @@
    "kind": "AVE (semTools default)",
    "semplex": 0.5792286957650596,
    "reference": 0.57944816857,
-   "abs_diff": 0.00021947280494039045
+   "abs_diff": 0.00021947280494039045,
+   "scaled_diff": 0.00021947280494039045
   },
   {
    "block": "Definitions",
@@ -31,7 +39,8 @@
    "kind": "AVE (semTools default)",
    "semplex": 0.553735987840771,
    "reference": 0.55799773834,
-   "abs_diff": 0.0042617504992289446
+   "abs_diff": 0.0042617504992289446,
+   "scaled_diff": 0.0042617504992289446
   },
   {
    "block": "Definitions",
@@ -39,7 +48,8 @@
    "kind": "AVE (semTools default)",
    "semplex": 0.6816121814188866,
    "reference": 0.68696709591,
-   "abs_diff": 0.005354914491113472
+   "abs_diff": 0.005354914491113472,
+   "scaled_diff": 0.005354914491113472
   },
   {
    "block": "Definitions",
@@ -47,7 +57,8 @@
    "kind": "AVE (semTools default)",
    "semplex": 0.5417947387273436,
    "reference": 0.57969866193,
-   "abs_diff": 0.03790392320265634
+   "abs_diff": 0.03790392320265634,
+   "scaled_diff": 0.03790392320265634
   },
   {
    "block": "Definitions",
@@ -55,7 +66,8 @@
    "kind": "omega (semTools default)",
    "semplex": 0.8324144492674467,
    "reference": 0.84329885345,
-   "abs_diff": 0.01088440418255332
+   "abs_diff": 0.01088440418255332,
+   "scaled_diff": 0.01088440418255332
   },
   {
    "block": "Definitions",
@@ -63,7 +75,8 @@
    "kind": "omega (semTools default)",
    "semplex": 0.8472008532221813,
    "reference": 0.84169144504,
-   "abs_diff": 0.0055094081821812635
+   "abs_diff": 0.0055094081821812635,
+   "scaled_diff": 0.0055094081821812635
   },
   {
    "block": "Definitions",
@@ -71,7 +84,8 @@
    "kind": "omega (semTools default)",
    "semplex": 0.8713966851773772,
    "reference": 0.87323276615,
-   "abs_diff": 0.0018360809726227778
+   "abs_diff": 0.0018360809726227778,
+   "scaled_diff": 0.0018360809726227778
   },
   {
    "block": "Definitions",
@@ -79,7 +93,8 @@
    "kind": "omega (semTools default)",
    "semplex": 0.8330484126944865,
    "reference": 0.82216280377,
-   "abs_diff": 0.010885608924486534
+   "abs_diff": 0.010885608924486534,
+   "scaled_diff": 0.010885608924486534
   },
   {
    "block": "Definitions",
@@ -87,7 +102,8 @@
    "kind": "omega (semTools default)",
    "semplex": 0.8971580746964746,
    "reference": 0.89101858034,
-   "abs_diff": 0.00613949435647454
+   "abs_diff": 0.00613949435647454,
+   "scaled_diff": 0.00613949435647454
   },
   {
    "block": "Definitions",
@@ -95,7 +111,8 @@
    "kind": "omega (semTools default)",
    "semplex": 0.8378906603365293,
    "reference": 0.82608407008,
-   "abs_diff": 0.011806590256529303
+   "abs_diff": 0.011806590256529303,
+   "scaled_diff": 0.011806590256529303
   },
   {
    "block": "Definitions",
@@ -103,7 +120,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.6438293153098585,
    "reference": 0.62683888905,
-   "abs_diff": 0.016990426259858582
+   "abs_diff": 0.016990426259858582,
+   "scaled_diff": 0.016990426259858582
   },
   {
    "block": "Definitions",
@@ -111,7 +129,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.701550014372283,
    "reference": 0.68129955632,
-   "abs_diff": 0.020250458052282982
+   "abs_diff": 0.020250458052282982,
+   "scaled_diff": 0.020250458052282982
   },
   {
    "block": "Definitions",
@@ -119,7 +138,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.8116502835124867,
    "reference": 0.80880099907,
-   "abs_diff": 0.002849284442486666
+   "abs_diff": 0.002849284442486666,
+   "scaled_diff": 0.002849284442486666
   },
   {
    "block": "Definitions",
@@ -127,7 +147,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.7580543885751231,
    "reference": 0.74760118594,
-   "abs_diff": 0.01045320263512306
+   "abs_diff": 0.01045320263512306,
+   "scaled_diff": 0.01045320263512306
   },
   {
    "block": "Definitions",
@@ -135,7 +156,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.7190520505938905,
    "reference": 0.71642886022,
-   "abs_diff": 0.0026231903738905826
+   "abs_diff": 0.0026231903738905826,
+   "scaled_diff": 0.0026231903738905826
   },
   {
    "block": "Definitions",
@@ -143,7 +165,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.9819025596205514,
    "reference": 0.96484200414,
-   "abs_diff": 0.01706055548055141
+   "abs_diff": 0.01706055548055141,
+   "scaled_diff": 0.01706055548055141
   },
   {
    "block": "Definitions",
@@ -151,7 +174,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.7874661258984641,
    "reference": 0.77487923168,
-   "abs_diff": 0.01258689421846415
+   "abs_diff": 0.01258689421846415,
+   "scaled_diff": 0.01258689421846415
   },
   {
    "block": "Definitions",
@@ -159,7 +183,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.7030478508738164,
    "reference": 0.69446068112,
-   "abs_diff": 0.008587169753816348
+   "abs_diff": 0.008587169753816348,
+   "scaled_diff": 0.008587169753816348
   },
   {
    "block": "Definitions",
@@ -167,7 +192,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.5517920276165121,
    "reference": 0.5231832819,
-   "abs_diff": 0.028608745716512174
+   "abs_diff": 0.028608745716512174,
+   "scaled_diff": 0.028608745716512174
   },
   {
    "block": "Definitions",
@@ -175,7 +201,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.8783567329637109,
    "reference": 0.87382447807,
-   "abs_diff": 0.004532254893710896
+   "abs_diff": 0.004532254893710896,
+   "scaled_diff": 0.004532254893710896
   },
   {
    "block": "Definitions",
@@ -183,7 +210,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.7852919119485872,
    "reference": 0.77816853129,
-   "abs_diff": 0.007123380658587197
+   "abs_diff": 0.007123380658587197,
+   "scaled_diff": 0.007123380658587197
   },
   {
    "block": "Definitions",
@@ -191,7 +219,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.7001706577954412,
    "reference": 0.67497532439,
-   "abs_diff": 0.025195333405441223
+   "abs_diff": 0.025195333405441223,
+   "scaled_diff": 0.025195333405441223
   },
   {
    "block": "Definitions",
@@ -199,7 +228,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.929317828587786,
    "reference": 0.92029424061,
-   "abs_diff": 0.009023587977786018
+   "abs_diff": 0.009023587977786018,
+   "scaled_diff": 0.009023587977786018
   },
   {
    "block": "Definitions",
@@ -207,7 +237,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.8002987587072505,
    "reference": 0.78582714394,
-   "abs_diff": 0.014471614767250562
+   "abs_diff": 0.014471614767250562,
+   "scaled_diff": 0.014471614767250562
   },
   {
    "block": "Definitions",
@@ -215,7 +246,8 @@
    "kind": "HTMT (semTools default HTMT2)",
    "semplex": 0.7432488516635066,
    "reference": 0.71400459498,
-   "abs_diff": 0.02924425668350661
+   "abs_diff": 0.02924425668350661,
+   "scaled_diff": 0.02924425668350661
   },
   {
    "block": "Definitions",
@@ -223,102 +255,124 @@
    "kind": "count (psych fa='fa' default)",
    "semplex": 2.0,
    "reference": 5.0,
-   "abs_diff": 3.0
+   "abs_diff": 3.0,
+   "scaled_diff": 0.6
   }
  ],
  "by_kind": [
   {
    "kind": "AVE",
    "count": 6,
-   "max": 2.116402656349159e-06,
-   "median": 5.798530268719126e-07
+   "max_scaled": 2.116402656349159e-06,
+   "median_scaled": 5.798530268719126e-07,
+   "max_abs": 2.116402656349159e-06
   },
   {
    "kind": "EFA loading",
    "count": 162,
-   "max": 1.0205253732076258e-05,
-   "median": 1.850870231523416e-06
+   "max_scaled": 1.0205253732076258e-05,
+   "median_scaled": 1.850870231523416e-06,
+   "max_abs": 1.0205253732076258e-05
   },
   {
    "kind": "HTMT",
    "count": 15,
-   "max": 4.876876680270925e-12,
-   "median": 2.7494673204842e-12
+   "max_scaled": 4.876876680270925e-12,
+   "median_scaled": 2.7494673204842e-12,
+   "max_abs": 4.876876680270925e-12
   },
   {
    "kind": "KMO",
    "count": 1,
-   "max": 4.442779477642489e-12,
-   "median": 4.442779477642489e-12
+   "max_scaled": 4.442779477642489e-12,
+   "median_scaled": 4.442779477642489e-12,
+   "max_abs": 4.442779477642489e-12
   },
   {
    "kind": "R-squared",
    "count": 32,
-   "max": 1.2409720511197264e-06,
-   "median": 2.501795661191686e-07
+   "max_scaled": 1.2409720511197264e-06,
+   "median_scaled": 2.501795661191686e-07,
+   "max_abs": 1.2409720511197264e-06
   },
   {
    "kind": "alpha",
    "count": 6,
-   "max": 4.7695181137896725e-12,
-   "median": 2.6950108811263362e-12
+   "max_scaled": 4.7695181137896725e-12,
+   "median_scaled": 2.6950108811263362e-12,
+   "max_abs": 4.7695181137896725e-12
   },
   {
    "kind": "approach",
    "count": 6,
-   "max": 1.2359329970568211e-06,
-   "median": 3.377018253231112e-08
+   "max_scaled": 1.1891582191170258e-06,
+   "median_scaled": 3.310557435734833e-08,
+   "max_abs": 1.2359329970568211e-06
   },
   {
    "kind": "count",
    "count": 1,
-   "max": 0.0,
-   "median": 0.0
+   "max_scaled": 0.0,
+   "median_scaled": 0.0,
+   "max_abs": 0.0
   },
   {
    "kind": "estimate",
    "count": 292,
-   "max": 3.8166826795027475e-05,
-   "median": 1.0658221981652005e-06
+   "max_scaled": 1.644263088242816e-05,
+   "median_scaled": 8.721215658535897e-07,
+   "max_abs": 3.8166826795027475e-05
   },
   {
    "kind": "fit",
    "count": 55,
-   "max": 0.006002139830769693,
-   "median": 6.035406840965152e-09
+   "max_scaled": 3.333340554105086e-05,
+   "median_scaled": 1.1399658994548645e-11,
+   "max_abs": 0.006002139830769693
   },
   {
    "kind": "modification index",
    "count": 15,
-   "max": 0.00027951420682370554,
-   "median": 8.089202907513027e-05
+   "max_scaled": 3.721467373982421e-06,
+   "median_scaled": 1.360727156498205e-06,
+   "max_abs": 0.00027951420682370554
   },
   {
    "kind": "omega",
    "count": 6,
-   "max": 1.0798262273237214e-07,
-   "median": 4.109736734259073e-08
+   "max_scaled": 1.0798262273237214e-07,
+   "median_scaled": 4.109736734259073e-08,
+   "max_abs": 1.0798262273237214e-07
   },
   {
    "kind": "p-value",
    "count": 1,
-   "max": 1.532911582398532e-39,
-   "median": 1.532911582398532e-39
+   "max_scaled": 1.532911582398532e-39,
+   "median_scaled": 1.532911582398532e-39,
+   "max_abs": 1.532911582398532e-39
   },
   {
    "kind": "standard error",
    "count": 268,
-   "max": 0.00016558904946695208,
-   "median": 1.4860241253494832e-07
+   "max_scaled": 2.315394590160124e-05,
+   "median_scaled": 1.4860241253494832e-07,
+   "max_abs": 0.00016558904946695208
+  },
+  {
+   "kind": "standardized SE / CI",
+   "count": 830,
+   "max_scaled": 2.629152956706815e-05,
+   "median_scaled": 1.847760927042863e-07,
+   "max_abs": 0.0002560540520857302
   },
   {
    "kind": "std estimate",
    "count": 292,
-   "max": 2.6672778847602885e-05,
-   "median": 2.925837516709606e-07
+   "max_scaled": 1.559077031898656e-05,
+   "median_scaled": 2.925837516709606e-07,
+   "max_abs": 2.6672778847602885e-05
   }
  ],
- "max_rel_fit": 3.333340554105086e-05,
  "worst": [
   {
    "block": "Model comparison",
@@ -326,63 +380,77 @@
    "kind": "fit",
    "semplex": 180.05780272336924,
    "reference": 180.0638048632,
-   "abs_diff": 0.006002139830769693
-  },
-  {
-   "block": "ECSI CFA MLM",
-   "quantity": "chi2_scaled",
-   "kind": "fit",
-   "semplex": 715.9420280589055,
-   "reference": 715.942681003,
-   "abs_diff": 0.0006529440944404996
-  },
-  {
-   "block": "ECSI CFA ML",
-   "quantity": "MI expe1 ~~ qual1",
-   "kind": "modification index",
-   "semplex": 75.10832113559317,
-   "reference": 75.1086006498,
-   "abs_diff": 0.00027951420682370554
-  },
-  {
-   "block": "ECSI SEM MLM",
-   "quantity": "VAL ~ EXPE | se",
-   "kind": "standard error",
-   "semplex": 7.412248453250533,
-   "reference": 7.4124140423,
-   "abs_diff": 0.00016558904946695208
-  },
-  {
-   "block": "ECSI SEM MLM",
-   "quantity": "VAL ~ QUAL | se",
-   "kind": "standard error",
-   "semplex": 6.568619629317387,
-   "reference": 6.5687490188,
-   "abs_diff": 0.00012938948261354
+   "abs_diff": 0.006002139830769693,
+   "scaled_diff": 3.333340554105086e-05
   },
   {
    "block": "ECSI SEM ML",
-   "quantity": "VAL ~ EXPE | se",
-   "kind": "standard error",
-   "semplex": 5.565463595843182,
-   "reference": 5.5655857721,
-   "abs_diff": 0.0001221762568182072
+   "quantity": "VAL ~ QUAL | std ci.lower",
+   "kind": "standardized SE / CI",
+   "semplex": -5.4266149496708005,
+   "reference": -5.426757627429415,
+   "abs_diff": 0.00014267775861487308,
+   "scaled_diff": 2.629152956706815e-05
   },
   {
-   "block": "ECSI CFA ML",
-   "quantity": "MI expe5 ~~ qual5",
-   "kind": "modification index",
-   "semplex": 57.269088360327125,
-   "reference": 57.2692024671,
-   "abs_diff": 0.00011410677287670978
+   "block": "ECSI SEM MLM",
+   "quantity": "SAT ~ EXPE | std ci.upper",
+   "kind": "standardized SE / CI",
+   "semplex": 5.454475157842822,
+   "reference": 5.454612511814747,
+   "abs_diff": 0.0001373539719251582,
+   "scaled_diff": 2.5181251945513648e-05
+  },
+  {
+   "block": "ECSI SEM MLM",
+   "quantity": "VAL ~ QUAL | std ci.lower",
+   "kind": "standardized SE / CI",
+   "semplex": -8.096697707476615,
+   "reference": -8.096900319689263,
+   "abs_diff": 0.0002026122126483898,
+   "scaled_diff": 2.5023429293762814e-05
+  },
+  {
+   "block": "ECSI SEM MLM",
+   "quantity": "SAT ~ VAL | std ci.lower",
+   "kind": "standardized SE / CI",
+   "semplex": -0.10239908733773218,
+   "reference": -0.10242408830457461,
+   "abs_diff": 2.500096684243669e-05,
+   "scaled_diff": 2.500096684243669e-05
+  },
+  {
+   "block": "ECSI SEM MLM",
+   "quantity": "SAT ~ QUAL | std ci.lower",
+   "kind": "standardized SE / CI",
+   "semplex": -6.495923419206551,
+   "reference": -6.496081848191161,
+   "abs_diff": 0.00015842898461038146,
+   "scaled_diff": 2.438839108138641e-05
   },
   {
    "block": "ECSI SEM ML",
-   "quantity": "MI expe3 ~~ qual3",
-   "kind": "modification index",
-   "semplex": 76.25086675402356,
-   "reference": 76.2509775189,
-   "abs_diff": 0.00011076487643890687
+   "quantity": "SAT ~ EXPE | std ci.upper",
+   "kind": "standardized SE / CI",
+   "semplex": 4.424131517398857,
+   "reference": 4.4242369755269335,
+   "abs_diff": 0.00010545812807638555,
+   "scaled_diff": 2.383645556504697e-05
+  },
+  {
+   "block": "ECSI SEM MLM",
+   "quantity": "SAT ~ EXPE | se",
+   "kind": "standard error",
+   "semplex": 4.460884975419047,
+   "reference": 4.4609882649,
+   "abs_diff": 0.00010328948095317259,
+   "scaled_diff": 2.315394590160124e-05
   }
- ]
+ ],
+ "environment": {
+  "python": "3.11.16",
+  "numpy": "2.4.6",
+  "pandas": "2.3.3",
+  "scipy": "1.17.1"
+ }
 }

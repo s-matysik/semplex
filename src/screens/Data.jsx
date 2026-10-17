@@ -3,7 +3,7 @@ import {
   Dropzone, Button, Panel, Field, Select, Switch, TagInput, Badge, Interpretation, Tabs, DataGrid, StatTile, Distribution,
   ScatterPlot, MissingMap, ResultTable, VariableChip, Input, Diagnosis, Verdict, EmptyState, Term, format,
 } from 'semplex-ui';
-import { useStore, setState, getState, engine, addChange, toast, logDecision, markStale, DOWNSTREAM } from '../store.js';
+import { useStore, setState, getState, engine, addChange, toast, logDecision, markStale, DOWNSTREAM, revertDecision } from '../store.js';
 import { sniffFile, resniff, commitImport, loadSample, openProjectFile } from '../lib/project.js';
 import { Head, Screen, EngineBanner, EngineErrorView, useRun, Loading } from '../ui.jsx';
 import { n2, n3, n1, pct, pTxt, int } from '../lib/fit.js';
@@ -341,11 +341,14 @@ function Scales() {
   async function save() {
     const sc = {}, names = {};
     parsed.forEach((p) => { sc[p.id] = p.items; names[p.id] = p.name; });
+    const before = data.scales.map((x) => ({ id: x.id, name: x.name, items: x.items.slice() }));
     const summary = await engine.call('set_scales', { scales: sc, names });
     setState({ data: summary });
     markStale(DOWNSTREAM);
-    logDecision({ module: 'Dane', moduleIcon: 'data', kind: 'change', action: `Zdefiniowano skale: ${parsed.map((p) => p.id).join(', ')}`, reason: 'Przypisanie pozycji do konstruktów.' });
-    toast('Zapisano skale. Rzetelność, CFA i SEM czekają na przeliczenie.');
+    const fmt = (arr) => arr.map((x) => `${x.id}: ${x.items.join(', ')}`).join('; ');
+    const d = logDecision({ module: 'Dane', moduleIcon: 'data', kind: 'change', action: `Zdefiniowano skale: ${parsed.map((p) => p.id).join(', ')}`,
+      reason: 'Przypisanie pozycji do konstruktów.', effects: [{ label: 'Skale', from: fmt(before), to: fmt(parsed) }], undo: { type: 'scales', before } });
+    toast('Zapisano skale. Rzetelność, CFA i SEM czekają na przeliczenie.', { actionLabel: 'Cofnij', onAction: () => revertDecision(d.id) });
   }
   return (
     <Screen>

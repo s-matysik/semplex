@@ -602,7 +602,10 @@ def param_table(o, ci_level=0.95):
                      "free": k is not None, "est": float(est), "se": float(se), "z": float(zval), "p": float(p),
                      "ci_lo": float(est - z * se) if k is not None else float(est), "ci_hi": float(est + z * se) if k is not None else float(est),
                      "std": float(std), "std_se": float(sse),
-                     "std_lo": float(std - z * sse) if k is not None else float(std), "std_hi": float(std + z * sse) if k is not None else float(std)})
+                     # standaryzowany parametr ma własną niepewność także wtedy, gdy wersja niestandaryzowana jest ustalona
+                     # (np. ładunek markerowy = 1); CI = std ± z·SE(std), jak standardizedSolution() w lavaan
+                     "std_lo": float(std - z * sse) if np.isfinite(sse) and sse > 1e-10 else float(std),
+                     "std_hi": float(std + z * sse) if np.isfinite(sse) and sse > 1e-10 else float(std)})
     return rows
 
 

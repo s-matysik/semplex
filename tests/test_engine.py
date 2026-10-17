@@ -128,7 +128,10 @@ def test_satorra_bentler_2001_difference_matches_lavaan(hs, monkeypatch):
     fits = {}
     for key, syn in (("m1", m3), ("m2", m3 + "\nvisual =~ x9")):
         f = S.fit_model(syn, data=hs, estimator="MLM")
-        fits[key] = {"fit": f.fit, "df": f.df, "n": f.n}
+        pt_ = S.param_table(f)
+        fits[key] = {"fit": f.fit, "df": f.df, "n": f.n, "observed": f.spec.obs, "rows_id": "same", "converged": f.converged,
+                     "heywood": f.heywood, "missing_mode": "listwise",
+                     "free_params": sorted({(p["lhs"], p["op"], p["rhs"]) for p in pt_ if p["free"]})}
     monkeypatch.setattr(api, "_require", lambda: None)
     monkeypatch.setattr(api, "fit", lambda syntax, *a, **k: fits["m2" if "visual =~ x9" in syntax else "m1"])
     res = api.compare_models([{"id": "m1", "syntax": m3}, {"id": "m2", "syntax": m3 + "\nvisual =~ x9"}], estimator="MLM")
@@ -136,6 +139,30 @@ def test_satorra_bentler_2001_difference_matches_lavaan(hs, monkeypatch):
     assert t["scaled"] and t["ddf"] == 1
     assert t["dchi2"] == pytest.approx(32.229203, abs=1e-3)
     assert t["p"] == pytest.approx(1.370158575e-08, rel=1e-3)
+    assert t["nesting"] == "verified" and not res["skipped"]
+
+
+def test_compare_models_refuses_different_rows(hs, monkeypatch):
+    m3 = "visual =~ x1 + x2 + x3\ntextual =~ x4 + x5 + x6\nspeed =~ x7 + x8 + x9"
+    base = {}
+    for key, syn in (("m1", m3), ("m2", m3 + "\nvisual =~ x9")):
+        f = S.fit_model(syn, data=hs, estimator="MLM")
+        pt_ = S.param_table(f)
+        base[key] = {"fit": f.fit, "df": f.df, "n": f.n, "observed": f.spec.obs, "rows_id": key, "converged": True,
+                     "heywood": [], "missing_mode": "listwise", "free_params": sorted({(p["lhs"], p["op"], p["rhs"]) for p in pt_ if p["free"]})}
+    monkeypatch.setattr(api, "_require", lambda: None)
+    monkeypatch.setattr(api, "fit", lambda syntax, *a, **k: base["m2" if "visual =~ x9" in syntax else "m1"])
+    res = api.compare_models([{"id": "m1", "syntax": m3}, {"id": "m2", "syntax": m3 + "\nvisual =~ x9"}], estimator="MLM")
+    assert not res["tests"] and res["skipped"] and "wiersze" in res["skipped"][0]["reasons"][0]
+
+
+def test_standardized_ci_of_marker_loading_matches_lavaan(hs):
+    # lavaan 0.7.2 standardizedSolution(cfa(HS model)): visual =~ x1 est.std 0.7718802, se 0.05497275
+    f = S.fit_model("visual =~ x1 + x2 + x3\ntextual =~ x4 + x5 + x6\nspeed =~ x7 + x8 + x9", data=hs)
+    row = next(p for p in S.param_table(f) if p["lhs"] == "visual" and p["rhs"] == "x1")
+    assert row["std_se"] == pytest.approx(0.05497275, abs=2e-5)
+    assert row["std_lo"] == pytest.approx(0.7718802 - 1.959964 * 0.05497275, abs=5e-5)
+    assert row["std_hi"] == pytest.approx(0.7718802 + 1.959964 * 0.05497275, abs=5e-5)
 
 
 def test_collinearity_flags_std_paths_above_one():

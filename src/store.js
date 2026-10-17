@@ -91,7 +91,18 @@ export function markStale(modules) {
   });
 }
 
-export const DOWNSTREAM = ['stats', 'rel', 'efa', 'cfa', 'sem', 'med', 'bridge', 'compare'];
+/* Zależności wyników: zmiana modułu unieważnia też jego bootstrap i moduły, które z niego korzystają. */
+const DEPENDENTS = {
+  stats: [], rel: ['relBoot'], efa: ['efaStab'], cfa: ['cfaBoot', 'compare', 'sem', 'semBoot'], sem: ['semBoot'],
+  med: [], bridge: [], compare: [],
+};
+export function withDependents(mods) {
+  const out = new Set();
+  const add = (m) => { if (out.has(m)) return; out.add(m); (DEPENDENTS[m] || []).forEach(add); };
+  mods.forEach(add);
+  return Array.from(out);
+}
+export const DOWNSTREAM = withDependents(['stats', 'rel', 'efa', 'cfa', 'sem', 'med', 'bridge', 'compare']);
 
 /* ---------- dziennik decyzji ---------- */
 export function logDecision(entry) {
@@ -130,12 +141,12 @@ export async function revertDecision(id) {
     await applyChanges(getState().changes.filter((c) => c.id !== u.id));
   } else if (u.type === 'syntax') {
     setState((s) => ({ syntax: Object.assign({}, s.syntax, { [u.target]: u.before }) }));
-    markStale([u.target]);
+    markStale(withDependents([u.target]));
   } else if (u.type === 'efaSkip') {
     setState((s) => ({ efaSkip: u.before }));
   } else if (u.type === 'estimator') {
     setState({ estimator: u.before });
-    markStale(['cfa', 'sem']);
+    markStale(withDependents(['cfa', 'sem']));
   } else if (u.type === 'scales') {
     const sc = {}, names = {};
     u.before.forEach((x) => { sc[x.id] = x.items; names[x.id] = x.name; });
@@ -143,7 +154,7 @@ export async function revertDecision(id) {
     markStale(DOWNSTREAM);
   } else if (u.type === 'split') {
     setState((s) => ({ split: Object.assign({}, s.split, u.before, { info: null }) }));
-    markStale(['efa', 'cfa', 'sem', 'rel']);
+    markStale(DOWNSTREAM);
   }
   setState((s) => ({ decisions: s.decisions.map((x) => (x.id === id ? Object.assign({}, x, { reverted: true }) : x)) }));
   markDecisionsStaleAfter(d.at);

@@ -1042,6 +1042,18 @@
     var params = Math.max(0, loadings - lat.length) + Object.keys(indicatorIds).length + lat.length
       + edges.filter(function (e) { return e.kind === 'path' || e.kind === 'cov'; }).length
       + obs.filter(function (n) { return !indicatorIds[n.id]; }).length;
+    // Kowariancje dodawane automatycznie przez silnik (jak w lavaan): między zmiennymi egzogenicznymi
+    // oraz między resztami czystych zmiennych zależnych — inaczej podgląd zawyża df.
+    var pairKey = function (a, b) { return a < b ? a + '|' + b : b + '|' + a; };
+    var explicitCov = {}; edges.forEach(function (e) { if (e.kind === 'cov') explicitCov[pairKey(e.from, e.to)] = true; });
+    var pathTo = {}, pathFrom = {};
+    edges.forEach(function (e) { if (e.kind === 'path') { pathTo[e.to] = true; pathFrom[e.from] = true; } });
+    var used = nodes.filter(function (n) { return n.kind === 'latent' || edges.some(function (e) { return e.from === n.id || e.to === n.id; }); });
+    var exo = used.filter(function (n) { return !pathTo[n.id] && !indicatorIds[n.id]; }).map(function (n) { return n.id; });
+    var pureY = used.filter(function (n) { return pathTo[n.id] && !pathFrom[n.id] && !indicatorIds[n.id]; }).map(function (n) { return n.id; });
+    [exo, pureY].forEach(function (set) {
+      for (var a = 0; a < set.length; a++) for (var b = a + 1; b < set.length; b++) if (!explicitCov[pairKey(set[a], set[b])]) params += 1;
+    });
     var issues = [];
     lat.forEach(function (n) {
       var k = edges.filter(function (e) { return e.kind === 'loading' && e.from === n.id; }).length;
@@ -1050,7 +1062,7 @@
     });
     obs.forEach(function (n) { if (!edges.some(function (e) { return e.from === n.id || e.to === n.id; })) issues.push({ level: 'ok', node: n.id, message: n.id + ' nie jest połączona z modelem.' }); });
     var df = moments - params;
-    if (df < 0) issues.unshift({ level: 'poor', message: 'Model nie jest identyfikowalny: df = ' + df + '. Usuń ścieżki albo dodaj wskaźniki.' });
+    if (df < 0) issues.unshift({ level: 'poor', message: 'Wstępna kontrola liczby parametrów: df = ' + df + ' < 0, więc model nie jest identyfikowalny. Usuń ścieżki albo dodaj wskaźniki.' });
     return { p: p, moments: moments, params: params, df: df, issues: issues, ok: df >= 0 && !issues.some(function (i) { return i.level === 'poor'; }) };
   }
 

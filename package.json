@@ -1,7 +1,7 @@
 {
   "name": "semplex-app",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "license": "MIT",
   "description": "SEMplex — analiza ankiet w przeglądarce: dane, rzetelność, EFA, CFA, SEM, mediacja, porównanie podejść i raport APA.",

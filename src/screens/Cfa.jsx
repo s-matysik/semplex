@@ -1,12 +1,13 @@
+import { ENGINE_VERSION } from '../engine/client.js';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Panel, FitIndex, Interpretation, ResultTable, PathDiagram, Tabs, Badge, Button, SyntaxEditor, CodeExport, Field, Select, Diagnosis, Verdict, Progress, lavaan, format,
 } from 'semplex-ui';
-import { useStore, setState, getState, engine, setResult, runEngineJob, logDecision, toast, markStale, revertDecision } from '../store.js';
+import { useStore, setState, getState, engine, setResult, runEngineJob, logDecision, toast, markStale, revertDecision, withDependents } from '../store.js';
 import { Head, Screen, NeedData, EngineErrorView, useRun, Loading, StaleNote, SeedBadge } from '../ui.jsx';
 import { fitIndices, overallFit, fitSentence, n2, n3, pTxt, int, grade, RULES, ESTIMATORS } from '../lib/fit.js';
 import { ensureSplit, scaleMap } from '../lib/analysis.js';
-import { cfaSyntaxFromScales, pathDiagramFromFit, codeSnippets, copyText, download } from '../lib/model.js';
+import { cfaSyntaxFromScales, pathDiagramFromFit, codeSnippets, copyText, download, ANALYSIS_FILE } from '../lib/model.js';
 
 /* Wspólny widok wyników modelu (CFA i SEM). */
 export function useModelRunner(module) {
@@ -207,15 +208,15 @@ export default function CfaScreen() {
             onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runNow(); } }} />
           <div className="row" style={{ marginTop: 12 }}>
             <Button variant="primary" icon="play" loading={running} disabled={diags.length > 0 || !text.trim()} onClick={runNow}>Uruchom CFA</Button>
-            {ident ? <Verdict level={ident.ok ? 'good' : 'poor'}>{ident.ok ? `identyfikowalny · ${ident.params} parametrów, df = ${ident.df}` : (ident.issues[0] && ident.issues[0].message) || 'model nieidentyfikowalny'}</Verdict> : null}
+            {ident ? <Verdict level={ident.ok ? 'good' : 'poor'}>{ident.ok ? `wstępnie: ${ident.params} parametrów, df = ${ident.df} (df ≥ 0 to warunek konieczny, nie wystarczający)` : (ident.issues[0] && ident.issues[0].message) || 'model nieidentyfikowalny'}</Verdict> : null}
           </div>
         </Panel>
         <Panel title="Ustawienia">
           <div className="stack">
             <Field label="Estymator" hint={(ESTIMATORS.find((e) => e.value === estimator) || {}).hint}>
-              <Select value={estimator} onChange={(e) => { const before = estimator; setState({ estimator: e.target.value }); markStale(['cfa', 'sem']); logDecision({ module: 'CFA', moduleIcon: 'cfa', kind: 'change', action: `Estymator ${before} → ${e.target.value}`, undo: { type: 'estimator', before } }); }} options={ESTIMATORS} />
+              <Select value={estimator} onChange={(e) => { const before = estimator; setState({ estimator: e.target.value }); markStale(withDependents(['cfa', 'sem'])); logDecision({ module: 'CFA', moduleIcon: 'cfa', kind: 'change', action: `Estymator ${before} → ${e.target.value}`, undo: { type: 'estimator', before } }); }} options={ESTIMATORS} />
             </Field>
-            <Field label="Braki danych" hint={missing === 'em' ? 'Kowariancja z algorytmu EM; estymator ML, błędy przy N kompletnych przypadków z danymi.' : 'Usuwa respondentów z jakimkolwiek brakiem w pozycjach modelu.'}>
+            <Field label="Braki danych" hint={missing === 'em' ? 'Kowariancja z algorytmu EM, estymator ML, N = osoby z co najmniej jedną odpowiedzią. To nie jest FIML: błędy standardowe i testy w tym trybie nie są zwalidowane — traktuj je ostrożnie.' : 'Usuwa respondentów z jakimkolwiek brakiem w pozycjach modelu.'}>
               <Select value={missing} onChange={(e) => { setMissing(e.target.value); fit(text, { missing: e.target.value }); }} options={[{ value: 'listwise', label: 'tylko kompletne (listwise)' }, { value: 'em', label: 'EM (kowariancja)' }]} />
             </Field>
           </div>
@@ -247,8 +248,9 @@ export default function CfaScreen() {
                       <ResultTable dense columns={[{ key: 'name', label: 'Model', type: 'text' }, { key: 'df', label: 'df', type: 'num', digits: 0 }, { key: 'chi2', label: 'χ²', type: 'num', digits: 2 }, { key: 'cfi', label: 'CFI', type: 'num', digits: 3 }, { key: 'rmsea', label: 'RMSEA', type: 'num', digits: 3 }, { key: 'aic', label: 'AIC', type: 'num', digits: 1 }, { key: 'bic', label: 'BIC', type: 'num', digits: 1 }]}
                         rows={cmp.models.filter((m) => m.ok).map((m) => ({ name: m.name, df: m.df, chi2: m.fit.chi2, cfi: m.fit.cfi, rmsea: m.fit.rmsea, aic: m.fit.aic, bic: m.fit.bic }))} note="Niższe AIC i BIC — lepszy kompromis dopasowania i złożoności." />
                       {cmp.tests.length ? <ResultTable dense columns={[{ key: 't', label: 'Porównanie', type: 'text' }, { key: 'd', label: 'Δχ²', type: 'num', digits: 2 }, { key: 'ddf', label: 'Δdf', type: 'num', digits: 0 }, { key: 'p', label: 'p', type: 'p' }, { key: 'dcfi', label: 'ΔCFI', type: 'num', digits: 3 }]}
-                        rows={cmp.tests.map((t) => ({ t: `${(cmp.models.find((m) => m.id === t.restricted) || {}).name} vs ${(cmp.models.find((m) => m.id === t.general) || {}).name}`, d: t.dchi2, ddf: t.ddf, p: t.p, dcfi: t.dcfi }))}
-                        note={(cmp.tests.some((t) => t.scaled) ? "Δχ² skalowane metodą Satorry–Bentlera (2001) dla estymatora MLM. " : "") + "Test różnicy χ² jest poprawny tylko dla modeli zagnieżdżonych. ΔCFI ≤ −0,01 oznacza istotne pogorszenie (Cheung i Rensvold, 2002)."} /> : null}
+                        rows={cmp.tests.map((t) => ({ t: `${(cmp.models.find((m) => m.id === t.restricted) || {}).name} vs ${(cmp.models.find((m) => m.id === t.general) || {}).name}${t.nesting === 'unverified' ? ' (zagnieżdżenie niepotwierdzone)' : ''}`, d: t.invalid ? NaN : t.dchi2, ddf: t.ddf, p: t.p, dcfi: t.dcfi }))}
+                        note={(cmp.tests.some((t) => t.scaled) ? "Δχ² skalowane metodą Satorry–Bentlera (2001) dla estymatora MLM. " : "") + "Test liczy się tylko dla modeli na tych samych zmiennych i wierszach, ze zbieżnym i dopuszczalnym rozwiązaniem; poprawny jest wyłącznie dla modeli zagnieżdżonych. ΔCFI podano opisowo — próg −0,01 Cheunga i Rensvolda (2002) zaproponowano dla testów niezmienniczości pomiarowej."} /> : null}
+                      {[...cmp.tests.flatMap((t) => t.warnings || []), ...(cmp.skipped || []).map((s) => `Pominięto parę ${s.restricted} – ${s.general}: ${s.reasons.join(', ')}.`)].map((w, i) => <Interpretation key={i} tone="warn" title="Uwaga do porównania modeli">{w}</Interpretation>)}
                     </> : null}
                   </div>
                 ) : null}
@@ -258,7 +260,8 @@ export default function CfaScreen() {
               <Panel title="Diagram ścieżek" subtitle="Ładunki i korelacje standaryzowane" actions={<Button size="sm" variant="ghost" icon="download" onClick={() => { const svg = document.querySelector('.cfa-diagram svg'); if (svg) download('cfa_diagram.svg', new XMLSerializer().serializeToString(svg), 'image/svg+xml'); }}>SVG</Button>}>
                 <div className="cfa-diagram scroll-x"><PathDiagram nodes={diag.nodes} edges={diag.edges} width={diag.width} height={diag.height} legend label="Diagram ścieżek modelu CFA" /></div>
               </Panel>
-              {mode !== 'simple' ? <CodeExport snippets={codeSnippets(r.syntax, { estimator: r.estimator, file: data.file, part: r.part === 'all' ? undefined : r.part, seed: settings.seed, kind: 'cfa', bootstrap: bootOk ? boot.value.R : undefined })} defaultLang={mode === 'code' ? 'lavaan' : 'python'} meta={`SEMplex 1.0 · ${r.estimator} · ziarno ${settings.seed}`} /> : null}
+              {mode !== 'simple' ? <div className="row"><Button size="sm" variant="secondary" icon="download" onClick={async () => { const a = await engine.call('analysis_csv', { syntax: r.syntax, part: r.part }); download(ANALYSIS_FILE, a.csv, 'text/csv;charset=utf-8'); toast(`Pobrano dane analityczne: N = ${a.n}, ${a.vars.length} zmiennych${a.steps.length ? '; przygotowanie: ' + a.steps.join(', ') : ''}.`); }}>Dane analityczne (CSV) do kodu</Button></div> : null}
+              {mode !== 'simple' ? <CodeExport snippets={codeSnippets(r.syntax, { estimator: r.estimator, part: r.part === 'all' ? undefined : r.part, seed: r.split_seed != null ? r.split_seed : settings.seed, kind: 'cfa', bootstrap: bootOk ? boot.value.R : undefined, version: ENGINE_VERSION })} defaultLang={mode === 'code' ? 'lavaan' : 'python'} meta={`SEMplex ${ENGINE_VERSION} · ${r.estimator}`} /> : null}
             </div>
           </div>
         </>

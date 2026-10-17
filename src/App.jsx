@@ -98,7 +98,8 @@ function usePipeline() {
 
 const COMMANDS = [
   { id: 'cmd:sample', title: 'Otwórz przykładowe dane', module: 'Polecenia', icon: 'file', keywords: 'przykład lojalność sample demo', shortcut: '' },
-  { id: 'cmd:save', title: 'Zapisz projekt (.sxp)', module: 'Polecenia', icon: 'download', keywords: 'save zapisz projekt', shortcut: 'Ctrl S' },
+  { id: 'cmd:save', title: 'Zapisz projekt (.sxp) bez kolumn pominiętych', module: 'Polecenia', icon: 'download', keywords: 'save zapisz projekt', shortcut: 'Ctrl S' },
+  { id: 'cmd:save-full', title: 'Zapisz projekt z pełnym plikiem źródłowym (także dane osobowe)', module: 'Polecenia', icon: 'download', keywords: 'save zapisz projekt pełny oryginał', shortcut: '' },
   { id: 'cmd:open', title: 'Otwórz projekt (.sxp)', module: 'Polecenia', icon: 'folder', keywords: 'open otwórz projekt' },
   { id: 'cmd:theme', title: 'Przełącz motyw jasny / ciemny', module: 'Polecenia', icon: 'moon', keywords: 'theme dark light motyw' },
   { id: 'cmd:settings', title: 'Ustawienia', module: 'Polecenia', icon: 'settings', keywords: 'settings ziarno bootstrap seed' },
@@ -166,7 +167,7 @@ export default function App() {
   useEffect(() => {
     function onKey(e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setState({ palette: true }); }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveProject(); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveProject('clean'); }
     }
     window.addEventListener('keydown', onKey);
     const warn = (e) => { if (getState().data && !getState().project.saved) { e.preventDefault(); e.returnValue = ''; } };
@@ -180,7 +181,8 @@ export default function App() {
     if (id.startsWith('go:')) return go(id.split(':')[1]);
     if (id.startsWith('mod:')) return go(id.slice(4));
     if (id === 'cmd:sample') { setState({ wantSample: Date.now(), importDraft: null, data: null }); go('data'); }
-    if (id === 'cmd:save') saveProject();
+    if (id === 'cmd:save') saveProject('clean');
+    if (id === 'cmd:save-full') saveProject('full');
     if (id === 'cmd:open') openProjectFile();
     if (id === 'cmd:theme') toggleTheme();
     if (id === 'cmd:settings') setState({ settingsOpen: true });
@@ -204,7 +206,7 @@ export default function App() {
           search={{ placeholder: 'Szukaj metody, zmiennej, polecenia…', onOpen: () => setState({ palette: true }) }}
           tools={<>
             <JobTray jobs={jobs} onCancel={cancelJob} note="Zadania liczą się w tle; możesz pracować w innych modułach." />
-            <Button size="sm" variant="ghost" icon="download" onClick={saveProject} title="Zapisz projekt (Ctrl S)" aria-label="Zapisz projekt" />
+            <Button size="sm" variant="ghost" icon="download" onClick={() => saveProject('clean')} title="Zapisz projekt bez kolumn pominiętych (Ctrl S)" aria-label="Zapisz projekt" />
             <Button size="sm" variant="ghost" icon="settings" onClick={() => setState({ settingsOpen: true })} aria-label="Ustawienia" />
             <Button size="sm" variant="ghost" icon="help" onClick={() => setState({ help: true })} aria-label="Pomoc" />
           </>}

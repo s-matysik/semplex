@@ -88,6 +88,20 @@ def sniff(filename, raw=None, path=None, encoding="auto", sep="auto", decimal="a
             "preview_header": [str(c) for c in df.columns], "preview": preview, "missing_codes": codes, "filename": filename}
 
 
+def clean_source(columns):
+    """Plik źródłowy bez kolumn pominiętych przy imporcie (m.in. danych osobowych) — do zapisu projektu.
+
+    Zwraca tekst CSV (UTF-8, separator ',', wartości jak w pliku źródłowym) i ustawienia, z którymi trzeba go wczytać."""
+    raw = STATE["raw"]
+    keep = [c["source"] for c in columns if c.get("type") != "skip" and c["source"] in raw.columns]
+    dec = STATE["info"].get("decimal", ".")
+    if STATE["info"].get("kind") == "excel":
+        dec = "."
+    text = raw[keep].to_csv(index=False, sep=",", lineterminator="\n")
+    return {"csv": text, "kept": keep, "dropped": [str(c) for c in raw.columns if c not in keep],
+            "opts": {"encoding": "utf-8", "sep": ",", "decimal": dec, "header": True}}
+
+
 def import_data(columns, missing_codes, reverse_scale=False, sample_meta=None):
     df, meta = D.build(STATE["raw"], columns, missing_codes, STATE["info"].get("decimal", "."), reverse_scale)
     sm = sample_meta or {}
@@ -100,7 +114,7 @@ def import_data(columns, missing_codes, reverse_scale=False, sample_meta=None):
             m["value_labels"] = sm["likert"]
         metamap[m["name"]] = m
     scales = sm.get("scales") or D.guess_scales([m["name"] for m in meta if m["type"] in ("ordinal", "continuous")])
-    STATE.update({"base": df, "meta": metamap, "changes": [], "excluded": set(), "split": None, "sample_meta": sm,
+    STATE.update({"base": df, "meta": metamap, "changes": [], "excluded": set(), "split": None, "sample_meta": sm, "missing_codes": list(missing_codes or []),
                   "scales": {k: [i for i in v if i in df.columns] for k, v in scales.items()}, "scale_names": sm.get("scale_names", {})})
     _rebuild()
     return summary()
@@ -302,6 +316,28 @@ def split(seed=1, strata=None, frac=0.5):
     return {"n": len(A), "n_efa": int(mask.sum()), "n_cfa": int((~mask).sum()), "seed": seed, "strata": strata}
 
 
+def analysis_csv(syntax, part="all", missing="listwise"):
+    """Dane dokładnie w postaci użytej w analizie modelu: po przekodowaniu, odwróceniu pozycji, wykluczeniach i wyborze
+    części próby; tylko zmienne modelu, z numerem wiersza pliku źródłowego. Z tym plikiem eksportowany kod odtwarza wynik."""
+    _require()
+    d, C, n, obs, n_complete = _model_data(syntax, part, "listwise")
+    steps = []
+    for ch in STATE["changes"]:
+        if ch["kind"] == "reverse":
+            steps.append(f"odwrócono {ch['var']} (skala {ch.get('lo')}–{ch.get('hi')})")
+        elif ch["kind"] == "exclude":
+            steps.append(f"wykluczono {len(ch['rows'])} wierszy")
+        elif ch["kind"] == "include":
+            steps.append(f"przywrócono {len(ch['rows'])} wierszy")
+        elif ch["kind"] == "drop_var":
+            steps.append(f"usunięto zmienną {ch['var']}")
+    out = d.copy()
+    out.insert(0, "row_id", out.index.astype(int) + 1)
+    return {"csv": out.to_csv(index=False, lineterminator="\n"), "n": int(len(out)), "vars": list(obs), "part": part,
+            "split_seed": STATE.get("split_seed") if part in ("efa", "cfa") else None, "steps": steps,
+            "missing_codes": STATE.get("missing_codes")}
+
+
 def _part(part):
     A = _analysis_df()
     if part in ("efa", "cfa"):
@@ -472,6 +508,8 @@ def fit(syntax, estimator="ML", part="cfa", missing="listwise", mi=True, std_lv=
     _require()
     d, C, n, obs, n_complete = _model_data(syntax, part, missing)
     est = estimator if d is not None else "ML"
+    import hashlib
+    rows_id = hashlib.sha1(",".join(map(str, d.index.tolist())).encode()).hexdigest()[:16] if d is not None else None
     if d is not None:
         f = S.fit_model(syntax, data=d, estimator=est, mi=mi, std_lv=std_lv)
     else:
@@ -483,7 +521,9 @@ def fit(syntax, estimator="ML", part="cfa", missing="listwise", mi=True, std_lv=
     return {"syntax": syntax, "estimator": est, "requested_estimator": estimator, "missing": missing, "n": n, "n_complete": n_complete,
             "part": part, "fit": f.fit, "params": pt, "r2": f.r2, "defined": f.defined, "mi": getattr(f, "mi", []),
             "converged": f.converged, "iterations": f.iterations, "heywood": f.heywood, "nodes": nodes,
-            "latent": f.spec.lat, "observed": f.spec.obs, "df": f.df, "npar": f.npar, "warnings": f.spec.warnings, "collinearity": _collinearity(f, pt),
+            "latent": f.spec.lat, "observed": f.spec.obs, "rows_id": rows_id, "missing_mode": missing,
+            "split_seed": STATE.get("split_seed") if part in ("efa", "cfa") else None,
+            "free_params": sorted({(p["lhs"], p["op"], p["rhs"]) for p in pt if p["free"]}), "df": f.df, "npar": f.npar, "warnings": f.spec.warnings, "collinearity": _collinearity(f, pt),
             "scales_used": {lv: [p["rhs"] for p in f.spec.params if p["op"] == "=~" and p["lhs"] == lv] for lv in f.spec.lat}}
 
 
@@ -535,37 +575,66 @@ class _BootJob:
 
 # --------------------------------------------------------------------------- porównanie modeli
 def compare_models(models, part="cfa", estimator="ML"):
+    """Porównanie modeli zagnieżdżonych: Δχ² (dla MLM skalowane metodą Satorry–Bentlera, 2001), ΔCFI, AIC, BIC.
+
+    Test liczy się tylko dla par z tymi samymi zmiennymi obserwowalnymi i tymi samymi wierszami danych, z rozwiązaniami
+    zbieżnymi i dopuszczalnymi. Zagnieżdżenie sprawdzane jest przez zawieranie zbiorów wolnych parametrów; gdy nie da się
+    go stwierdzić (np. ograniczenia równości), wynik dostaje ostrzeżenie."""
     _require()
+    from scipy import stats as st
     fits = []
     for m in models:
         try:
             r = fit(m["syntax"], estimator, part, mi=False)
-            fits.append({"id": m["id"], "name": m.get("name", m["id"]), "fit": r["fit"], "df": r["df"], "ok": True, "n": r["n"]})
+            fits.append({"id": m["id"], "name": m.get("name", m["id"]), "fit": r["fit"], "df": r["df"], "ok": True, "n": r["n"],
+                         "observed": sorted(r["observed"]), "rows_id": r["rows_id"], "converged": r["converged"],
+                         "admissible": not r["heywood"], "free": set(map(tuple, r["free_params"])), "missing_mode": r["missing_mode"]})
         except Exception as e:
             fits.append({"id": m["id"], "name": m.get("name", m["id"]), "ok": False, "error": str(e)})
-    tests = []
+    tests, skipped = [], []
     ok = [f for f in fits if f["ok"]]
-    for i in range(len(ok)):
-        for j in range(len(ok)):
-            a, b = ok[i], ok[j]
-            if a["df"] > b["df"] and a["n"] == b["n"]:
-                d = a["fit"]["chi2"] - b["fit"]["chi2"]
-                ddf = a["df"] - b["df"]
-                from scipy import stats as st
-                t = {"restricted": a["id"], "general": b["id"], "dchi2": d, "ddf": ddf, "p": float(st.chi2.sf(max(d, 0), ddf)),
-                     "dcfi": a["fit"]["cfi"] - b["fit"]["cfi"], "scaled": False}
-                ca, cb = a["fit"].get("scaling"), b["fit"].get("scaling")
-                if ca and cb:
-                    # Satorra-Bentler (2001) scaled difference, as lavaan::anova() for MLM
-                    cd = (a["df"] * ca - b["df"] * cb) / ddf
-                    if cd > 0:
-                        ds = d / cd
-                        t.update({"dchi2": ds, "dchi2_ml": d, "cd": cd, "p": float(st.chi2.sf(max(ds, 0), ddf)), "scaled": True,
-                                  "method": "Satorra-Bentler 2001"})
-                    if "cfi_scaled" in a["fit"] and "cfi_scaled" in b["fit"]:
-                        t["dcfi"] = a["fit"]["cfi_scaled"] - b["fit"]["cfi_scaled"]
-                tests.append(t)
-    return {"models": fits, "tests": tests}
+    for a in ok:
+        for b in ok:
+            if not a["df"] > b["df"]:
+                continue
+            reasons = []
+            if a["observed"] != b["observed"]:
+                reasons.append("różne zmienne obserwowalne")
+            if a["rows_id"] is None or a["rows_id"] != b["rows_id"]:
+                reasons.append("różne wiersze danych albo tryb EM")
+            if not (a["converged"] and b["converged"]):
+                reasons.append("rozwiązanie niezbieżne")
+            if not (a["admissible"] and b["admissible"]):
+                reasons.append("rozwiązanie niedopuszczalne (przypadek Heywooda)")
+            if reasons:
+                skipped.append({"restricted": a["id"], "general": b["id"], "reasons": reasons})
+                continue
+            nested = a["free"] <= b["free"]
+            d = a["fit"]["chi2"] - b["fit"]["chi2"]
+            ddf = a["df"] - b["df"]
+            t = {"restricted": a["id"], "general": b["id"], "dchi2": d, "ddf": ddf, "p": float(st.chi2.sf(max(d, 0), ddf)),
+                 "dcfi": a["fit"]["cfi"] - b["fit"]["cfi"], "scaled": False, "nesting": "verified" if nested else "unverified",
+                 "warnings": [] if nested else ["Nie stwierdzono zawierania wolnych parametrów — upewnij się, że modele są zagnieżdżone."]}
+            ca, cb = a["fit"].get("scaling"), b["fit"].get("scaling")
+            if ca and cb:
+                # Satorra-Bentler (2001) scaled difference, as lavaan::anova() for MLM
+                cd = (a["df"] * ca - b["df"] * cb) / ddf
+                if cd > 0:
+                    ds = d / cd
+                    t.update({"dchi2": ds, "dchi2_ml": d, "cd": cd, "p": float(st.chi2.sf(max(ds, 0), ddf)), "scaled": True,
+                              "method": "Satorra-Bentler 2001"})
+                else:
+                    # niedodatni czynnik skalujący: test skalowany nie istnieje; nie podstawiamy wyniku ML
+                    t.update({"dchi2": float("nan"), "dchi2_ml": d, "cd": cd, "p": float("nan"), "scaled": False, "invalid": True,
+                              "method": "Satorra-Bentler 2001"})
+                    t["warnings"].append("Czynnik skalujący różnicy jest niedodatni — skalowanego testu Δχ² nie można obliczyć "
+                                         "(rozważ test Satorry–Bentlera, 2010).")
+                if "cfi_scaled" in a["fit"] and "cfi_scaled" in b["fit"]:
+                    t["dcfi"] = a["fit"]["cfi_scaled"] - b["fit"]["cfi_scaled"]
+            tests.append(t)
+    for f in fits:
+        f.pop("free", None)
+    return {"models": fits, "tests": tests, "skipped": skipped}
 
 
 # --------------------------------------------------------------------------- mediacja / most

@@ -25,7 +25,7 @@ Wspólne dla wszystkich ekranów: przełącznik Prosty / Zaawansowany / Kod, pal
 
 ## Uruchomienie lokalne
 
-Wymagany Node.js 18 lub nowszy.
+Testowane z Node.js 20 (tak jak w CI). Testy interfejsu (`tools/ui-test.mjs`) nie działają w Node.js 24 z powodu przypisania `globalThis.navigator` w środowisku testowym.
 
 ```bash
 npm install
@@ -88,12 +88,13 @@ Folder `validation/` odtwarza wyniki walidacji opisane w artykule o SEMplex.
 
 | Skrypt | Co robi |
 |---|---|
-| `Rscript validation/lavaan_reference.R` | pobiera dane ECSI (`satisfaction`, N = 250 klientów banku, 27 wskaźników; pakiet cSEM 0.7.1 z CRAN, GPL-3 — dane nie są przechowywane w repozytorium) i liczy wartości referencyjne w lavaan 0.7.2, semTools 0.5.9 i psych 2.6.9 |
+| `Rscript validation/lavaan_reference.R` | pobiera dane ECSI (`satisfaction`, N = 250 klientów banku, 27 wskaźników; pakiet cSEM 0.7.1 z CRAN, GPL-3 — dane nie są przechowywane w repozytorium) i liczy wartości referencyjne w lavaan 0.7.2, semTools 0.5-9 i psych 2.6.9 |
 | `Rscript validation/lavaan_definitions.R` | wartości referencyjne dla definicji stosowanych w SEMplex (ω z jednoczynnikowej CFA, AVE Fornella–Larckera, HTMT w wersji oryginalnej, analiza równoległa na składowych) oraz test różnicy χ² Satorry–Bentlera (2001) |
-| `python validation/semplex_vs_lavaan.py` | porównuje 1158 wielkości (dopasowanie, oszacowania, błędy standardowe, MI, R², ładunki EFA, rzetelność, podejścia porównawcze) → `validation/results/agreement.csv` |
+| `python validation/semplex_vs_lavaan.py` | porównuje 1988 wielkości (dopasowanie, oszacowania, błędy standardowe, standaryzowane SE i granice 95% CI, MI, R², ładunki EFA, rzetelność, podejścia porównawcze); kończy się błędem, gdy któremuś parametrowi referencyjnemu brak odpowiednika albo różnica przekracza 10⁻⁴ → `validation/results/agreement.csv` |
 | `python validation/monte_carlo.py 500` | badanie symulacyjne modelu z zarządzania zasobami ludzkimi (autonomia → zaangażowanie → wypalenie → intencja odejścia; pozycje Likerta 1–7; N = 150, 300, 600; 500 replikacji) → `validation/results/monte_carlo_summary.csv` |
+| `python validation/ecsi_case_study.py` (oraz `--zero-missing`) | odtwarza wszystkie liczby studium przypadku ECSI z artykułu; wariant `--zero-missing` to analiza wrażliwości, w której odpowiedź 0 traktowana jest jako brak (znaczenie 0 nie jest udokumentowane w cSEM ani plspm) |
 
-Wynik: największa różnica względna wobec lavaan/semTools/psych wynosi 3,3·10⁻⁵; w symulacji obciążenie standaryzowanych ścieżek SEM nie przekracza 6% (N = 150), a pokrycie 95% CI mieści się w przedziale 0,92–0,96.
+Wynik: największa różnica, liczona jako |SEMplex − referencja| / max(1, |referencja|), wynosi 3,3·10⁻⁵; w symulacji obciążenie standaryzowanych ścieżek SEM nie przekracza 6,0% (N = 150), a pokrycie 95% przedziałów Walda mieści się w zakresie 91,8–96,2%.
 
 *English:* `validation/` reproduces the agreement study against lavaan, semTools and psych on the ECSI customer-satisfaction data and the Monte Carlo recovery study reported in the SEMplex software paper.
 
@@ -106,7 +107,7 @@ Wynik: największa różnica względna wobec lavaan/semTools/psych wynosi 3,3·1
 Względem specyfikacji (`specyfikacja-semplex.md`) świadomie odłożono:
 
 - **Estymatory:** dostępne ML i MLM (Satorra–Bentler). MLR i WLSMV dla danych porządkowych nie są jeszcze zaimplementowane; dla pozycji Likerta zalecany jest MLM.
-- **Braki danych:** przypadki kompletne (listwise) albo macierz kowariancji z algorytmu EM. FIML nie jest jeszcze dostępny.
+- **Braki danych:** domyślnie przypadki kompletne (listwise). W CFA dostępny jest też tryb „EM (kowariancja)”: macierz kowariancji z algorytmu EM i estymacja ML z N obejmującym wszystkie częściowo obserwowane osoby. To nie jest FIML; błędy standardowe i testy w tym trybie nie zostały zwalidowane, więc traktuj je ostrożnie.
 - **Struktura średnich i ograniczenia:** model nie ma wyrazów wolnych (`~ 1`); ograniczenia równości i nierówności (`==`, `<`, `>`) są pomijane z ostrzeżeniem.
 - **ESEM** w porównaniu podejść to rotacja target rozwiązania EFA z efektem z macierzy Φ (bez pełnej estymacji błędów ESEM); przedziały daje bootstrap.
 - **Pliki SPSS, Stata, SAS** — wydanie v1; zapisz dane jako CSV albo XLSX.

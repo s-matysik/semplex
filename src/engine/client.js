@@ -1,5 +1,5 @@
 /* Klient silnika: kolejka wywołań do wątku Pyodide i zadania długie liczone porcjami. */
-export const ENGINE_VERSION = '1.1.0';
+export const ENGINE_VERSION = '1.2.0';
 
 export class EngineError extends Error {
   constructor(res) {

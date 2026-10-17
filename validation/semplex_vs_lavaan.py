@@ -36,6 +36,7 @@ SCALES = {"IMAG": [f"imag{i}" for i in range(1, 6)], "EXPE": [f"expe{i}" for i i
           "QUAL": [f"qual{i}" for i in range(1, 6)], "VAL": [f"val{i}" for i in range(1, 5)],
           "SAT": [f"sat{i}" for i in range(1, 5)], "LOY": [f"loy{i}" for i in range(1, 5)]}
 rows = []
+MISSING = []  # reference parameters without a SEMplex counterpart (must stay empty)
 
 
 def add(block, quantity, semplex, lavaan_value, kind):
@@ -68,12 +69,21 @@ for name, syntax in (("cfa", MEAS), ("sem", MEAS + "\n" + STRUCT)):
             key = (p["lhs"], p["op"], p["rhs"].replace(" ", ""))
             m = mine.get(key) or (mine.get((p["rhs"], p["op"], p["lhs"])) if p["op"] == "~~" else None)
             if m is None:
+                MISSING.append((block, p["lhs"], p["op"], p["rhs"]))
                 continue
             q = f"{p['lhs']} {p['op']} {p['rhs']}"
             add(block, q + " | est", m["est"], p["est"], "estimate")
             add(block, q + " | std", m["std"], p["est.std"], "std estimate")
             if p.get("se") is not None and m.get("se") is not None and np.isfinite(m["se"]):
                 add(block, q + " | se", m["se"], p["se"], "standard error")
+            # standardized SE and 95% CI bounds (lavaan::standardizedSolution, delta method); rows with
+            # se.std = 0 are parameters fixed after standardization (e.g. latent variances = 1)
+            if p.get("se.std") is not None and p["se.std"] > 1e-10 and np.isfinite(m.get("std_se", np.nan)):
+                add(block, q + " | std se", m["std_se"], p["se.std"], "standardized SE / CI")
+                if "std_lo" in m:
+                    zq = 1.959963984540054
+                    add(block, q + " | std ci.lower", m["std_lo"], p["est.std"] - zq * p["se.std"], "standardized SE / CI")
+                    add(block, q + " | std ci.upper", m["std_hi"], p["est.std"] + zq * p["se.std"], "standardized SE / CI")
         if est == "ML":
             ref_mi = {(x["lhs"], x["op"], x["rhs"]): x["mi"] for x in r["mi"]}
             my_mi = {(x["lhs"], x["op"], x["rhs"]): x["mi"] for x in f.mi}
@@ -148,13 +158,30 @@ for key, refkey in (("sam", "sam_std"), ("sem", "sem_cmp_std")):
         add("Approaches", f"{key.upper()}: SAT~{x}", pt[key][i], rv, "approach")
 
 df = pd.DataFrame(rows)
+df["scaled_diff"] = df["abs_diff"] / np.maximum(1.0, df["reference"].abs())
+EXPECTED_KINDS = {"fit", "estimate", "std estimate", "standard error", "standardized SE / CI", "modification index",
+                  "R-squared", "EFA loading", "HTMT", "omega", "alpha", "AVE", "KMO", "approach", "p-value", "count"}
+missing_kinds = EXPECTED_KINDS - set(df["kind"])
+TOL = 1e-4
+chk_ = df[(df["block"] != "Definitions") & (df["kind"] != "p-value")]
+bad = chk_[chk_["scaled_diff"] > TOL]
+if MISSING or missing_kinds or len(bad):
+    print("unmatched reference parameters:", MISSING[:10], "missing kinds:", sorted(missing_kinds))
+    print(bad[["block", "quantity", "semplex", "reference", "scaled_diff"]].head(20).to_string(index=False))
+    raise SystemExit("validation failed: incomplete comparison or difference above tolerance " + str(TOL))
 df.to_csv(os.path.join(RES, "agreement.csv"), index=False)
 chk = df[df["block"] != "Definitions"]
-summ = chk.groupby("kind")["abs_diff"].agg(["count", "max", "median"]).reset_index()
-summ_rel = chk[chk["kind"].isin(["fit"])].assign(rel=lambda d: d["abs_diff"] / d["reference"].abs().clip(lower=1e-9))
-out = {"n_quantities": int(len(chk)), "definition_rows": df[df["block"] == "Definitions"].to_dict(orient="records"), "by_kind": summ.to_dict(orient="records"),
-       "max_rel_fit": float(summ_rel["rel"].max()),
-       "worst": chk.sort_values("abs_diff", ascending=False).head(8).to_dict(orient="records")}
+# one metric throughout, as in the paper: d = |SEMplex - reference| / max(1, |reference|)
+summ = chk.groupby("kind").agg(count=("scaled_diff", "size"), max_scaled=("scaled_diff", "max"),
+                               median_scaled=("scaled_diff", "median"), max_abs=("abs_diff", "max")).reset_index()
+worst = chk.sort_values("scaled_diff", ascending=False)
+out = {"n_quantities": int(len(chk)), "metric": "|SEMplex - reference| / max(1, |reference|)", "tolerance": TOL,
+       "max_scaled_diff": float(chk["scaled_diff"].max()), "max_abs_diff": float(chk["abs_diff"].max()),
+       "unmatched_reference_parameters": len(MISSING),
+       "definition_rows": df[df["block"] == "Definitions"].to_dict(orient="records"), "by_kind": summ.to_dict(orient="records"),
+       "worst": worst.head(8).to_dict(orient="records"),
+       "environment": {"python": sys.version.split()[0], "numpy": np.__version__, "pandas": pd.__version__,
+                       "scipy": __import__("scipy").__version__}}
 json.dump(out, open(os.path.join(RES, "agreement_summary.json"), "w"), indent=1)
 print(summ.to_string(index=False))
-print("worst:\n", chk.sort_values("abs_diff", ascending=False).head(8)[["block", "quantity", "semplex", "reference", "abs_diff"]].to_string(index=False))
+print("worst:\n", worst.head(8)[["block", "quantity", "semplex", "reference", "scaled_diff"]].to_string(index=False))

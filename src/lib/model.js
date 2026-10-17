@@ -121,14 +121,20 @@ export function cfaSyntaxFromScales(scales, skip = []) {
 }
 
 /* ---------- eksport kodu ---------- */
-export function codeSnippets(syntax, { estimator = 'ML', file = 'dane.csv', part, seed = 1, kind = 'cfa', bootstrap } = {}) {
+/* Kod do odtworzenia modelu. Czyta plik danych analitycznych pobrany przyciskiem „Dane analityczne (CSV)”:
+   zawiera dokładnie te wiersze i zmienne, na których policzono model (po przekodowaniu, odwróceniu, wykluczeniach
+   i wyborze części próby), więc kod nie musi powtarzać przygotowania danych. */
+export const ANALYSIS_FILE = 'semplex_dane_analityczne.csv';
+export function codeSnippets(syntax, { estimator = 'ML', part, seed = 1, kind = 'cfa', bootstrap, version = '' } = {}) {
   const est = estimator === 'MLM' ? 'MLM' : 'ML';
   const fn = kind === 'sem' ? 'sem' : 'cfa';
-  const py = `# Silnik SEMplex (ten sam kod, który liczy w przeglądarce): pobierz folder engine/ z aplikacji
+  const head = `SEMplex ${version}; dane: ${ANALYSIS_FILE}${part ? ` (część próby „${part}”, podział losowy z ziarnem ${seed})` : ''}`;
+  const py = `# ${head}
+# Silnik SEMplex: folder public/engine/semplex z repozytorium (ten sam kod, który liczy w przeglądarce)
 import pandas as pd
 from semplex.sem import fit_model, param_table
 
-dane = pd.read_csv("${file}", sep=None, engine="python")${part ? `\n# uwaga: w aplikacji użyto części próby „${part}” (podział losowy, ziarno ${seed})` : ''}
+dane = pd.read_csv("${ANALYSIS_FILE}").drop(columns=["row_id"])
 model = """
 ${syntax.trim()}
 """
@@ -137,15 +143,17 @@ print(fit.fit)                      # χ², CFI, TLI, RMSEA [90% CI], SRMR
 for r in param_table(fit):
     print(r["lhs"], r["op"], r["rhs"], round(r["est"], 3), round(r["std"], 3))${bootstrap ? `\n# bootstrap: semplex.sem.bootstrap(model, dane, R=${bootstrap}, seed=${seed})` : ''}
 `;
-  const lav = `library(lavaan)
+  const lav = `# ${head}
+library(lavaan)
 
-dane <- read.csv2("${file}")
+dane <- read.csv("${ANALYSIS_FILE}")
+dane$row_id <- NULL
 model <- '
 ${syntax.trim()}
 '
-fit <- ${fn}(model, data = dane, estimator = "${est}", missing = "listwise")
+fit <- ${fn}(model, data = dane, estimator = "${est}")
 summary(fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
-modindices(fit, sort. = TRUE, maximum.number = 10)${bootstrap ? `\n# set.seed(${seed}); fit_b <- ${fn}(model, data = dane, se = "bootstrap", bootstrap = ${bootstrap})` : ''}
+modindices(fit, sort. = TRUE, maximum.number = 10)${bootstrap ? `\n# bootstrap (inny generator liczb losowych niż w SEMplex): set.seed(${seed}); fit_b <- ${fn}(model, data = dane, se = "bootstrap", bootstrap = ${bootstrap})` : ''}
 `;
   return { python: py, lavaan: lav };
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Panel, ScreePlot, FactorConsensus, LoadingHeatmap, SampleSplit, Interpretation, Badge, Button, Field, Select, Switch, Diagnosis, StatTile, Term, CodeExport, Checkbox, Verdict, Progress, Input,
 } from 'semplex-ui';
-import { useStore, engine, setResult, setState, getState, runEngineJob, logDecision, toast, go, markStale, revertDecision } from '../store.js';
+import { useStore, engine, setResult, setState, getState, runEngineJob, logDecision, toast, go, markStale, revertDecision, withDependents } from '../store.js';
 import { Head, Screen, NeedData, EngineErrorView, useRun, Loading, StaleNote, SeedBadge } from '../ui.jsx';
 import { n2, n3, pTxt, int, grade, RULES, pct } from '../lib/fit.js';
 import { ensureSplit } from '../lib/analysis.js';
@@ -36,6 +36,9 @@ export default function EfaScreen() {
       const r = await engine.call('efa_run', { items: its, corr: o.corr, extraction: o.extraction, rotation: o.rotation, k: kk, part: split.use ? 'efa' : 'all', seed: settings.seed, iters: 100 });
       setResult('efa', r);
       setK(r.k);
+      logDecision({ module: 'EFA', moduleIcon: 'efa', kind: 'run', origin: 'auto',
+        action: `Uruchomiono EFA: k = ${r.k}, korelacje ${o.corr}, ekstrakcja ${o.extraction}, rotacja ${o.rotation}`,
+        reason: `${its.length} pozycji; ${split.use ? `część EFA (podział losowy 50/50${split.strata ? ', warstwami: ' + split.strata : ''}, ziarno ${split.seed || settings.seed})` : 'cała próba, bez podziału'}; N = ${r.n}.` });
       setState((s) => ({ results: Object.assign({}, s.results, { efaStab: s.results.efaStab ? Object.assign({}, s.results.efaStab, { stale: true }) : undefined }) }));
     });
   }
@@ -61,7 +64,7 @@ export default function EfaScreen() {
       action: on ? `Pominięto ${item} w CFA` : `Przywrócono ${item} do CFA`,
       reason: p ? (p.kind === 'cross' ? `Ładunek krzyżowy: ${p.factor} ${n2(p.top)}, ${p.factor2} ${n2(p.second)}.` : `Słaby ładunek ${n2(p.top)} (< 0,40).`) : 'Decyzja badacza.',
       undo: { type: 'efaSkip', before } });
-    markStale(['cfa']);
+    markStale(withDependents(['cfa']));
     toast(on ? `Pozycja ${item} nie trafi do CFA. Dane i EFA bez zmian.` : `Pozycja ${item} wraca do CFA.`, { actionLabel: 'Cofnij', onAction: () => revertDecision(d.id) });
   }
 
@@ -80,7 +83,7 @@ export default function EfaScreen() {
     const syn = cfaSyntax();
     const before = getState().syntax.cfa;
     setState((s) => ({ syntax: Object.assign({}, s.syntax, { cfa: syn }) }));
-    markStale(['cfa']);
+    markStale(withDependents(['cfa']));
     logDecision({ module: 'EFA', moduleIcon: 'efa', kind: 'run', origin: 'proposal', action: `Model CFA z rozwiązania EFA (${r.k} czynniki)`,
       reason: `Pozycja → czynnik o najwyższym ładunku${skip.length ? '; pominięte: ' + skip.join(', ') : ''}. ${info ? 'CFA na części walidacyjnej.' : ''}`, undo: { type: 'syntax', target: 'cfa', before } });
     go('cfa');
@@ -128,12 +131,12 @@ export default function EfaScreen() {
           <SampleSplit parts={parts} n={data.n} method={split.use ? `losowo 50/50${split.strata ? ', warstwami: ' + split.strata : ''}` : 'bez podziału'} seed={split.use ? (split.seed || settings.seed) : undefined} />
           <div className="stack">
             <Switch label="Podziel próbę na część EFA i CFA" hint="Zalecane. Bez podziału dopasowanie CFA jest zawyżone." checked={split.use}
-              onChange={(c) => { const before = { use: split.use }; setState((s) => ({ split: Object.assign({}, s.split, { use: c, info: null }) })); markStale(['efa', 'cfa', 'sem']);
+              onChange={(c) => { const before = { use: split.use }; setState((s) => ({ split: Object.assign({}, s.split, { use: c, info: null }) })); markStale(withDependents(['efa', 'cfa', 'sem']));
                 logDecision({ module: 'EFA', moduleIcon: 'efa', kind: 'split', action: c ? 'Włączono podział próby 50/50' : 'Wyłączono podział próby', reason: c ? 'EFA i CFA na rozłącznych częściach.' : 'Cała próba w EFA i CFA — dopasowanie CFA będzie zawyżone.', undo: { type: 'split', before } }); }} />
             {split.use ? <div className="form">
-              <Field label="Warstwy (opcjonalnie)"><Select value={split.strata || ''} onChange={(e) => { setState((s) => ({ split: Object.assign({}, s.split, { strata: e.target.value, info: null }) })); markStale(['efa', 'cfa', 'sem']); }}
+              <Field label="Warstwy (opcjonalnie)"><Select value={split.strata || ''} onChange={(e) => { setState((s) => ({ split: Object.assign({}, s.split, { strata: e.target.value, info: null }) })); markStale(withDependents(['efa', 'cfa', 'sem'])); }}
                 options={[{ value: '', label: 'bez warstwowania' }].concat(data.variables.filter((v) => v.type === 'binary' || v.type === 'nominal').map((v) => ({ value: v.name, label: v.name })))} /></Field>
-              <Field label="Ziarno podziału"><Input type="number" min={1} value={split.seed || settings.seed} onChange={(e) => { setState((s) => ({ split: Object.assign({}, s.split, { seed: Math.max(1, parseInt(e.target.value || '1', 10)), info: null }) })); markStale(['efa', 'cfa', 'sem']); }} /></Field>
+              <Field label="Ziarno podziału"><Input type="number" min={1} value={split.seed || settings.seed} onChange={(e) => { setState((s) => ({ split: Object.assign({}, s.split, { seed: Math.max(1, parseInt(e.target.value || '1', 10)), info: null }) })); markStale(withDependents(['efa', 'cfa', 'sem'])); }} /></Field>
             </div> : <Interpretation tone="warn" title="Ta sama próba w EFA i CFA">CFA potwierdzi strukturę, którą sama wybrała — opisz to w ograniczeniach.</Interpretation>}
           </div>
         </div>

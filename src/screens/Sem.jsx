@@ -1,11 +1,12 @@
+import { ENGINE_VERSION } from '../engine/client.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Panel, ModelCanvas, Toolbar, SyntaxEditor, Interpretation, ResultTable, Badge, Button, Tabs, Verdict, VariableChip, CodeExport, StatTile, Input, Field, Diagnosis, lavaan, format,
 } from 'semplex-ui';
-import { useStore, setState, getState, setResult, runEngineJob, logDecision, toast, markStale, go } from '../store.js';
+import { useStore, setState, getState, setResult, runEngineJob, logDecision, toast, markStale, go, engine } from '../store.js';
 import { Head, Screen, NeedData, EngineErrorView, Loading, StaleNote, SeedBadge } from '../ui.jsx';
 import { n2, n3, pTxt, int, ci } from '../lib/fit.js';
-import { autoLayout, canvasEstimates, codeSnippets, cfaSyntaxFromScales } from '../lib/model.js';
+import { autoLayout, canvasEstimates, codeSnippets, cfaSyntaxFromScales, download, ANALYSIS_FILE } from '../lib/model.js';
 import { scaleMap } from '../lib/analysis.js';
 import { useModelRunner, syntaxDiagnostics, FitBlock, fitInterpretation, MiTable, useMiApply, CollinearityNote } from './Cfa.jsx';
 
@@ -166,7 +167,7 @@ export default function SemScreen() {
             <SyntaxEditor value={text} onChange={(t) => setText(t)} diagnostics={diags} height={200} label="Składnia modelu SEM"
               onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runNow(); } }} />
             <div className="row" style={{ marginTop: 8 }}>
-              {ident ? <Verdict level={ident.ok ? 'good' : 'poor'}>{ident.ok ? `identyfikowalny · df = ${ident.df}` : (ident.issues[0] && ident.issues[0].message) || 'nieidentyfikowalny'}</Verdict> : null}
+              {ident ? <Verdict level={ident.ok ? 'good' : 'poor'}>{ident.ok ? `wstępnie: df = ${ident.df} (warunek konieczny, nie wystarczający)` : (ident.issues[0] && ident.issues[0].message) || 'nieidentyfikowalny'}</Verdict> : null}
               {r && stale ? <Badge tone="ok" icon="refresh">wyniki nieaktualne</Badge> : null}
             </div>
           </Panel>
@@ -221,9 +222,10 @@ export default function SemScreen() {
             <div className="stack">
               {r2.length ? <div className="tiles t3">{r2.map(([v, x]) => <StatTile key={v} label={`R² ${v}`} value={n2(x)} icon="layers" meter={x} note={x >= 0.26 ? 'duży (Cohen, 1988)' : x >= 0.13 ? 'średni' : 'mały'} />)}</div> : null}
               <Interpretation tone="brand" title="Porównaj ten efekt innymi podejściami" icon="bridge" actions={<Button size="sm" variant="secondary" iconRight="arrow-right" onClick={() => go('bridge')}>Porównanie podejść</Button>}>
-                Sprawdź, jak bardzo wynik zależy od metody: sumy pozycji, SAM, ESEM i pełny SEM na tych samych danych.
+                Sprawdź, jak wybrana zależność zmienia się z reprezentacją konstruktów: średnie pozycji, SAM, przybliżenie ESEM i SEM łączny w modelu zredukowanym.
               </Interpretation>
-              {mode !== 'simple' ? <CodeExport snippets={codeSnippets(r.syntax, { estimator: r.estimator, file: data.file, part: r.part === 'all' ? undefined : r.part, seed: settings.seed, kind: 'sem', bootstrap: bootOk ? boot.value.R : undefined })} defaultLang={mode === 'code' ? 'lavaan' : 'python'} meta={`SEMplex 1.0 · ${r.estimator}`} /> : null}
+              {mode !== 'simple' ? <div className="row"><Button size="sm" variant="secondary" icon="download" onClick={async () => { const a = await engine.call('analysis_csv', { syntax: r.syntax, part: r.part }); download(ANALYSIS_FILE, a.csv, 'text/csv;charset=utf-8'); toast(`Pobrano dane analityczne: N = ${a.n}, ${a.vars.length} zmiennych${a.steps.length ? '; przygotowanie: ' + a.steps.join(', ') : ''}.`); }}>Dane analityczne (CSV) do kodu</Button></div> : null}
+              {mode !== 'simple' ? <CodeExport snippets={codeSnippets(r.syntax, { estimator: r.estimator, part: r.part === 'all' ? undefined : r.part, seed: r.split_seed != null ? r.split_seed : settings.seed, kind: 'sem', bootstrap: bootOk ? boot.value.R : undefined, version: ENGINE_VERSION })} defaultLang={mode === 'code' ? 'lavaan' : 'python'} meta={`SEMplex ${ENGINE_VERSION} · ${r.estimator}`} /> : null}
             </div>
           </div>
         </>

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { DecisionTimeline, Panel, Button, Switch, Input, Badge, Dialog, EmptyState, Interpretation, Segmented, CodeExport } from 'semplex-ui';
-import { useStore, revertDecision, go } from '../store.js';
+import { useStore, revertDecision, go, logDecision } from '../store.js';
 import { Head, Screen } from '../ui.jsx';
 import { download } from '../lib/model.js';
 
@@ -21,6 +21,7 @@ export default function LogScreen() {
   const [origin, setOrigin] = useState('all');
   const [sel, setSel] = useState(null);
   const [confirm, setConfirm] = useState(null);
+  const [note, setNote] = useState({ action: '', reason: '' });
 
   const list = decisions.filter((d) => (showReverted || !d.reverted) && (origin === 'all' || d.origin === origin) && (!q || `${d.action} ${d.reason || ''} ${d.module}`.toLowerCase().includes(q.toLowerCase())));
   const groups = useMemo(() => {
@@ -32,7 +33,7 @@ export default function LogScreen() {
   const anyStale = decisions.some((d) => d.stale && !d.reverted);
   const base = (project.name || 'projekt').replace(/[^\p{L}\p{N}_-]+/gu, '_');
 
-  if (!decisions.length) return <Screen><EmptyState icon="history" title="Dziennik jest pusty">Każde wczytanie danych, odwrócenie pozycji, wykluczenie respondentów i zmiana modelu trafia tutaj z uzasadnieniem i możliwością cofnięcia.</EmptyState></Screen>;
+  if (!decisions.length) return <Screen><EmptyState icon="history" title="Dziennik jest pusty">Wczytanie danych, odwrócenie pozycji, wykluczenie respondentów, zmiany skal i modelu oraz uruchomienia EFA trafiają tutaj; obsługiwane zmiany można cofnąć. Inne decyzje dopisz jako notatkę.</EmptyState></Screen>;
 
   const insp = cur ? (
     <>
@@ -56,6 +57,13 @@ export default function LogScreen() {
         <Button variant="secondary" icon="download" onClick={() => download(base + '_dziennik.csv', '\ufeff' + toCsv(decisions), 'text/csv;charset=utf-8')}>CSV</Button>
         <Button variant="secondary" icon="code" onClick={() => download(base + '_dziennik.json', JSON.stringify(decisions.map(({ undo, ...d }) => d), null, 1), 'application/json')}>JSON</Button>
       </Head>
+      <Panel title="Notatka badacza" subtitle="Decyzje, których program nie zapisuje sam (np. pozostawienie oznaczonych respondentów, odrzucenie sugestii liczby czynników)">
+        <div className="row">
+          <Input placeholder="Decyzja, np. Zachowano wszystkich oznaczonych respondentów" value={note.action} onChange={(e) => setNote(Object.assign({}, note, { action: e.target.value }))} aria-label="Treść decyzji" />
+          <Input placeholder="Uzasadnienie" value={note.reason} onChange={(e) => setNote(Object.assign({}, note, { reason: e.target.value }))} aria-label="Uzasadnienie decyzji" />
+          <Button size="sm" variant="secondary" icon="plus" disabled={!note.action.trim()} onClick={() => { logDecision({ module: 'Notatka', moduleIcon: 'history', kind: 'note', origin: 'manual', action: note.action.trim(), reason: note.reason.trim() }); setNote({ action: '', reason: '' }); }}>Dodaj do dziennika</Button>
+        </div>
+      </Panel>
       {anyStale ? <Interpretation tone="warn" title="Część liczb czeka na przeliczenie" icon="refresh">Po cofnięciu decyzji wpisy późniejsze mają znacznik „liczby do przeliczenia”. Otwórz ich moduły i uruchom analizy ponownie.</Interpretation> : null}
       <div className="row">
         <Input icon="search" placeholder="Szukaj w dzienniku" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Szukaj w dzienniku" />
