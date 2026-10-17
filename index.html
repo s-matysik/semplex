@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pl" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SEMplex — darmowa analiza ankiet w przeglądarce: dane, rzetelność, EFA, CFA, SEM, mediacja i raport. Dane nie opuszczają komputera.">
+    <link rel="icon" href="./semplex-mark.svg">
+    <title>SEMplex</title>
+    <script>
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('sx-theme'); } catch (e) {}
+        if (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t = 'dark';
+        document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>SEMplex wymaga włączonego JavaScriptu.</noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

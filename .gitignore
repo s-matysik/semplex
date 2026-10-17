@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.tmp/
+__pycache__/
+*.pyc
+.chrome-*/
+.pytest_cache/
+package.json.new
+.DS_Store
+Thumbs.db
+
+# materiały robocze (nie są potrzebne aplikacji)
+.claude/
+semplex-design-system*.zip
+specyfikacja-semplex.md

@@ -1,0 +1,34 @@
+{
+  "name": "semplex-ui",
+  "version": "1.0.0",
+  "description": "Komponenty React systemu projektowego SEMplex",
+  "type": "module",
+  "main": "./index.mjs",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs"
+    },
+    "./bundle.css": "./bundle.css",
+    "./tokens.css": "./tokens.css"
+  },
+  "files": [
+    "index.mjs",
+    "bundle.js",
+    "bundle.css",
+    "tokens.css",
+    "index.d.ts"
+  ],
+  "sideEffects": [
+    "./bundle.js",
+    "./index.mjs",
+    "*.css"
+  ],
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "license": "MIT"
+}
