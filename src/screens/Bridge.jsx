@@ -96,7 +96,12 @@ export default function BridgeScreen() {
     <Screen>
       <Head eyebrow="Most EFA – regresja – SEM" title="Czy wynik zależy od metody" meta={r ? [<Badge key="n">N = {int(r.n)}</Badge>, <SeedBadge key="s" seed={r.seed} R={r.R_ok} />, partial ? <Badge key="p" tone="ok" icon="refresh">wynik częściowy</Badge> : null].filter(Boolean) : [<Badge key="new" tone="brand">nowe</Badge>]}>
         <Field label="Zmienna zależna"><Select value={y} onChange={(e) => { setY(e.target.value); setXs(xs.filter((x) => x !== e.target.value)); }} options={scales} /></Field>
-        <Field label="Predyktory"><Select value={xs[0] || ''} onChange={(e) => setXs([e.target.value])} options={scales.filter((s) => s !== y)} /></Field>
+        {(xs.length ? xs : ['']).map((xv, i) => (
+          <Field key={'x' + i} label={i === 0 ? 'Predyktory' : `Predyktor ${i + 1}`}>
+            <Select value={xv || ''} aria-label={`Predyktor ${i + 1}`}
+              onChange={(e) => { const nx = (xs.length ? xs : ['']).slice(); nx[i] = e.target.value; setXs(nx.filter((v, k) => v && nx.indexOf(v) === k)); }}
+              options={scales.filter((s) => s !== y && (s === xv || !xs.includes(s)))} />
+          </Field>))}
         <Button variant="secondary" icon="plus" disabled={xs.length >= scales.length - 1} onClick={() => setXs(xs.concat(scales.filter((s) => s !== y && !xs.includes(s)).slice(0, 1)))}>Dodaj predyktor</Button>
         <Button variant="primary" icon="play" loading={running} disabled={!xs.length} onClick={compute}>Porównaj 7 podejść</Button>
       </Head>
