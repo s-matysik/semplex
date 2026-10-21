@@ -165,7 +165,11 @@ missing_kinds = EXPECTED_KINDS - set(df["kind"])
 TOL = 1e-4
 chk_ = df[(df["block"] != "Definitions") & (df["kind"] != "p-value")]
 bad = chk_[chk_["scaled_diff"] > TOL]
-if MISSING or missing_kinds or len(bad):
+# a value that is not finite on either side cannot be judged as agreement
+nonfinite = df[(df["block"] != "Definitions") & ~(np.isfinite(df["semplex"].astype(float)) & np.isfinite(df["reference"].astype(float)))]
+pbad = df[(df["kind"] == "p-value") & (df["abs_diff"] > TOL)]
+if MISSING or missing_kinds or len(bad) or len(nonfinite) or len(pbad):
+    print("non-finite rows:", nonfinite[["block", "quantity"]].head(10).to_dict(orient="records"), "p-value rows above tolerance:", len(pbad))
     print("unmatched reference parameters:", MISSING[:10], "missing kinds:", sorted(missing_kinds))
     print(bad[["block", "quantity", "semplex", "reference", "scaled_diff"]].head(20).to_string(index=False))
     raise SystemExit("validation failed: incomplete comparison or difference above tolerance " + str(TOL))
@@ -180,7 +184,7 @@ out = {"n_quantities": int(len(chk)), "metric": "|SEMplex - reference| / max(1, 
        "unmatched_reference_parameters": len(MISSING),
        "definition_rows": df[df["block"] == "Definitions"].to_dict(orient="records"), "by_kind": summ.to_dict(orient="records"),
        "worst": worst.head(8).to_dict(orient="records"),
-       "environment": {"python": sys.version.split()[0], "numpy": np.__version__, "pandas": pd.__version__,
+       "environment": {"semplex": __import__("semplex").__version__, "python": sys.version.split()[0], "numpy": np.__version__, "pandas": pd.__version__,
                        "scipy": __import__("scipy").__version__}}
 json.dump(out, open(os.path.join(RES, "agreement_summary.json"), "w"), indent=1)
 print(summ.to_string(index=False))

@@ -183,3 +183,20 @@ def test_collinearity_flags_std_paths_above_one():
     assert any(x["kind"] == "std_path" and abs(x["value"]) > 1 for x in flags)
     f2 = S.fit_model("A =~ a0 + a1 + a2\nY =~ y0 + y1 + y2\nY ~ A", data=df)
     assert not [x for x in api._collinearity(f2, S.param_table(f2)) if x["kind"] == "std_path"]
+
+
+def test_compare_models_skips_unverified_nesting(hs, monkeypatch):
+    # m1 frees visual =~ x9, m2 frees textual =~ x1 and speed =~ x2: different df, free-parameter sets not nested
+    m3 = "visual =~ x1 + x2 + x3\ntextual =~ x4 + x5 + x6\nspeed =~ x7 + x8 + x9"
+    syn = {"m1": m3 + "\nvisual =~ x9", "m2": m3 + "\ntextual =~ x1\nspeed =~ x2"}
+    base = {}
+    for key, s in syn.items():
+        f = S.fit_model(s, data=hs, estimator="MLM")
+        pt_ = S.param_table(f)
+        base[key] = {"fit": f.fit, "df": f.df, "n": f.n, "observed": f.spec.obs, "rows_id": "same", "converged": True,
+                     "heywood": [], "missing_mode": "listwise", "free_params": sorted({(p["lhs"], p["op"], p["rhs"]) for p in pt_ if p["free"]})}
+    assert base["m1"]["df"] > base["m2"]["df"]
+    monkeypatch.setattr(api, "_require", lambda: None)
+    monkeypatch.setattr(api, "fit", lambda syntax, *a, **k: base["m2" if "speed =~ x2" in syntax else "m1"])
+    res = api.compare_models([{"id": k, "syntax": v} for k, v in syn.items()], estimator="MLM")
+    assert not res["tests"] and res["skipped"] and any("zagnieżdżenia" in r for r in res["skipped"][0]["reasons"])

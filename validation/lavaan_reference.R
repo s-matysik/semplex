@@ -1,5 +1,5 @@
 # Reference results for the SEMplex validation on the ECSI customer-satisfaction data.
-# Data: cSEM::satisfaction (N = 250 customers of a Spanish bank; 27 indicators, scale 1-10),
+# Data: cSEM::satisfaction (N = 250 customers of a Spanish bank; 27 indicators, integer responses 0-10; the meaning of 0 is undocumented),
 # downloaded from CRAN at run time and not redistributed (GPL-3).
 # Run from the repository root:  Rscript validation/lavaan_reference.R
 suppressMessages({

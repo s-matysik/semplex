@@ -188,7 +188,7 @@ export default function CfaScreen() {
   return (
     <Screen>
       <Head eyebrow="Konfirmacyjna analiza czynnikowa" title={r ? `Model ${Object.keys(scales).length}-czynnikowy` : 'Potwierdź strukturę czynnikową'}
-        meta={r ? [<Badge key="n">n = {int(r.n)} ({r.part === 'cfa' ? 'część CFA' : 'cała próba'})</Badge>, <Badge key="e">{r.estimator}{r.missing === 'em' ? ' · EM' : ' · listwise'}</Badge>,
+        meta={r ? [<Badge key="n">n = {int(r.n)} ({r.part === 'cfa' ? 'część CFA' : 'cała próba'})</Badge>, <Badge key="e">{r.estimator}{r.missing_mode === 'em' ? ' · EM' : ' · listwise'}</Badge>,
           bootOk ? <SeedBadge key="s" seed={boot.value.seed} R={boot.value.ok} /> : null,
           <Badge key="i" tone={r.converged ? 'good' : 'poor'} icon={r.converged ? 'good' : 'poor'}>{r.converged ? `zbieżny · df = ${r.df}` : 'brak zbieżności'}</Badge>].filter(Boolean) : []}>
         <Button variant="secondary" icon="shuffle" disabled={!r} onClick={() => run(runBoot)}>Bootstrap CI</Button>
@@ -217,7 +217,7 @@ export default function CfaScreen() {
               <Select value={estimator} onChange={(e) => { const before = estimator; setState({ estimator: e.target.value }); markStale(withDependents(['cfa', 'sem'])); logDecision({ module: 'CFA', moduleIcon: 'cfa', kind: 'change', action: `Estymator ${before} → ${e.target.value}`, undo: { type: 'estimator', before } }); }} options={ESTIMATORS} />
             </Field>
             <Field label="Braki danych" hint={missing === 'em' ? 'Kowariancja z algorytmu EM, estymator ML, N = osoby z co najmniej jedną odpowiedzią. To nie jest FIML: błędy standardowe i testy w tym trybie nie są zwalidowane — traktuj je ostrożnie.' : 'Usuwa respondentów z jakimkolwiek brakiem w pozycjach modelu.'}>
-              <Select value={missing} onChange={(e) => { setMissing(e.target.value); fit(text, { missing: e.target.value }); }} options={[{ value: 'listwise', label: 'tylko kompletne (listwise)' }, { value: 'em', label: 'EM (kowariancja)' }]} />
+              <Select value={missing} onChange={(e) => { const before = missing, to = e.target.value; setMissing(to); logDecision({ module: 'CFA', moduleIcon: 'cfa', kind: 'change', action: `Braki danych: ${before === 'em' ? 'EM' : 'listwise'} → ${to === 'em' ? 'EM' : 'listwise'}`, reason: to === 'em' ? 'Kowariancja z algorytmu EM; tryb niezwalidowany.' : 'Tylko kompletne przypadki.' }); fit(text, { missing: to }); }} options={[{ value: 'listwise', label: 'tylko kompletne (listwise)' }, { value: 'em', label: 'EM (kowariancja)' }]} />
             </Field>
           </div>
         </Panel>
@@ -260,8 +260,8 @@ export default function CfaScreen() {
               <Panel title="Diagram ścieżek" subtitle="Ładunki i korelacje standaryzowane" actions={<Button size="sm" variant="ghost" icon="download" onClick={() => { const svg = document.querySelector('.cfa-diagram svg'); if (svg) download('cfa_diagram.svg', new XMLSerializer().serializeToString(svg), 'image/svg+xml'); }}>SVG</Button>}>
                 <div className="cfa-diagram scroll-x"><PathDiagram nodes={diag.nodes} edges={diag.edges} width={diag.width} height={diag.height} legend label="Diagram ścieżek modelu CFA" /></div>
               </Panel>
-              {mode !== 'simple' ? <div className="row"><Button size="sm" variant="secondary" icon="download" onClick={async () => { const a = await engine.call('analysis_csv', { syntax: r.syntax, part: r.part }); download(ANALYSIS_FILE, a.csv, 'text/csv;charset=utf-8'); toast(`Pobrano dane analityczne: N = ${a.n}, ${a.vars.length} zmiennych${a.steps.length ? '; przygotowanie: ' + a.steps.join(', ') : ''}.`); }}>Dane analityczne (CSV) do kodu</Button></div> : null}
-              {mode !== 'simple' ? <CodeExport snippets={codeSnippets(r.syntax, { estimator: r.estimator, part: r.part === 'all' ? undefined : r.part, seed: r.split_seed != null ? r.split_seed : settings.seed, kind: 'cfa', bootstrap: bootOk ? boot.value.R : undefined, version: ENGINE_VERSION })} defaultLang={mode === 'code' ? 'lavaan' : 'python'} meta={`SEMplex ${ENGINE_VERSION} · ${r.estimator}`} /> : null}
+              {mode !== 'simple' ? <div className="row"><Button size="sm" variant="secondary" icon="download" onClick={async () => { const a = await engine.call('analysis_csv', { syntax: r.syntax, part: r.part, missing: r.missing_mode }); download(ANALYSIS_FILE, a.csv, 'text/csv;charset=utf-8'); toast(`Pobrano dane analityczne: N = ${a.n}, ${a.vars.length} zmiennych${a.missing === 'em' ? ' (z brakami — tryb EM)' : ''}${a.steps.length ? '; przygotowanie: ' + a.steps.join(', ') : ''}.`); }}>Dane analityczne (CSV) do kodu</Button></div> : null}
+              {mode !== 'simple' ? <CodeExport snippets={codeSnippets(r.syntax, { estimator: r.estimator, part: r.part === 'all' ? undefined : r.part, seed: r.split_seed != null ? r.split_seed : settings.seed, kind: 'cfa', missing: r.missing_mode, bootstrap: bootOk ? boot.value.R : undefined, version: ENGINE_VERSION })} defaultLang={mode === 'code' ? 'lavaan' : 'python'} meta={`SEMplex ${ENGINE_VERSION} · ${r.estimator}`} /> : null}
             </div>
           </div>
         </>

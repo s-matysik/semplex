@@ -122,6 +122,10 @@ def main():
     s1 = call("fit", syntax=MEAS + "\n" + PAIRS + "\n" + STRUCT, estimator="MLM", part="all", mi=False)
     out["sem_without_pairs"] = fitsum(s0) | {"paths": paths(s0), "collinearity": s0["collinearity"]}
     out["sem_with_pairs"] = fitsum(s1) | {"paths": paths(s1), "collinearity": s1["collinearity"], "r2": s1["r2"]}
+    # sensitivity: also free val2 ~~ val3 (second largest MI, left fixed in the main analysis)
+    m3 = call("fit", syntax=MEAS + "\n" + PAIRS + "\nval2 ~~ val3", estimator="MLM", part="cfa", mi=False)
+    s2 = call("fit", syntax=MEAS + "\n" + PAIRS + "\nval2 ~~ val3\n" + STRUCT, estimator="MLM", part="all", mi=False)
+    out["sensitivity_val2_val3"] = {"cfa": fitsum(m3), "sem": fitsum(s2) | {"paths": paths(s2), "r2": s2["r2"]}}
 
     cq, cv = job("compare", {"y": "SAT", "xs": ["QUAL", "VAL"], "R": R_BOOT, "seed": SEED}, results=[{"xi": 0}, {"xi": 1}])
     (cl_,) = job("compare", {"y": "LOY", "xs": ["SAT"], "R": R_BOOT, "seed": SEED})

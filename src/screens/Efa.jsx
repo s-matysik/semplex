@@ -185,7 +185,7 @@ export default function EfaScreen() {
                 <tbody>{r.phi.map((row, i) => <tr key={i}><td className="mono">{r.factor_names[i]}</td>{row.map((v, j) => <td key={j} className="num">{j <= i ? n2(v) : ''}</td>)}</tr>)}</tbody></table>
             </Panel>
           ) : null}
-          {mode === 'code' ? <CodeExport snippets={{ lavaan: `library(psych)\nfa(dane[, c(${r.items.map((i) => `"${i}"`).join(', ')})], nfactors = ${r.k}, fm = "${r.extraction === 'paf' ? 'pa' : r.extraction}", rotate = "${r.rotation}", cor = "${r.corr === 'polychoric' ? 'poly' : 'cor'}")\nfa.parallel(dane[, c(${r.items.map((i) => `"${i}"`).join(', ')})], fa = "fa")`,
+          {mode === 'code' ? <CodeExport snippets={{ lavaan: `library(psych)\nfa(dane[, c(${r.items.map((i) => `"${i}"`).join(', ')})], nfactors = ${r.k}, fm = "${r.extraction === 'paf' ? 'pa' : r.extraction}", rotate = "${r.rotation}", cor = "${r.corr === 'polychoric' ? 'poly' : 'cor'}")\nfa.parallel(dane[, c(${r.items.map((i) => `"${i}"`).join(', ')})], fa = "pc", n.iter = 100, quant = 0.95, cor = "cor")\n# analiza równoległa jak w SEMplex: składowe główne, 100 losowań, 95. percentyl (losowania R i NumPy nie są identyczne)`,
             python: `from semplex.efa import correlation, efa, n_factors\nR, _ = correlation(X, "${r.corr}")\nprint(n_factors(R, n=${r.n}, seed=${r.nf.seed})["consensus"])\nsol = efa(R, ${r.k}, "${r.extraction}", "${r.rotation}")`,
             'model CFA': cfaSyntax() }} defaultLang="model CFA" meta={`ziarno ${r.nf.seed}`} /> : null}
         </>

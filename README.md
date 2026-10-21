@@ -12,12 +12,12 @@ Aplikacja jest w pełni statyczna, więc działa na **GitHub Pages** albo na dow
 | Opisowe i testy | M, SD, skośność, kurtoza, mini-rozkłady; macierz korelacji Pearsona/Spearmana; test Mardii z wyborem estymatora; test t Welcha z g Hedgesa, ANOVA |
 | Rzetelność i trafność | ω McDonalda (z jednoczynnikowej CFA) i α Cronbacha z CI Feldta lub bootstrap; analiza pozycji „bez tej pozycji”; CR, AVE, MSV, Fornell–Larcker, HTMT |
 | EFA | korelacje polichoryczne lub Pearsona; KMO, Bartlett; minres, ML, PAF; rotacje oblimin, geomin, promax, varimax, quartimax; konsensus 9 kryteriów liczby czynników (m.in. analiza równoległa, MAP, Hull, BIC); stabilność ładunków z bootstrapu; podział próby EFA/CFA z ziarnem i warstwowaniem; model CFA z rozwiązania jednym przyciskiem |
-| CFA | składnia lavaan z kontrolą identyfikowalności; estymatory ML i MLM (Satorra–Bentler); χ², CFI, TLI, RMSEA z 90% CI, SRMR z progami i źródłami; ładunki z CI (delta lub bootstrap); przypadki Heywooda; indeksy modyfikacji z propozycją „Dodaj”; porównanie modeli (Δχ², ΔCFI, AIC, BIC); diagram ścieżek (SVG); kod Python i lavaan |
+| CFA | składnia lavaan z kontrolą identyfikowalności; estymatory ML i MLM (Satorra–Bentler); χ², CFI, TLI, RMSEA z 90% CI, SRMR z progami i źródłami; ładunki z CI (delta lub bootstrap); przypadki Heywooda; indeksy modyfikacji z propozycją „Dodaj”; porównanie modeli (skalowane Δχ² tylko przy potwierdzonym zagnieżdżeniu, te same zmienne i wiersze; ΔCFI, AIC, BIC); diagram ścieżek (SVG); kod Python i lavaan |
 | SEM — edytor modelu | płótno modelu zsynchronizowane ze składnią w obie strony, przeciąganie zmiennych z danych, cofanie/ponawianie; ścieżki, R², efekty zdefiniowane (`:=`) z bootstrapem |
 | Mediacja i moderacja | szablony PROCESS 4 (na zmiennych latentnych albo średnich), 7 i 14 (moderowana mediacja, ścieżka a albo b) oraz 1 (moderacja z obszarem Johnsona–Neymana); szablon 58 w wydaniu v1 |
-| Porównanie podejść | ten sam efekt w 7 podejściach: sumy pozycji, wyniki czynnikowe, korekta Croona, pojedynczy wskaźnik z korektą α, SAM lokalny, ESEM (rotacja target), pełny SEM; wykres leśny, wykres kaskadowy różnicy, rekomendacja i akapit do Metod (PL/EN) |
+| Porównanie podejść | ten sam efekt w 7 podejściach: średnie pozycji, wyniki czynnikowe, korekta Croona, pojedynczy wskaźnik z korektą α, SAM lokalny, przybliżenie ESEM (rotacja target), SEM łączny; przedziały bootstrap z liczbą odrzuconych losowań; wykres leśny, kolejne różnice (opisowo), sugestia heurystyczna i akapit do Metod (PL/EN) |
 | Raport | sekcja Wyniki po polsku albo w APA 7 po angielsku z tabelami; eksport HTML, Word (.doc), druk/PDF |
-| Dziennik decyzji | każda zmiana z uzasadnieniem, skutkiem (przed → po) i pochodzeniem; cofanie z listą modułów do przeliczenia; eksport CSV i JSON |
+| Dziennik decyzji | obsługiwane zmiany danych i modelu (odwrócenia, wykluczenia, skale, propozycje EFA, modyfikacje z MI, tryb braków w CFA, uruchomienia EFA z ziarnem) z uzasadnieniem i skutkiem; notatki badacza; cofanie z listą modułów do przeliczenia; eksport CSV i JSON |
 
 Moduły Porównanie grup, Moc i wielkość próby, PLS-SEM/IPMA/NCA (v1) i Modele wielopoziomowe (v2) mają w interfejsie ekran zapowiedzi, zgodnie ze specyfikacją wydań.
 
@@ -88,13 +88,13 @@ Folder `validation/` odtwarza wyniki walidacji opisane w artykule o SEMplex.
 
 | Skrypt | Co robi |
 |---|---|
-| `Rscript validation/lavaan_reference.R` | pobiera dane ECSI (`satisfaction`, N = 250 klientów banku, 27 wskaźników; pakiet cSEM 0.7.1 z CRAN, GPL-3 — dane nie są przechowywane w repozytorium) i liczy wartości referencyjne w lavaan 0.7.2, semTools 0.5-9 i psych 2.6.9 |
+| `Rscript validation/lavaan_reference.R` | pobiera dane ECSI (`satisfaction`, N = 250 klientów banku, 27 wskaźników; pakiet cSEM 0.7.1 z CRAN, GPL-3 — dane nie są przechowywane w repozytorium) i liczy wartości referencyjne w lavaan 0.7-2, semTools 0.5-9 i psych 2.6.9 |
 | `Rscript validation/lavaan_definitions.R` | wartości referencyjne dla definicji stosowanych w SEMplex (ω z jednoczynnikowej CFA, AVE Fornella–Larckera, HTMT w wersji oryginalnej, analiza równoległa na składowych) oraz test różnicy χ² Satorry–Bentlera (2001) |
-| `python validation/semplex_vs_lavaan.py` | porównuje 1988 wielkości (dopasowanie, oszacowania, błędy standardowe, standaryzowane SE i granice 95% CI, MI, R², ładunki EFA, rzetelność, podejścia porównawcze); kończy się błędem, gdy któremuś parametrowi referencyjnemu brak odpowiednika albo różnica przekracza 10⁻⁴ → `validation/results/agreement.csv` |
+| `python validation/semplex_vs_lavaan.py` | porównuje 1988 wielkości (dopasowanie, oszacowania, błędy standardowe, standaryzowane SE i granice 95% CI, MI, R², ładunki EFA, rzetelność, podejścia porównawcze); kończy się błędem, gdy któremuś parametrowi referencyjnemu brak odpowiednika, wartość nie jest skończona albo różnica (dla wartości p — bezwzględna) przekracza 10⁻⁴ → `validation/results/agreement.csv` |
 | `python validation/monte_carlo.py 500` | badanie symulacyjne modelu z zarządzania zasobami ludzkimi (autonomia → zaangażowanie → wypalenie → intencja odejścia; pozycje Likerta 1–7; N = 150, 300, 600; 500 replikacji) → `validation/results/monte_carlo_summary.csv` |
-| `python validation/ecsi_case_study.py` (oraz `--zero-missing`) | odtwarza wszystkie liczby studium przypadku ECSI z artykułu; wariant `--zero-missing` to analiza wrażliwości, w której odpowiedź 0 traktowana jest jako brak (znaczenie 0 nie jest udokumentowane w cSEM ani plspm) |
+| `python validation/ecsi_case_study.py` (oraz `--zero-missing`) | odtwarza wszystkie liczby studium przypadku ECSI z artykułu (z sumą SHA-256 pliku danych i wersjami środowiska w wyniku) oraz analizę wrażliwości z dodatkową kowariancją val2 ~~ val3; wariant `--zero-missing` to analiza wrażliwości, w której odpowiedź 0 traktowana jest jako brak (znaczenie 0 nie jest udokumentowane w cSEM ani plspm) |
 
-Wynik: największa różnica, liczona jako |SEMplex − referencja| / max(1, |referencja|), wynosi 3,3·10⁻⁵; w symulacji obciążenie standaryzowanych ścieżek SEM nie przekracza 6,0% (N = 150), a pokrycie 95% przedziałów Walda mieści się w zakresie 91,8–96,2%.
+Wynik: największa znormalizowana różnica, liczona jako |SEMplex − referencja| / max(1, |referencja|), wynosi 3,3·10⁻⁵; w symulacji obciążenie standaryzowanych ścieżek SEM nie przekracza 6,0% (N = 150), a pokrycie 95% przedziałów Walda mieści się w zakresie 91,8–96,2%.
 
 *English:* `validation/` reproduces the agreement study against lavaan, semTools and psych on the ECSI customer-satisfaction data and the Monte Carlo recovery study reported in the SEMplex software paper.
 
@@ -115,7 +115,7 @@ Względem specyfikacji (`specyfikacja-semplex.md`) świadomie odłożono:
 
 ## Prywatność
 
-Plik czyta przeglądarka, a silnik liczy w wątku tej samej karty. Sieć służy tylko do pobrania środowiska Python. Kolumny z danymi osobowymi są domyślnie pomijane przy imporcie. Plik projektu `.sxp` zawiera dane źródłowe — przechowuj go jak same dane.
+Plik czyta przeglądarka, a silnik liczy w wątku tej samej karty. Sieć służy tylko do pobrania środowiska Python. Kolumny z danymi osobowymi są domyślnie pomijane przy imporcie. Plik projektu `.sxp` domyślnie nie zawiera kolumn pominiętych przy imporcie, ale zawiera pozostałe odpowiedzi — przechowuj go jak same dane.
 
 ## Licencja i autor
 

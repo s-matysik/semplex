@@ -320,7 +320,13 @@ def analysis_csv(syntax, part="all", missing="listwise"):
     """Dane dokładnie w postaci użytej w analizie modelu: po przekodowaniu, odwróceniu pozycji, wykluczeniach i wyborze
     części próby; tylko zmienne modelu, z numerem wiersza pliku źródłowego. Z tym plikiem eksportowany kod odtwarza wynik."""
     _require()
-    d, C, n, obs, n_complete = _model_data(syntax, part, "listwise")
+    if missing == "em":
+        # EM: eksport niepełnych danych (bez wierszy całkowicie pustych); kompletne przypadki nie odtwarzają kowariancji EM
+        A_ = _part(part)
+        obs = S.Spec(syntax, list(A_.columns)).obs
+        d = A_[obs].dropna(how="all")
+    else:
+        d, C, n, obs, n_complete = _model_data(syntax, part, "listwise")
     steps = []
     for ch in STATE["changes"]:
         if ch["kind"] == "reverse":
@@ -335,7 +341,7 @@ def analysis_csv(syntax, part="all", missing="listwise"):
     out.insert(0, "row_id", out.index.astype(int) + 1)
     return {"csv": out.to_csv(index=False, lineterminator="\n"), "n": int(len(out)), "vars": list(obs), "part": part,
             "split_seed": STATE.get("split_seed") if part in ("efa", "cfa") else None, "steps": steps,
-            "missing_codes": STATE.get("missing_codes")}
+            "missing_codes": STATE.get("missing_codes"), "missing": missing}
 
 
 def _part(part):
@@ -579,7 +585,7 @@ def compare_models(models, part="cfa", estimator="ML"):
 
     Test liczy się tylko dla par z tymi samymi zmiennymi obserwowalnymi i tymi samymi wierszami danych, z rozwiązaniami
     zbieżnymi i dopuszczalnymi. Zagnieżdżenie sprawdzane jest przez zawieranie zbiorów wolnych parametrów; gdy nie da się
-    go stwierdzić (np. ograniczenia równości), wynik dostaje ostrzeżenie."""
+    go stwierdzić (np. ograniczenia równości), para jest pomijana i porównuje się tylko indeksy dopasowania."""
     _require()
     from scipy import stats as st
     fits = []
@@ -606,6 +612,9 @@ def compare_models(models, part="cfa", estimator="ML"):
                 reasons.append("rozwiązanie niezbieżne")
             if not (a["admissible"] and b["admissible"]):
                 reasons.append("rozwiązanie niedopuszczalne (przypadek Heywooda)")
+            if not reasons and not (a["free"] <= b["free"]):
+                # bez potwierdzonego zagnieżdżenia Δχ² nie jest testem modeli zagnieżdżonych — porównujemy tylko indeksy
+                reasons.append("nie potwierdzono zagnieżdżenia (zbiory wolnych parametrów); porównaj CFI, AIC i BIC")
             if reasons:
                 skipped.append({"restricted": a["id"], "general": b["id"], "reasons": reasons})
                 continue

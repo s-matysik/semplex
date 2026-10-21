@@ -125,16 +125,18 @@ export function cfaSyntaxFromScales(scales, skip = []) {
    zawiera dokładnie te wiersze i zmienne, na których policzono model (po przekodowaniu, odwróceniu, wykluczeniach
    i wyborze części próby), więc kod nie musi powtarzać przygotowania danych. */
 export const ANALYSIS_FILE = 'semplex_dane_analityczne.csv';
-export function codeSnippets(syntax, { estimator = 'ML', part, seed = 1, kind = 'cfa', bootstrap, version = '' } = {}) {
+export function codeSnippets(syntax, { estimator = 'ML', part, seed = 1, kind = 'cfa', bootstrap, version = '', missing = 'listwise' } = {}) {
   const est = estimator === 'MLM' ? 'MLM' : 'ML';
   const fn = kind === 'sem' ? 'sem' : 'cfa';
-  const head = `SEMplex ${version}; dane: ${ANALYSIS_FILE}${part ? ` (część próby „${part}”, podział losowy z ziarnem ${seed})` : ''}`;
+  const em = missing === 'em';
+  const head = `SEMplex ${version}; dane: ${ANALYSIS_FILE}${part ? ` (część próby „${part}”, podział losowy z ziarnem ${seed})` : ''}`
+    + (em ? `\n# Uwaga: w SEMplex użyto kowariancji z algorytmu EM (dwuetapowo). Plik zawiera dane z brakami;\n# missing = "fiml" w lavaan to inna metoda (pełna informacja) i da nieco inne wyniki.` : '');
   const py = `# ${head}
 # Silnik SEMplex: folder public/engine/semplex z repozytorium (ten sam kod, który liczy w przeglądarce)
 import pandas as pd
 from semplex.sem import fit_model, param_table
 
-dane = pd.read_csv("${ANALYSIS_FILE}").drop(columns=["row_id"])
+dane = pd.read_csv("${ANALYSIS_FILE}").drop(columns=["row_id"])${em ? '\n# fit_model liczy na kompletnych przypadkach; tryb EM interfejsu odpowiada semplex.api.fit(..., missing="em")' : ''}
 model = """
 ${syntax.trim()}
 """
@@ -151,7 +153,7 @@ dane$row_id <- NULL
 model <- '
 ${syntax.trim()}
 '
-fit <- ${fn}(model, data = dane, estimator = "${est}")
+fit <- ${fn}(model, data = dane, estimator = "${est}"${em ? ', missing = "fiml"' : ''})
 summary(fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
 modindices(fit, sort. = TRUE, maximum.number = 10)${bootstrap ? `\n# bootstrap (inny generator liczb losowych niż w SEMplex): set.seed(${seed}); fit_b <- ${fn}(model, data = dane, se = "bootstrap", bootstrap = ${bootstrap})` : ''}
 `;
