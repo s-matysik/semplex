@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600&display=swap");
 
-/* SEMplex components — every value comes from tokens.css; prefix sx- */
+/* SEMplex components - every value comes from tokens.css; prefix sx- */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 22px; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
 .sx-icon { flex: none; display: inline-block; vertical-align: middle; }
@@ -455,7 +455,7 @@ body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 2
 .sx-log-reason { font-size: 12px; line-height: 17px; color: var(--ink-muted); margin-top: 2px; }
 .sx-log-effect { font-size: 12px; line-height: 16px; color: var(--ink-subtle); margin-top: 2px; font-variant-numeric: tabular-nums; }
 
-/* Sidebar — compact rail */
+/* Sidebar - compact rail */
 .sx-sidebar.is-compact { width: 64px; align-items: center; }
 .sx-sidebar.is-compact .sx-sidebar-head { padding: var(--space-3) 0; width: 100%; display: flex; justify-content: center; }
 .sx-sidebar.is-compact .sx-sidebar-body { padding: var(--space-2) 0; overflow: visible; display: flex; flex-direction: column; align-items: center; }
@@ -685,7 +685,7 @@ body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 2
 .sx-lg-scf::before { width: 9px; height: 9px; border: 0; border-radius: 1px; background: var(--chart-2); transform: rotate(45deg); }
 .sx-lg-zone::before { background: color-mix(in oklab, var(--chart-2) 18%, transparent); }
 
-/* ScreePlot — interaction */
+/* ScreePlot - interaction */
 .sx-scree.is-interactive svg { cursor: pointer; }
 .sx-scree svg:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
 .sx-scree-guide { stroke: var(--ink-subtle); stroke-width: 1; stroke-dasharray: 3 3; }
@@ -694,7 +694,7 @@ body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 2
 .sx-tick.is-hover { fill: var(--ink); font-weight: 600; }
 .sx-lg-sel::before { width: 10px; height: 10px; border: 2.5px solid var(--brand); border-radius: 50%; background: transparent; }
 
-/* LoadingHeatmap — selection, removal, stability */
+/* LoadingHeatmap - selection, removal, stability */
 .sx-heat.is-interactive tbody tr { cursor: pointer; outline: none; }
 .sx-heat tbody tr:hover th, .sx-heat tbody tr:focus-visible th { color: var(--ink); }
 .sx-heat tbody tr:hover th .sx-var { text-decoration: underline; text-underline-offset: 3px; }
@@ -966,7 +966,7 @@ th.sx-cons-res { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-
 .sx-diag-foot-r { display: flex; align-items: center; gap: var(--space-3); margin-left: auto; }
 .sx-diag-src { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-subtle); white-space: nowrap; }
 
-/* Dropzone — error */
+/* Dropzone - error */
 .sx-drop.is-error { border-color: var(--poor); border-style: solid; background: color-mix(in oklab, var(--poor-soft) 60%, var(--surface)); }
 .sx-drop.is-error .sx-drop-ico { background: var(--poor-soft); color: var(--poor); }
 .sx-drop.is-error .sx-drop-formats { display: none; }

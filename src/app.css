@@ -1,4 +1,4 @@
-/* Rama aplikacji SEMplex — wyłącznie tokeny z tokens.css. */
+/* Rama aplikacji SEMplex - wyłącznie tokeny z tokens.css. */
 html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); }
 * { box-sizing: border-box; }
 

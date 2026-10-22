@@ -93,7 +93,7 @@ export default function StatsScreen() {
             <CorrMatrix vars={r.vars} r={r.r} p={r.p} n={r.n} groups={r.groups} highlight={hl || undefined} hint="Najedź na komórkę, aby zobaczyć r, p i n." />
           </Panel>
           <Interpretation tone="info" title="Co dalej">
-            Sprawdź, czy pozycje tej samej skali korelują ze sobą wyraźniej niż z innymi. Rzetelność i trafność policzysz w następnym module, a strukturę czynnikową — w EFA.
+            Sprawdź, czy pozycje tej samej skali korelują ze sobą wyraźniej niż z innymi. Rzetelność i trafność policzysz w następnym module, a strukturę czynnikową - w EFA.
           </Interpretation>
         </>
       )}

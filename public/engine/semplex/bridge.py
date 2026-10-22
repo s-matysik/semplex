@@ -256,7 +256,7 @@ class CompareJob:
         spread = max(g.values()) - min(g.values())
         total = g["sem"] - g["sum"]
         steps = [
-            # kolejne różnice między podejściami — opis, a nie zidentyfikowany rozkład obciążenia
+            # kolejne różnice między podejściami - opis, a nie zidentyfikowany rozkład obciążenia
             {"label": "Średnie pozycji", "value": g["sum"], "kind": "start"},
             {"label": "Pojedynczy wskaźnik − średnie", "value": g["single"] - g["sum"], "kind": "step"},
             {"label": "SAM − pojedynczy wskaźnik", "value": g["sam"] - g["single"], "kind": "step"},
@@ -278,16 +278,16 @@ class CompareJob:
         elif abs(g["esem"] - g["sem"]) > 0.05 and self.extra.get("esem_max_cross", 0) >= 0.20:
             rec = "esem"
             reasons = [f"Reguła heurystyczna: przybliżenie ESEM różni się od SEM łącznego o {_pl(g['esem'] - g['sem'], '+.2f')}, a największy "
-                       f"ładunek krzyżowy wynosi {_pl(self.extra['esem_max_cross'], '.2f')} — sprawdź, czy ładunki krzyżowe mają uzasadnienie merytoryczne."]
+                       f"ładunek krzyżowy wynosi {_pl(self.extra['esem_max_cross'], '.2f')} - sprawdź, czy ładunki krzyżowe mają uzasadnienie merytoryczne."]
         else:
             rec = "sem"
-            reasons = [f"Reguła heurystyczna: N = {n} ≥ 300 i CFI = {_pl(cfi, '.3f')} ≥ 0,90, a ładunki krzyżowe nie zmieniają wyniku — "
+            reasons = [f"Reguła heurystyczna: N = {n} ≥ 300 i CFI = {_pl(cfi, '.3f')} ≥ 0,90, a ładunki krzyżowe nie zmieniają wyniku - "
                        "punktem odniesienia jest SEM łączny. Oceń dopasowanie także innymi wskaźnikami."]
         pred_r = self.extra.get("pred_r", 0.0)
         collinear = pred_r >= 0.85
         if collinear:
             reasons = [f"Predyktory są bardzo silnie skorelowane na poziomie latentnym (r = {_pl(pred_r, '.2f')}). Efekty cząstkowe są niestabilne "
-                       "i zależą od podejścia — ostrożnie interpretuj ich oddzielne wkłady. Łączenie konstruktów wymaga uzasadnienia teoretycznego, "
+                       "i zależą od podejścia - ostrożnie interpretuj ich oddzielne wkłady. Łączenie konstruktów wymaga uzasadnienia teoretycznego, "
                        "a nie tylko wysokiej korelacji."] + reasons
         mean_alpha = float(np.mean(list(self.extra["alpha"].values())))
         bad = [r["label"] for r in rows if not r["ci_available"] or not r["point_valid"]]

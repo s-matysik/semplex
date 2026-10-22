@@ -47,7 +47,7 @@ export default function LogScreen() {
         {MODULE_TARGET[cur.module] ? <Button size="sm" variant="secondary" iconRight="arrow-right" onClick={() => go(MODULE_TARGET[cur.module])}>Otwórz moduł</Button> : null}
         {!cur.reverted && cur.undo ? <Button size="sm" variant="danger" icon="undo" onClick={() => setConfirm(cur)}>Cofnij tę decyzję…</Button> : null}
       </div>
-      {!cur.undo && !cur.reverted ? <p className="subtle">Uruchomień analiz nie cofa się — zostają w historii jako ślad pracy.</p> : null}
+      {!cur.undo && !cur.reverted ? <p className="subtle">Uruchomień analiz nie cofa się - zostają w historii jako ślad pracy.</p> : null}
     </>
   ) : <p className="muted">Wybierz wpis na osi czasu.</p>;
 

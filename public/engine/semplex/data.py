@@ -54,7 +54,7 @@ def sniff(raw, filename, encoding="auto", sep="auto", decimal="auto", header=Tru
     name = filename.lower()
     if name.endswith((".xlsx", ".xlsm", ".xls")):
         df = pd.read_excel(io.BytesIO(raw), header=0 if header else None)
-        return {"kind": "excel", "encoding": "—", "sep": "—", "decimal": "—", "sample": "", "replacement_chars": 0}, df
+        return {"kind": "excel", "encoding": "-", "sep": "-", "decimal": "-", "sample": "", "replacement_chars": 0}, df
     if name.endswith((".sav", ".dta", ".sas7bdat", ".parquet")):
         raise ValueError("unsupported:" + name.rsplit(".", 1)[-1])
     text, enc = decode(raw, encoding)

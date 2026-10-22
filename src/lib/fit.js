@@ -1,15 +1,15 @@
 /* Oceny wskaźników z progami i źródłami (słowo + ikona + kolor przez Verdict/FitIndex). */
 import { format } from 'semplex-ui';
 
-export const n2 = (v) => (v == null || Number.isNaN(v) ? '—' : format.num(v, 2));
-export const n3 = (v) => (v == null || Number.isNaN(v) ? '—' : format.num(v, 3));
-export const n1 = (v) => (v == null || Number.isNaN(v) ? '—' : format.num(v, 1));
-export const n0 = (v) => (v == null || Number.isNaN(v) ? '—' : format.num(v, 0));
-export const pv = (v) => (v == null || Number.isNaN(v) ? '—' : format.p(v));
-export const pct = (v, d = 1) => (v == null || Number.isNaN(v) ? '—' : format.num(100 * v, d) + '%');
-export const int = (v) => (v == null ? '—' : String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'));
+export const n2 = (v) => (v == null || Number.isNaN(v) ? '-' : format.num(v, 2));
+export const n3 = (v) => (v == null || Number.isNaN(v) ? '-' : format.num(v, 3));
+export const n1 = (v) => (v == null || Number.isNaN(v) ? '-' : format.num(v, 1));
+export const n0 = (v) => (v == null || Number.isNaN(v) ? '-' : format.num(v, 0));
+export const pv = (v) => (v == null || Number.isNaN(v) ? '-' : format.p(v));
+export const pct = (v, d = 1) => (v == null || Number.isNaN(v) ? '-' : format.num(100 * v, d) + '%');
+export const int = (v) => (v == null ? '-' : String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'));
 export const pTxt = (v) => {
-  if (v == null || Number.isNaN(v)) return 'p = —';
+  if (v == null || Number.isNaN(v)) return 'p = -';
   const s = format.p(v);
   return s.startsWith('<') ? 'p ' + s : 'p = ' + s;
 };
@@ -49,7 +49,7 @@ export function fitIndices(fit, scaled) {
   const p = s ? fit.pvalue_scaled : fit.pvalue;
   const ratio = fit.df > 0 ? chi / fit.df : null;
   const out = [
-    { key: 'chi', label: 'χ²/df', value: ratio == null ? '—' : format.num(ratio, 2), verdict: ratio == null ? undefined : ratio <= 3 ? 'good' : ratio <= 5 ? 'ok' : 'poor',
+    { key: 'chi', label: 'χ²/df', value: ratio == null ? '-' : format.num(ratio, 2), verdict: ratio == null ? undefined : ratio <= 3 ? 'good' : ratio <= 5 ? 'ok' : 'poor',
       threshold: '≤ 3', source: `χ²(${fit.df}) = ${format.num(chi, 2)}; ${pTxt(p)}${s ? ' · Satorra–Bentler' : ''}` },
   ];
   ['cfi', 'tli', 'rmsea', 'srmr'].forEach((k) => {

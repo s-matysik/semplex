@@ -17,8 +17,8 @@ function useFmt(lang) {
   const o = lang === 'en' ? { decimal: '.' } : {};
   const lz = lang === 'en' ? { decimal: '.', leadingZero: false } : {};
   return {
-    d2: (v) => (v == null ? '—' : format.num(v, 2, o)), d3: (v) => (v == null ? '—' : format.num(v, 3, o)),
-    b2: (v) => (v == null ? '—' : format.num(v, 2, lz)), b3: (v) => (v == null ? '—' : format.num(v, 3, lz)),
+    d2: (v) => (v == null ? '-' : format.num(v, 2, o)), d3: (v) => (v == null ? '-' : format.num(v, 3, o)),
+    b2: (v) => (v == null ? '-' : format.num(v, 2, lz)), b3: (v) => (v == null ? '-' : format.num(v, 3, lz)),
     p: (v) => { const s = format.p(v, lz); return s.startsWith('<') ? `p ${s}` : `p = ${s}`; }, sep: lang === 'en' ? ', ' : '; ',
   };
 }
@@ -57,7 +57,7 @@ export default function ReportScreen() {
         <tbody>{Object.entries(cfa.scales_used).flatMap(([f, its]) => its.map((it, i) => { const p = idx[f + '=~' + it]; return <tr key={f + it}><td>{i === 0 ? f : ''}</td><td>{it}</td><td>{F.b2(p.std)}</td><td>{F.b3(p.std_se)}</td></tr>; }))}</tbody></table></section>);
   }
   if (inc.rel && rel && rel.validity && rel.validity.rows) sections.push(<section key="rel"><h2>{t.rel}</h2><p>{pl
-    ? `Rzetelność oceniono współczynnikiem ω McDonalda (wartości od ${F.d2(Math.min(...rel.scales.map((x) => x.omega)))} do ${F.d2(Math.max(...rel.scales.map((x) => x.omega)))}) oraz α Cronbacha. Trafność zbieżną oceniono rzetelnością złożoną (CR) i AVE (Fornell i Larcker, 1981), a różnicową — wskaźnikiem HTMT (Henseler i in., 2015); największy HTMT = ${F.d2(Math.max(...rel.validity.htmt.flatMap((r, i) => r.filter((_, j) => j > i))))}.`
+    ? `Rzetelność oceniono współczynnikiem ω McDonalda (wartości od ${F.d2(Math.min(...rel.scales.map((x) => x.omega)))} do ${F.d2(Math.max(...rel.scales.map((x) => x.omega)))}) oraz α Cronbacha. Trafność zbieżną oceniono rzetelnością złożoną (CR) i AVE (Fornell i Larcker, 1981), a różnicową - wskaźnikiem HTMT (Henseler i in., 2015); największy HTMT = ${F.d2(Math.max(...rel.validity.htmt.flatMap((r, i) => r.filter((_, j) => j > i))))}.`
     : `Reliability was assessed with McDonald's ω (range ${F.b2(Math.min(...rel.scales.map((x) => x.omega)))}–${F.b2(Math.max(...rel.scales.map((x) => x.omega)))}) and Cronbach's α. Convergent validity was evaluated with composite reliability (CR) and AVE (Fornell & Larcker, 1981) and discriminant validity with HTMT (Henseler et al., 2015); the largest HTMT was ${F.b2(Math.max(...rel.validity.htmt.flatMap((r, i) => r.filter((_, j) => j > i))))}.`}</p>
     <table><caption>{t.tabRel}</caption><thead><tr><th>{t.factor}</th><th>k</th><th>α</th><th>ω</th><th>CR</th><th>AVE</th><th>MSV</th></tr></thead>
       <tbody>{rel.scales.map((x) => { const vr = rel.validity.rows.find((y) => y.factor === x.id) || {}; return <tr key={x.id}><td>{x.id}</td><td>{x.k}</td><td>{F.b2(x.alpha)}</td><td>{F.b2(x.omega)}</td><td>{F.b2(vr.cr)}</td><td>{F.b2(vr.ave)}</td><td>{F.b2(vr.msv)}</td></tr>; })}</tbody></table></section>);
@@ -78,14 +78,14 @@ export default function ReportScreen() {
       : `The indirect effect ${sp.x} → ${sp.m} → ${sp.y} was estimated ${m.latent ? 'with latent variables' : 'on scale means'} using percentile bootstrap (${m.R_ok} resamples, seed ${m.seed}): β = ${F.b3(m.defined.ind.std)}${b.ind_std ? `, 95% CI [${F.b3(b.ind_std[0])}, ${F.b3(b.ind_std[1])}]` : ''}; direct effect β = ${F.b3(m.paths.c.std)}, ${F.p(m.paths.c.p)}.`}</p></section>);
   }
   if (inc.bridge && bridge) sections.push(<section key="bridge"><h2>{t.bridge}</h2><p>{methodsParagraph(bridge, lang)}</p></section>);
-  if (inc.log && s.decisions.filter((x) => !x.reverted && x.kind !== 'run').length) sections.push(<section key="log"><h2>{t.log}</h2><ol>{s.decisions.filter((x) => !x.reverted && x.kind !== 'run').map((x) => <li key={x.id}>{x.action}{x.reason ? ` — ${x.reason}` : ''}</li>)}</ol></section>);
+  if (inc.log && s.decisions.filter((x) => !x.reverted && x.kind !== 'run').length) sections.push(<section key="log"><h2>{t.log}</h2><ol>{s.decisions.filter((x) => !x.reverted && x.kind !== 'run').map((x) => <li key={x.id}>{x.action}{x.reason ? ` - ${x.reason}` : ''}</li>)}</ol></section>);
   sections.push(<section key="soft"><h2>{t.soft}</h2><p>{pl
     ? `Obliczenia wykonano w SEMplex ${v.semplex || '1.0'} (Python w przeglądarce przez Pyodide ${v.pyodide || ''}; numpy ${v.numpy || ''}, scipy ${v.scipy || ''}). Estymacja ML/MLM zgodna z konwencjami lavaan (Rosseel, 2012).`
     : `Analyses were run in SEMplex ${v.semplex || '1.0'} (Python in the browser via Pyodide ${v.pyodide || ''}; numpy ${v.numpy || ''}, scipy ${v.scipy || ''}). ML/MLM estimation follows lavaan conventions (Rosseel, 2012).`}</p></section>);
 
   function html() {
     const body = ref.current ? ref.current.innerHTML : '';
-    return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>${s.project.name} — ${t.title}</title><style>body{font-family:'Times New Roman',serif;max-width:800px;margin:40px auto;line-height:1.6;color:#111}h1,h2{font-family:Arial,sans-serif}h2{font-size:16px;margin-top:28px}table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;margin:8px 0 20px}th,td{padding:3px 10px;text-align:right;border-bottom:1px solid #ccc}th:first-child,td:first-child{text-align:left}thead th{border-top:2px solid #111;border-bottom:1px solid #111}caption{text-align:left;font-style:italic;padding-bottom:4px}</style></head><body><h1>${t.title}</h1>${body}</body></html>`;
+    return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>${s.project.name} - ${t.title}</title><style>body{font-family:'Times New Roman',serif;max-width:800px;margin:40px auto;line-height:1.6;color:#111}h1,h2{font-family:Arial,sans-serif}h2{font-size:16px;margin-top:28px}table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;margin:8px 0 20px}th,td{padding:3px 10px;text-align:right;border-bottom:1px solid #ccc}th:first-child,td:first-child{text-align:left}thead th{border-top:2px solid #111;border-bottom:1px solid #111}caption{text-align:left;font-style:italic;padding-bottom:4px}</style></head><body><h1>${t.title}</h1>${body}</body></html>`;
   }
   const base = (s.project.name || 'raport').replace(/[^\p{L}\p{N}_-]+/gu, '_');
   const empty = !efa && !cfa && !sem && !rel;
@@ -102,7 +102,7 @@ export default function ReportScreen() {
       {stale.length ? <Interpretation tone="warn" title="Część wyników jest nieaktualna">Moduły {stale.join(', ')} czekają na przeliczenie po zmianach w danych lub modelu. Przelicz je przed eksportem raportu.</Interpretation> : null}
       <div className="row no-print">{[['efa', 'EFA'], ['rel', 'Rzetelność'], ['cfa', 'CFA'], ['sem', 'SEM'], ['med', 'Mediacja'], ['bridge', 'Porównanie podejść'], ['log', 'Dziennik decyzji']].map(([k, l]) =>
         <Checkbox key={k} label={l} checked={inc[k]} onChange={(c) => setInc(Object.assign({}, inc, { [k]: c }))} />)}</div>
-      {empty ? <EmptyState icon="report" title="Raport jest jeszcze pusty" actions={<Button variant="primary" onClick={() => go('cfa')}>Przejdź do CFA</Button>}>Uruchom co najmniej EFA, CFA albo rzetelność — ich wyniki trafią tu automatycznie z tabelami APA.</EmptyState> :
+      {empty ? <EmptyState icon="report" title="Raport jest jeszcze pusty" actions={<Button variant="primary" onClick={() => go('cfa')}>Przejdź do CFA</Button>}>Uruchom co najmniej EFA, CFA albo rzetelność - ich wyniki trafią tu automatycznie z tabelami APA.</EmptyState> :
         <article className="report" ref={ref}>{sections}</article>}
     </Screen>
   );

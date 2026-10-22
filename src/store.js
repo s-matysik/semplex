@@ -214,5 +214,5 @@ export function toggleTheme() {
 }
 export function go(module) { setState({ module, palette: false }); window.scrollTo && window.scrollTo(0, 0); }
 
-/* Uchwyt diagnostyczny (tylko odczyt i nawigacja) — używany przez test interfejsu tools/ui-test.mjs. */
+/* Uchwyt diagnostyczny (tylko odczyt i nawigacja) - używany przez test interfejsu tools/ui-test.mjs. */
 if (typeof window !== 'undefined') window.__semplex = { getState, go, setState, revertDecision };

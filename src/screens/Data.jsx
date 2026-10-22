@@ -43,7 +43,7 @@ function Start() {
         <Dropzone onFiles={onFiles} formats={['CSV', 'TXT', 'TSV', 'XLSX']} title="Upuść plik z danymi albo wybierz z dysku"
           subtitle="Jeden wiersz = jeden respondent, pierwszy wiersz = nazwy zmiennych. Kodowanie i separator rozpoznają się same."
           cta="Wybierz plik" onSample={() => run(loadSample)} sampleLabel="Otwórz przykład: Lojalność klientów 2026 (N = 524)"
-          privacy="Dane nie opuszczają komputera — plik czyta przeglądarka, a liczy silnik uruchomiony lokalnie." />
+          privacy="Dane nie opuszczają komputera - plik czyta przeglądarka, a liczy silnik uruchomiony lokalnie." />
       )}
       <div className="cols even">
         <Interpretation tone="info" title="Jak przygotować plik">
@@ -115,7 +115,7 @@ function ImportStep() {
       ) : null}
       {pii.length ? (
         <Interpretation tone="brand" icon="lock" title={`${pii.length === 1 ? 'Jedna kolumna wygląda' : pii.length + ' kolumny wyglądają'} na dane osobowe i zostanie pominięta`}>
-          {pii.map((c) => `${c.source} (${c.pii})`).join(', ')}. Możesz ją włączyć, zmieniając typ — wtedy trafi do pamięci tej karty przeglądarki i do zapisu projektu.
+          {pii.map((c) => `${c.source} (${c.pii})`).join(', ')}. Możesz ją włączyć, zmieniając typ - wtedy trafi do pamięci tej karty przeglądarki i do zapisu projektu.
         </Interpretation>
       ) : null}
       <Panel flush title="Zmienne" subtitle="Sprawdź typy. Pozycje Likerta to zmienne porządkowe; identyfikatory i tekst są pomijane.">
@@ -208,7 +208,7 @@ function Overview() {
           fixes={[{ title: 'Odwróć, jeśli treść pozycji jest sformułowana negatywnie', recommended: true, actionLabel: 'Odwróć pozycję', actionIcon: 'refresh', onAction: () => reverse(vinfo) }]} />
       ) : null}
       {Math.abs(vinfo.stats.skew) > 2 || Math.abs(vinfo.stats.kurt) > 7 ? (
-        <Interpretation tone="warn" title="Rozkład silnie odbiega od normalnego" source="Curran, West i Finch (1996)">Skośność powyżej 2 albo kurtoza powyżej 7 — użyj estymatora MLM (odporne błędy).</Interpretation>
+        <Interpretation tone="warn" title="Rozkład silnie odbiega od normalnego" source="Curran, West i Finch (1996)">Skośność powyżej 2 albo kurtoza powyżej 7 - użyj estymatora MLM (odporne błędy).</Interpretation>
       ) : null}
     </>
   ) : <Loading variant="block" />;
@@ -266,12 +266,12 @@ function Careless() {
     <Screen>
       <EngineErrorView error={error} onClose={() => setError(null)} />
       <div className="form">
-        <Field label="Czas wypełniania (sekundy)" hint="Kolumna z łącznym czasem ankiety"><Select value={tv} onChange={(e) => setTv(e.target.value)} options={[{ value: '', label: 'brak — tylko longstring' }].concat(timeVars.map((v) => ({ value: v, label: v })))} /></Field>
+        <Field label="Czas wypełniania (sekundy)" hint="Kolumna z łącznym czasem ankiety"><Select value={tv} onChange={(e) => setTv(e.target.value)} options={[{ value: '', label: 'brak - tylko longstring' }].concat(timeVars.map((v) => ({ value: v, label: v })))} /></Field>
         {hasTime ? <Field label="Kogo zaproponować"><Select value={only} onChange={(e) => setOnly(e.target.value)} options={[{ value: 'both', label: 'oba sygnały naraz (zalecane)' }, { value: 'any', label: 'dowolny sygnał' }]} /></Field> : null}
       </div>
       <div className="tiles t3">
         <StatTile label={<Term term="Longstring" definition="Najdłuższy ciąg identycznych odpowiedzi z rzędu." source="Johnson (2005)" />} value={res.rows.filter((r) => r.longstring >= res.ls_cut).length} icon="minus" note={`próg ≥ ${res.ls_cut} z ${res.items.length} pozycji`} />
-        <StatTile label="Za szybko" value={hasTime ? res.rows.filter((r) => r.sec_per_item != null && r.sec_per_item < res.time_cut).length : '—'} icon="history" note={hasTime ? `< ${n1(res.time_cut)} s na pozycję (35% mediany)` : 'wskaż kolumnę czasu'} />
+        <StatTile label="Za szybko" value={hasTime ? res.rows.filter((r) => r.sec_per_item != null && r.sec_per_item < res.time_cut).length : '-'} icon="history" note={hasTime ? `< ${n1(res.time_cut)} s na pozycję (35% mediany)` : 'wskaż kolumnę czasu'} />
         <StatTile label="Odstający wielowymiarowo" value={res.n_maha} icon="poor" note="odległość Mahalanobisa, p < 0,001" />
       </div>
       <div className="cols">
@@ -313,7 +313,7 @@ function Missing() {
       <div className="tiles t3">
         <StatTile label="Przypadki kompletne" value={int(res.complete)} icon="check" note={`z ${int(res.n)} (${pct(res.complete / Math.max(res.n, 1))})`} tone={lost / Math.max(res.n, 1) > 0.2 ? 'ok' : 'good'} />
         <StatTile label="Najwięcej braków" value={pct(Math.max(...Object.values(res.per_var)))} icon="info" note={Object.entries(res.per_var).sort((a, b) => b[1] - a[1])[0][0]} />
-        <StatTile label={<Term term="Test MCAR Little’a" definition="Sprawdza, czy braki są całkowicie losowe; p > 0,05 nie przeczy MCAR." source="Little (1988)" />} value={lt ? pTxt(lt.p) : '—'} icon="stats" note={lt ? `χ²(${lt.df}) = ${format.num(lt.chi2, 2)}` : 'brak braków'} />
+        <StatTile label={<Term term="Test MCAR Little’a" definition="Sprawdza, czy braki są całkowicie losowe; p > 0,05 nie przeczy MCAR." source="Little (1988)" />} value={lt ? pTxt(lt.p) : '-'} icon="stats" note={lt ? `χ²(${lt.df}) = ${format.num(lt.chi2, 2)}` : 'brak braków'} />
       </div>
       <Interpretation tone={lt && lt.p < 0.05 ? 'warn' : 'info'} title={lt ? (lt.p < 0.05 ? 'Braki prawdopodobnie nie są całkowicie losowe' : 'Wzorzec braków jest zgodny z MCAR') : 'W pozycjach skal nie ma braków'} source="Little (1988); Enders (2010)">
         {lt ? (lt.p < 0.05 ? 'Usuwanie przypadków (listwise) może obciążyć wyniki. W CFA i SEM wybierz „EM (kowariancja)” w ustawieniach braków.' : `Analizy usuwają przypadki z brakami (listwise): stracisz ${int(lost)} respondentów. Przy dużej utracie wybierz w CFA estymację na macierzy kowariancji z algorytmu EM.`) : 'Analizy użyją wszystkich respondentów.'}
@@ -364,7 +364,7 @@ function Scales() {
         </Panel>
         <div className="stack">
           {data.scales.map((s) => (
-            <Panel key={s.id} title={`${s.id} — ${s.name}`} subtitle={`α = ${n2(s.alpha)} · ${s.items.length} pozycji`}>
+            <Panel key={s.id} title={`${s.id} - ${s.name}`} subtitle={`α = ${n2(s.alpha)} · ${s.items.length} pozycji`}>
               <div className="chips">{s.items.map((i) => { const v = data.variables.find((x) => x.name === i); return <VariableChip key={i} name={i} type={v ? v.type : 'ordinal'} label={v ? v.label : ''} reversed={v && v.reversed} />; })}</div>
             </Panel>
           ))}
@@ -387,7 +387,7 @@ export default function DataScreen() {
     <>
       <div className="content" style={{ paddingBottom: 0 }}>
         <Head eyebrow="Dane i czyszczenie" title={data.file} meta={[<Badge key="n">N = {int(data.n)}{data.n_excluded ? ` (−${data.n_excluded})` : ''}</Badge>, <Badge key="k">{data.k} zmiennych</Badge>, <Badge key="p" icon="lock">dane lokalnie</Badge>]}>
-          <Button variant="secondary" icon="upload" onClick={() => { if (window.confirm('Wczytać nowy plik? Bieżący projekt zostanie zamknięty — zapisz go wcześniej, jeśli chcesz do niego wrócić.')) setState({ data: null, importDraft: null, results: {} }); }}>Wczytaj inny plik</Button>
+          <Button variant="secondary" icon="upload" onClick={() => { if (window.confirm('Wczytać nowy plik? Bieżący projekt zostanie zamknięty - zapisz go wcześniej, jeśli chcesz do niego wrócić.')) setState({ data: null, importDraft: null, results: {} }); }}>Wczytaj inny plik</Button>
         </Head>
         <Tabs value={tab} onChange={setTab} tabs={[
           { id: 'overview', label: 'Przegląd', icon: 'data', count: flagged || undefined, status: flagged ? 'ok' : undefined },

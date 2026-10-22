@@ -24,7 +24,7 @@
   /* ---------- number formatting (Polish decimal comma by default) ---------- */
   function fmt(v, digits, opts) {
     opts = opts || {};
-    if (v === null || v === undefined || v === '' || isNaN(v)) return '—';
+    if (v === null || v === undefined || v === '' || isNaN(v)) return '-';
     var d = digits === undefined ? 3 : digits;
     var dec = opts.decimal || ',';
     var s = Math.abs(v).toFixed(d);
@@ -33,7 +33,7 @@
     return (v < 0 ? '−' : '') + s;
   }
   function fmtP(p, opts) {
-    if (p === null || p === undefined) return '—';
+    if (p === null || p === undefined) return '-';
     if (p < 0.001) return '< ' + fmt(0.001, 3, opts);
     return fmt(p, 3, opts);
   }
@@ -333,7 +333,7 @@
     var box = h('div', { className: 'sx-cmd', role: 'dialog', 'aria-label': props.label || 'Szukaj metody' },
       h('div', { className: 'sx-cmd-search' }, h(Icon, { name: 'search', size: 18 }),
         scope ? h('span', { className: 'sx-cmd-scope' }, scope.label) : null,
-        h('input', { className: 'sx-cmd-input', value: scope ? qq : q, autoFocus: props.autoFocus, placeholder: scope ? (scope.placeholder || 'Szukaj: ' + scope.label) : (props.placeholder || 'Szukaj metody, testu albo wskaźnika — np. omega, HTMT, inwariancja'),
+        h('input', { className: 'sx-cmd-input', value: scope ? qq : q, autoFocus: props.autoFocus, placeholder: scope ? (scope.placeholder || 'Szukaj: ' + scope.label) : (props.placeholder || 'Szukaj metody, testu albo wskaźnika - np. omega, HTMT, inwariancja'),
           onChange: function (e) { st[1]((scope ? scope.prefix : '') + e.target.value); sel[1](0); }, onKeyDown: onKey, 'aria-label': 'Szukaj', role: 'combobox', 'aria-expanded': true, 'aria-controls': lid, 'aria-activedescendant': results[active] ? lid + '-' + active : undefined }),
         h(Kbd, null, 'esc')),
       h('div', { className: 'sx-cmd-list', role: 'listbox', id: lid, 'aria-label': 'Wyniki' },
@@ -436,7 +436,7 @@
       case 'num': return fmt(v, col.digits === undefined ? 3 : col.digits, opts);
       case 'p': return fmtP(v, opts);
       case 'est': return h(React.Fragment, null, fmt(v, col.digits === undefined ? 2 : col.digits, opts), h('span', { className: 'sx-stars' }, stars(row[col.pKey || 'p'])));
-      case 'ci': return v ? '[' + fmt(v[0], col.digits === undefined ? 2 : col.digits, opts) + '; ' + fmt(v[1], col.digits === undefined ? 2 : col.digits, opts) + ']' : '—';
+      case 'ci': return v ? '[' + fmt(v[0], col.digits === undefined ? 2 : col.digits, opts) + '; ' + fmt(v[1], col.digits === undefined ? 2 : col.digits, opts) + ']' : '-';
       case 'var': return h('code', { className: 'sx-var' }, v);
       case 'verdict': return v ? h(Verdict, { level: v }) : null;
       default: return v;
@@ -522,9 +522,9 @@
     var vmax = Math.max.apply(null, votes.concat([1]));
     var nRec = crit.filter(function (c) { return c.recommended; }).length;
     var row = hr[0] !== null ? crit[hr[0]] : null;
-    var read = row ? h('span', null, h('b', null, row.name + ': ' + row.k + plFactors(row.k)), row.note ? ' — ' + row.note : '')
+    var read = row ? h('span', null, h('b', null, row.name + ': ' + row.k + plFactors(row.k)), row.note ? ' - ' + row.note : '')
       : hk ? h('span', null, h('b', null, hk + plFactors(hk) + ': '), votes[hk - 1] + ' z ' + crit.length + ' kryteriów' + (recVotes[hk - 1] ? ', w tym ' + recVotes[hk - 1] + ' z ' + nRec + ' zalecanych' : ''))
-      : h('span', null, h('b', null, 'Konsensus: ' + top + plFactors(top)), ' — ' + votes[top - 1] + ' z ' + crit.length + ' kryteriów' + (nRec ? ', w tym ' + recVotes[top - 1] + ' z ' + nRec + ' zalecanych' : ''));
+      : h('span', null, h('b', null, 'Konsensus: ' + top + plFactors(top)), ' - ' + votes[top - 1] + ' z ' + crit.length + ' kryteriów' + (nRec ? ', w tym ' + recVotes[top - 1] + ' z ' + nRec + ' zalecanych' : ''));
     return h('div', { className: cx('sx-cons', props.className) },
       h('table', { className: 'sx-cons-table' },
         h('caption', { className: 'sx-cons-cap' }, props.caption || 'Liczba czynników wskazana przez każde kryterium'),
@@ -581,7 +581,7 @@
         props.method ? h('span', null, props.method) : null,
         props.seed !== undefined ? h('span', { className: 'sx-badge sx-badge-neutral' }, 'ziarno ' + props.seed) : null),
       parts.some(function (p) { return p.note; }) ? h('ul', { className: 'sx-ssplit-notes' }, parts.map(function (p, i) {
-        return p.note ? h('li', { key: i }, h('span', { className: 'sx-ssplit-key sx-ssplit-' + (p.tone || 'neutral') }), h('span', null, h('b', null, p.label), ' — ' + p.note)) : null;
+        return p.note ? h('li', { key: i }, h('span', { className: 'sx-ssplit-key sx-ssplit-' + (p.tone || 'neutral') }), h('span', null, h('b', null, p.label), ' - ' + p.note)) : null;
       })) : null);
   }
 
@@ -623,7 +623,7 @@
       tip = h('div', { className: 'sx-tip', role: 'status', style: { left: Math.min(x(hv) / W * 100 + 2, 64) + '%', top: Math.max(0, y(eig[hv]) / H * 100 - 30) + '%' } },
         h('div', { className: 'sx-tip-v' }, 'Czynnik ' + (hv + 1) + ': ' + fmt(eig[hv], 2, opts)),
         h('div', { className: 'sx-tip-l' }, par[hv] !== undefined ? 'próg analizy równoległej ' + fmt(par[hv], 2, opts) : 'wartość własna'),
-        above !== null ? h('div', { className: 'sx-tip-n' }, above ? 'powyżej progu — czynnik zachowany' : 'poniżej progu') : null,
+        above !== null ? h('div', { className: 'sx-tip-n' }, above ? 'powyżej progu - czynnik zachowany' : 'poniżej progu') : null,
         props.onSelect ? h('div', { className: 'sx-tip-n' }, 'Kliknij, aby wybrać ' + (hv + 1) + plFactors(hv + 1)) : null);
     }
     return h('figure', { className: cx('sx-chart', 'sx-scree', props.onSelect && 'is-interactive', props.className), style: { position: 'relative' } },
@@ -888,7 +888,7 @@
   var VTYPE = { continuous: ['1.5', 'ciągła'], ordinal: ['1<5', 'porządkowa'], binary: ['0/1', 'binarna'], nominal: ['A·B', 'nominalna'] };
   function VariableChip(props) {
     var t = VTYPE[props.type] || VTYPE.continuous;
-    return h('span', { className: cx('sx-vchip', props.selected && 'is-on', props.reversed && 'is-rev', props.className), title: props.label ? props.name + ' — ' + props.label : undefined },
+    return h('span', { className: cx('sx-vchip', props.selected && 'is-on', props.reversed && 'is-rev', props.className), title: props.label ? props.name + ' - ' + props.label : undefined },
       h('span', { className: 'sx-vchip-type', title: t[1] }, t[0]),
       h('code', { className: 'sx-vchip-name' }, props.name),
       props.reversed ? h('span', { className: 'sx-vchip-flag', title: 'pozycja odwrócona' }, 'R') : null,
@@ -915,7 +915,7 @@
         props.error && props.error.onFix ? h(Button, { variant: 'secondary', icon: props.error.fixIcon, onClick: props.error.onFix }, props.error.fixLabel) : null,
         props.onSample !== undefined || props.sampleLabel ? h(Button, { variant: 'ghost', onClick: props.onSample }, props.sampleLabel || 'Wczytaj przykładową ankietę') : null),
       h('input', { ref: input, type: 'file', hidden: true, onChange: function (e) { files(e.target.files); } }),
-      props.privacy !== false ? h('div', { className: 'sx-drop-privacy' }, h(Icon, { name: 'lock', size: 14 }), props.privacy || 'Dane nie opuszczają komputera — obliczenia działają w przeglądarce.') : null);
+      props.privacy !== false ? h('div', { className: 'sx-drop-privacy' }, h(Icon, { name: 'lock', size: 14 }), props.privacy || 'Dane nie opuszczają komputera - obliczenia działają w przeglądarce.') : null);
   }
 
   var LANGS = { python: 'Python', lavaan: 'lavaan (R)', mplus: 'Mplus' };
@@ -1043,7 +1043,7 @@
       + edges.filter(function (e) { return e.kind === 'path' || e.kind === 'cov'; }).length
       + obs.filter(function (n) { return !indicatorIds[n.id]; }).length;
     // Kowariancje dodawane automatycznie przez silnik (jak w lavaan): między zmiennymi egzogenicznymi
-    // oraz między resztami czystych zmiennych zależnych — inaczej podgląd zawyża df.
+    // oraz między resztami czystych zmiennych zależnych - inaczej podgląd zawyża df.
     var pairKey = function (a, b) { return a < b ? a + '|' + b : b + '|' + a; };
     var explicitCov = {}; edges.forEach(function (e) { if (e.kind === 'cov') explicitCov[pairKey(e.from, e.to)] = true; });
     var pathTo = {}, pathFrom = {};
@@ -1057,8 +1057,8 @@
     var issues = [];
     lat.forEach(function (n) {
       var k = edges.filter(function (e) { return e.kind === 'loading' && e.from === n.id; }).length;
-      if (k === 0) issues.push({ level: 'poor', node: n.id, message: n.id + ' nie ma wskaźników — dodaj co najmniej trzy pozycje.' });
-      else if (k < 3) issues.push({ level: 'ok', node: n.id, message: n.id + ' ma ' + k + (k === 1 ? ' wskaźnik' : ' wskaźniki') + ' — przy mniej niż trzech czynnik jest identyfikowalny tylko w szerszym modelu.' });
+      if (k === 0) issues.push({ level: 'poor', node: n.id, message: n.id + ' nie ma wskaźników - dodaj co najmniej trzy pozycje.' });
+      else if (k < 3) issues.push({ level: 'ok', node: n.id, message: n.id + ' ma ' + k + (k === 1 ? ' wskaźnik' : ' wskaźniki') + ' - przy mniej niż trzech czynnik jest identyfikowalny tylko w szerszym modelu.' });
     });
     obs.forEach(function (n) { if (!edges.some(function (e) { return e.from === n.id || e.to === n.id; })) issues.push({ level: 'ok', node: n.id, message: n.id + ' nie jest połączona z modelem.' }); });
     var df = moments - params;
@@ -1793,7 +1793,7 @@
       tip = h('div', { className: 'sx-tip', style: { left: Math.min(X(mv.est) / W * 100 + 2, 62) + '%', top: ((TOP + hv * RH) / H * 100 - 4) + '%' } },
         h('div', { className: 'sx-tip-v' }, r.label),
         series.map(function (s) { var v = r.values[s.key]; return v ? h('div', { key: s.key, className: 'sx-tip-l' }, s.label + ' ' + fmt(v.est, dg, opts) + (v.lo !== undefined ? ' [' + fmt(v.lo, dg, opts) + '; ' + fmt(v.hi, dg, opts) + ']' : '')) : null; }),
-        zones.length ? h('div', { className: 'sx-tip-n' }, 'Ocena: ' + (ZONE_WORD[zoneOf(mv.est)] || '') + (mv.lo !== undefined && zoneOf(mv.lo) !== zoneOf(mv.est) ? ' — dolna granica CI w strefie „' + ZONE_WORD[zoneOf(mv.lo)] + '”' : '')) : null);
+        zones.length ? h('div', { className: 'sx-tip-n' }, 'Ocena: ' + (ZONE_WORD[zoneOf(mv.est)] || '') + (mv.lo !== undefined && zoneOf(mv.lo) !== zoneOf(mv.est) ? ' - dolna granica CI w strefie „' + ZONE_WORD[zoneOf(mv.lo)] + '”' : '')) : null);
     }
     return h('figure', { className: cx('sx-chart', 'sx-thplot', props.onSelect && 'is-interactive', props.className), style: { position: 'relative' } },
       h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: props.fluid ? undefined : W }, role: 'img', 'aria-label': props.label || 'Oszacowania z przedziałami ufności na tle progów', onMouseLeave: function () { setHover(null); } },
@@ -1849,15 +1849,15 @@
           if (v >= cut) { cls += ' is-poor'; mark = 'poor'; flags++; } else if (v >= near) { cls += ' is-ok'; mark = 'ok'; }
         } else {
           v = phi[i][j]; cls += ' is-upper'; title = 'Korelacja ' + a + '–' + b + ' = ' + fmt(v, 2, opts);
-          if (Math.abs(v) >= Math.sqrt(ave[i]) || Math.abs(v) >= Math.sqrt(ave[j])) { cls += ' is-poor'; mark = 'poor'; flags++; title += ' — większa niż √AVE (kryterium Fornella–Larckera)'; }
+          if (Math.abs(v) >= Math.sqrt(ave[i]) || Math.abs(v) >= Math.sqrt(ave[j])) { cls += ' is-poor'; mark = 'poor'; flags++; title += ' - większa niż √AVE (kryterium Fornella–Larckera)'; }
         }
         var hot = hv && ((hv[0] === i && hv[1] === j) || (hv[0] === j && hv[1] === i));
         return h('td', { key: b, className: cls + (hot ? ' is-hot' : ''), style: style, title: title, onMouseEnter: function () { hs[1]([i, j]); }, onMouseLeave: function () { hs[1](null); } },
           mark ? h(Icon, { name: mark, size: 12, className: 'sx-tone-' + mark }) : null, fmt(v, 2, opts));
       }));
     });
-    var read = hv ? (hv[0] === hv[1] ? '√AVE ' + f[hv[0]] + ' = ' + fmt(Math.sqrt(ave[hv[0]]), 2, opts) + ' — średnia wariancja wyjaśniona ' + fmt(ave[hv[0]], 2, opts) + (ave[hv[0]] >= 0.5 ? ' (≥ 0,50)' : ' (< 0,50)')
-      : hv[0] > hv[1] ? 'HTMT ' + f[hv[1]] + '–' + f[hv[0]] + ' = ' + fmt(ht[hv[0]][hv[1]], 2, opts) + (ht[hv[0]][hv[1]] < cut ? ' — poniżej progu ' + fmt(cut, 2, opts) : ' — powyżej progu ' + fmt(cut, 2, opts))
+    var read = hv ? (hv[0] === hv[1] ? '√AVE ' + f[hv[0]] + ' = ' + fmt(Math.sqrt(ave[hv[0]]), 2, opts) + ' - średnia wariancja wyjaśniona ' + fmt(ave[hv[0]], 2, opts) + (ave[hv[0]] >= 0.5 ? ' (≥ 0,50)' : ' (< 0,50)')
+      : hv[0] > hv[1] ? 'HTMT ' + f[hv[1]] + '–' + f[hv[0]] + ' = ' + fmt(ht[hv[0]][hv[1]], 2, opts) + (ht[hv[0]][hv[1]] < cut ? ' - poniżej progu ' + fmt(cut, 2, opts) : ' - powyżej progu ' + fmt(cut, 2, opts))
       : 'Korelacja ' + f[hv[0]] + '–' + f[hv[1]] + ' = ' + fmt(phi[hv[0]][hv[1]], 2, opts) + ' wobec √AVE ' + fmt(Math.sqrt(ave[hv[0]]), 2, opts) + ' i ' + fmt(Math.sqrt(ave[hv[1]]), 2, opts)) : null;
     return h('div', { className: cx('sx-vm', props.className) },
       h('table', null,
@@ -1867,7 +1867,7 @@
         h('span', null, h('i', { className: 'sx-vm-key is-diag' }), 'przekątna: √AVE'),
         h('span', null, h('i', { className: 'sx-vm-key is-lower' }), 'pod przekątną: HTMT (próg ' + fmt(cut, 2, opts) + ')'),
         h('span', null, h('i', { className: 'sx-vm-key is-upper' }), 'nad przekątną: korelacje czynników')),
-      h('div', { className: 'sx-vm-read', role: 'status' }, read || (flags ? 'Oznaczono ' + flags + (flags === 1 ? ' komórkę' : ' komórki') + ' — najedź, aby zobaczyć, dlaczego.' : 'Wszystkie kryteria trafności różnicowej spełnione — najedź na komórkę, aby zobaczyć wartość.')));
+      h('div', { className: 'sx-vm-read', role: 'status' }, read || (flags ? 'Oznaczono ' + flags + (flags === 1 ? ' komórkę' : ' komórki') + ' - najedź, aby zobaczyć, dlaczego.' : 'Wszystkie kryteria trafności różnicowej spełnione - najedź na komórkę, aby zobaczyć wartość.')));
   }
 
   /* ---------- InvarianceLadder: configural → metric → scalar → strict ---------- */
@@ -1964,7 +1964,7 @@
   var NAV = [
     { label: 'Dane', items: [{ id: 'data', label: 'Dane i czyszczenie', icon: 'data' }, { id: 'stats', label: 'Opisowe i testy', icon: 'stats' }] },
     { label: 'Pomiar', items: [{ id: 'rel', label: 'Rzetelność i trafność', icon: 'reliability' }, { id: 'efa', label: 'EFA', icon: 'efa' }, { id: 'cfa', label: 'CFA', icon: 'cfa' }] },
-    { label: 'Model', items: [{ id: 'sem', label: 'SEM — edytor modelu', icon: 'sem' }, { id: 'med', label: 'Mediacja i moderacja', icon: 'mediation' }, { id: 'bridge', label: 'Porównanie podejść', icon: 'bridge', release: 'nowe' }, { id: 'groups', label: 'Porównanie grup', icon: 'groups', release: 'v1' }] },
+    { label: 'Model', items: [{ id: 'sem', label: 'SEM - edytor modelu', icon: 'sem' }, { id: 'med', label: 'Mediacja i moderacja', icon: 'mediation' }, { id: 'bridge', label: 'Porównanie podejść', icon: 'bridge', release: 'nowe' }, { id: 'groups', label: 'Porównanie grup', icon: 'groups', release: 'v1' }] },
     { label: 'Rozszerzenia', items: [{ id: 'power', label: 'Moc i wielkość próby', icon: 'power', release: 'v1' }, { id: 'pls', label: 'PLS-SEM, IPMA, NCA', icon: 'pls', release: 'v1' }, { id: 'ml', label: 'Modele wielopoziomowe', icon: 'layers', release: 'v2' }] },
     { label: 'Wynik', items: [{ id: 'report', label: 'Raport', icon: 'report' }, { id: 'log', label: 'Dziennik decyzji', icon: 'history' }] }];
   function navSections(over) {
@@ -2071,7 +2071,7 @@
       hp ? h('div', { className: 'sx-tip', style: { left: Math.min(X(hp.w) / W * 100 + 2, 64) + '%', top: '6%' } },
         h('div', { className: 'sx-tip-v' }, (props.wShort || 'W') + ' = ' + fmt(hp.w, 1, opts)),
         h('div', { className: 'sx-tip-l' }, (props.effectShort || 'efekt') + ' ' + fmt(hp.est, dg, opts) + ' [' + fmt(hp.lo, dg, opts) + '; ' + fmt(hp.hi, dg, opts) + ']'),
-        h('div', { className: 'sx-tip-n' }, sig(hp) ? 'przedział nie obejmuje 0 — efekt istotny' : 'przedział obejmuje 0 — efekt nieistotny')) : null,
+        h('div', { className: 'sx-tip-n' }, sig(hp) ? 'przedział nie obejmuje 0 - efekt istotny' : 'przedział obejmuje 0 - efekt nieistotny')) : null,
       props.legend !== false ? h('figcaption', { className: 'sx-legend' },
         h('span', { className: 'sx-lg sx-lg-ce' }, (props.effectLabel || 'Efekt warunkowy') + ' z 95% CI'),
         h('span', { className: 'sx-lg sx-lg-sq sx-lg-cesig' }, 'obszar istotności'),
@@ -2175,7 +2175,7 @@
       hp ? h('div', { className: 'sx-tip', style: { left: Math.min(X(hp.importance) / W * 100 + 3, 64) + '%', top: Math.max(0, Y(hp.performance) / H * 100 - 22) + '%' } },
         h('div', { className: 'sx-tip-v' }, hp.label || hp.id),
         h('div', { className: 'sx-tip-l' }, 'ważność ' + fmt(hp.importance, dg, opts) + ' · wykonanie ' + fmt(hp.performance, 1, opts)),
-        h('div', { className: 'sx-tip-n' }, hp.importance >= xm && hp.performance < ym ? 'ważny i słabo oceniany — tu poprawa da najwięcej' : hp.importance >= xm ? 'ważny i dobrze oceniany' : 'mniejszy wpływ na wynik')) : null,
+        h('div', { className: 'sx-tip-n' }, hp.importance >= xm && hp.performance < ym ? 'ważny i słabo oceniany - tu poprawa da najwięcej' : hp.importance >= xm ? 'ważny i dobrze oceniany' : 'mniejszy wpływ na wynik')) : null,
       props.legend !== false ? h('figcaption', { className: 'sx-legend' },
         h('span', { className: 'sx-lg sx-lg-ipma' }, props.pointLabel || 'Konstrukt'),
         h('span', { className: 'sx-lg sx-lg-ipmap' }, 'Priorytet: ważny, słabo oceniany'),
@@ -2386,7 +2386,7 @@
         h('span', null, label),
         lead && lead.eta ? h('span', { className: 'sx-jobs-eta' }, lead.eta) : null),
       open ? h('div', { id: uid, role: 'dialog', 'aria-label': 'Zadania w tle', className: cx('sx-jobs-pop', props.align === 'start' && 'is-start') },
-        h('div', { className: 'sx-jobs-head' }, h('b', null, 'Zadania w tle'), h('span', null, props.note || 'Możesz pracować dalej — wynik pojawi się sam.')),
+        h('div', { className: 'sx-jobs-head' }, h('b', null, 'Zadania w tle'), h('span', null, props.note || 'Możesz pracować dalej - wynik pojawi się sam.')),
         jobs.length ? h('ul', { className: 'sx-jobs-list' }, jobs.map(function (j) {
           var pct = Math.round((j.progress || 0) * 100);
           return h('li', { key: j.id, className: 'sx-job is-' + (j.status || 'running') },

@@ -1,5 +1,5 @@
 /* Wątek obliczeń: Pyodide (CPython w WebAssembly) + silnik SEMplex w Pythonie.
-   Dane trafiają tu z karty przeglądarki i nigdzie dalej — sieć służy tylko do pobrania środowiska. */
+   Dane trafiają tu z karty przeglądarki i nigdzie dalej - sieć służy tylko do pobrania środowiska. */
 const PYODIDE_VERSION = '0.29.5';
 const PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
 const FILES = ['__init__', 'syntax', 'sem', 'efa', 'data', 'measure', 'bridge', 'mediation', 'api'];
@@ -36,7 +36,7 @@ async function init(engineUrl, version, indexURL, indexPath) {
 async function ensureExcel() {
   if (excelReady) return;
   status('packages', 0.5, 'Wczytywanie obsługi plików Excel');
-  // openpyxl nie należy do pakietów dystrybucji Pyodide — instalacja z PyPI (czysty Python)
+  // openpyxl nie należy do pakietów dystrybucji Pyodide - instalacja z PyPI (czysty Python)
   await py.loadPackage('micropip', { messageCallback: () => {}, errorCallback: () => {} });
   await py.runPythonAsync("import micropip\nawait micropip.install('openpyxl')");
   excelReady = true;

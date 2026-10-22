@@ -338,6 +338,6 @@ export declare const format: Format;
 /** Parser i drukarka składni lavaan oraz kontrola identyfikowalności. */
 export declare const lavaan: Lavaan;
 
-/** Cała biblioteka jako jeden obiekt — to samo, co window.SEMplex po wczytaniu bundle.js. */
+/** Cała biblioteka jako jeden obiekt - to samo, co window.SEMplex po wczytaniu bundle.js. */
 declare const SEMplex: typeof import('./index');
 export default SEMplex;

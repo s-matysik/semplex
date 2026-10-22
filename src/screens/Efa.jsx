@@ -77,7 +77,7 @@ export default function EfaScreen() {
       L[i].forEach((v, j) => { if (Math.abs(v) > Math.abs(L[i][best])) best = j; });
       (groups[r.factor_names[best]] = groups[r.factor_names[best]] || []).push(it);
     });
-    return Object.entries(groups).map(([f, its]) => (its.length === 1 ? `# ${f} =~ ${its[0]}   (czynnik z jedną pozycją — uzupełnij albo pomiń)` : `${f} =~ ${its.join(' + ')}`)).join('\n');
+    return Object.entries(groups).map(([f, its]) => (its.length === 1 ? `# ${f} =~ ${its[0]}   (czynnik z jedną pozycją - uzupełnij albo pomiń)` : `${f} =~ ${its.join(' + ')}`)).join('\n');
   }
   function toCfa() {
     const syn = cfaSyntax();
@@ -102,7 +102,7 @@ export default function EfaScreen() {
       <div className="eyebrow">Propozycje</div>
       <h2 className="sub">{props.length ? `${props.length} pozycji do decyzji` : 'Struktura bez zastrzeżeń'}</h2>
       {props.length ? props.map((p) => (
-        <Diagnosis key={p.item} compact level="warn" eyebrow={p.kind === 'cross' ? 'Ładunek krzyżowy' : 'Słaby ładunek'} title={`${p.item}${p.label ? ' — ' + p.label : ''}`}
+        <Diagnosis key={p.item} compact level="warn" eyebrow={p.kind === 'cross' ? 'Ładunek krzyżowy' : 'Słaby ładunek'} title={`${p.item}${p.label ? ' - ' + p.label : ''}`}
           what={p.kind === 'cross' ? `${p.factor}: ${n2(p.top)}, ${p.factor2}: ${n2(p.second)} (różnica ${n2(Math.abs(p.top) - Math.abs(p.second))} < 0,20).` : `Najwyższy ładunek ${n2(p.top)} na ${p.factor}; h² = ${n2(p.h2)}.`}
           effect={(() => { const left = r.items.filter((it, i) => !skip.includes(it) && it !== p.item && r.factor_names[r.loadings[i].reduce((b, v, j, a) => (Math.abs(v) > Math.abs(a[b]) ? j : b), 0)] === p.factor).length; return `Bez ${p.item} czynnik ${p.factor} ma ${left} ${left === 1 ? 'pozycję' : left < 5 ? 'pozycje' : 'pozycji'}.`; })()}
           source="Kryteria: Howard (2016); Costello i Osborne (2005)"
@@ -132,12 +132,12 @@ export default function EfaScreen() {
           <div className="stack">
             <Switch label="Podziel próbę na część EFA i CFA" hint="Zalecane. Bez podziału dopasowanie CFA jest zawyżone." checked={split.use}
               onChange={(c) => { const before = { use: split.use }; setState((s) => ({ split: Object.assign({}, s.split, { use: c, info: null }) })); markStale(withDependents(['efa', 'cfa', 'sem']));
-                logDecision({ module: 'EFA', moduleIcon: 'efa', kind: 'split', action: c ? 'Włączono podział próby 50/50' : 'Wyłączono podział próby', reason: c ? 'EFA i CFA na rozłącznych częściach.' : 'Cała próba w EFA i CFA — dopasowanie CFA będzie zawyżone.', undo: { type: 'split', before } }); }} />
+                logDecision({ module: 'EFA', moduleIcon: 'efa', kind: 'split', action: c ? 'Włączono podział próby 50/50' : 'Wyłączono podział próby', reason: c ? 'EFA i CFA na rozłącznych częściach.' : 'Cała próba w EFA i CFA - dopasowanie CFA będzie zawyżone.', undo: { type: 'split', before } }); }} />
             {split.use ? <div className="form">
               <Field label="Warstwy (opcjonalnie)"><Select value={split.strata || ''} onChange={(e) => { setState((s) => ({ split: Object.assign({}, s.split, { strata: e.target.value, info: null }) })); markStale(withDependents(['efa', 'cfa', 'sem'])); }}
                 options={[{ value: '', label: 'bez warstwowania' }].concat(data.variables.filter((v) => v.type === 'binary' || v.type === 'nominal').map((v) => ({ value: v.name, label: v.name })))} /></Field>
               <Field label="Ziarno podziału"><Input type="number" min={1} value={split.seed || settings.seed} onChange={(e) => { setState((s) => ({ split: Object.assign({}, s.split, { seed: Math.max(1, parseInt(e.target.value || '1', 10)), info: null }) })); markStale(withDependents(['efa', 'cfa', 'sem'])); }} /></Field>
-            </div> : <Interpretation tone="warn" title="Ta sama próba w EFA i CFA">CFA potwierdzi strukturę, którą sama wybrała — opisz to w ograniczeniach.</Interpretation>}
+            </div> : <Interpretation tone="warn" title="Ta sama próba w EFA i CFA">CFA potwierdzi strukturę, którą sama wybrała - opisz to w ograniczeniach.</Interpretation>}
           </div>
         </div>
       </Panel>
@@ -169,7 +169,7 @@ export default function EfaScreen() {
           </div>
           <Interpretation tone={r.k === r.nf.consensus ? 'good' : 'warn'} title={r.k === r.nf.consensus ? `Kryteria zgodnie wskazują ${r.k} czynniki` : `Wybrano ${r.k} czynniki, konsensus wskazuje ${r.nf.consensus}`} source="Analiza równoległa: Horn (1965); Hull: Lorenzo-Seva i in. (2011)"
             actions={r.k !== r.nf.consensus ? <Button size="sm" variant="secondary" onClick={() => compute(r.nf.consensus)}>Wróć do konsensusu</Button> : null}>
-            {r.k === r.nf.consensus ? `Rozwiązanie wyjaśnia ${pct(r.total_explained, 0)} wariancji. Uzasadnienie wyboru trafi do akapitu Metody.` : 'Wybór inny niż konsensus uzasadnij teorią — trafi do dziennika decyzji.'}
+            {r.k === r.nf.consensus ? `Rozwiązanie wyjaśnia ${pct(r.total_explained, 0)} wariancji. Uzasadnienie wyboru trafi do akapitu Metody.` : 'Wybór inny niż konsensus uzasadnij teorią - trafi do dziennika decyzji.'}
           </Interpretation>
           <Panel flush title="Ładunki czynnikowe" subtitle={`Macierz wzorca · ${r.rotation}${stability ? ` · stabilność z ${stab.value.ok} prób bootstrap` : ''}`}
             actions={props.length ? <Button size="sm" variant="ghost" icon="eye" onClick={() => setDrawer(true)}>Propozycje · {props.length}</Button> : null}>

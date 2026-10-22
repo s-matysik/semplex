@@ -155,7 +155,7 @@ win.__semplex.setState({ palette: false });
 
 console.error = origError;
 const fatal = errors.filter((e) => !/Not implemented|happy-dom|getContext|scrollIntoView/i.test(e));
-for (const r of results) console.log(`${r.ok ? 'OK  ' : 'BŁĄD'} ${r.name}${r.ok ? '' : '  — ' + (r.detail || '').replace(/\s+/g, ' ').slice(0, 240)}`);
+for (const r of results) console.log(`${r.ok ? 'OK  ' : 'BŁĄD'} ${r.name}${r.ok ? '' : '  - ' + (r.detail || '').replace(/\s+/g, ' ').slice(0, 240)}`);
 console.log(`\nWywołania silnika: ${calls.length} (${[...new Set(calls)].join(', ')})`);
 if (fatal.length) { console.log(`\nBłędy w konsoli (${fatal.length}):`); fatal.slice(0, 12).forEach((e) => console.log(' • ' + e.slice(0, 900))); }
 const failed = results.filter((r) => !r.ok).length;

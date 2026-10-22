@@ -2,11 +2,11 @@
 
   A  pracownicy_2026.csv     UTF-8, ';', przecinek dziesiętny, skala 1–7; SEM z mediacją i moderacją,
                              pozycja odwrócona, braki zakodowane jako -9 (rozpoznawany domyślnie) i 99 (pułapka:
-                             nie ma go na liście domyślnej — trzeba go dopisać w polu „Kody braków” przy imporcie),
+                             nie ma go na liście domyślnej - trzeba go dopisać w polu „Kody braków” przy imporcie),
                              dane osobowe, nieuważni respondenci
   B  studenci_ankieta.xlsx   Excel, odpowiedzi zapisane słowami (skala 1–5), EFA z ładunkiem krzyżowym
                              i słabą pozycją; brak odpowiedzi zapisany słowami
-  C  klienci_cp1250.csv      Windows-1250, ';', N = 150, ładunki krzyżowe — porównanie podejść (SAM, ESEM)
+  C  klienci_cp1250.csv      Windows-1250, ';', N = 150, ładunki krzyżowe - porównanie podejść (SAM, ESEM)
 
 Wartości „prawdziwe” liczy ten sam skrypt na populacji N = 400 000 (zmienne latentne bez błędu pomiaru)
 i zapisuje do klucz_wartosci.json. Uruchom:  python tools/make_test_data.py  → folder dane-testowe/
@@ -97,7 +97,7 @@ dfA = dfA.astype(object)
 # braki rzadkie (ok. 1,2% na pozycję), bo silnik liczy na przypadkach kompletnych: przy 18 pozycjach
 # zostaje ok. 80% wierszy
 m9 = rng.random(dfA.shape) < 0.008
-m99 = rng.random(dfA.shape) < 0.004  # kod 99 — NIE jest domyślnym kodem braku
+m99 = rng.random(dfA.shape) < 0.004  # kod 99 - NIE jest domyślnym kodem braku
 dfA = dfA.mask(m9, -9).mask(m99 & ~m9, 99)
 imiona = ["Anna", "Piotr", "Katarzyna", "Tomasz", "Magdalena", "Krzysztof", "Agnieszka", "Michał", "Joanna", "Paweł"]
 nazw = ["Nowak", "Kowalska", "Wiśniewski", "Wójcik", "Kamińska", "Lewandowski", "Zielińska", "Szymański", "Woźniak", "Dąbrowska"]

@@ -80,7 +80,7 @@ export default function SemScreen() {
     const name = newLat.name.trim();
     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name) || vars.has(name) || model.nodes.some((n) => n.id === name)) { toast('Podaj nową nazwę: litery, cyfry i _, inna niż zmienne w danych.', { icon: 'poor' }); return; }
     setState((s) => ({ layout: Object.assign({}, s.layout, { [name]: { x: newLat.x, y: newLat.y } }) }));
-    // zmienna latentna bez wskaźników nie istnieje w składni — zapisujemy jako komentarz do czasu dodania ładunków
+    // zmienna latentna bez wskaźników nie istnieje w składni - zapisujemy jako komentarz do czasu dodania ładunków
     pushText(text.replace(/\s*$/, '') + `\n# ${name} =~ (przeciągnij ścieżkę od ${name} do pozycji)`);
     setPendingLat((p) => p.concat([{ id: name, kind: 'latent' }]));
     setNewLat(null);
@@ -208,10 +208,10 @@ export default function SemScreen() {
             {r2.length ? ` Model wyjaśnia ${r2.map(([v, x]) => `${format.num(100 * x, 0)}% wariancji ${v}`).join(', ')}.` : ''}
           </Interpretation>
           <div className="cols">
-            <Panel flush title="Wyniki strukturalne" subtitle={bootOk ? `95% CI z bootstrapu (${boot.value.ok} prób)` : '95% CI metodą delta — dla efektów pośrednich uruchom bootstrap'}>
+            <Panel flush title="Wyniki strukturalne" subtitle={bootOk ? `95% CI z bootstrapu (${boot.value.ok} prób)` : '95% CI metodą delta - dla efektów pośrednich uruchom bootstrap'}>
               <div className="pad-x"><Tabs value={tab} onChange={setTab} tabs={[{ id: 'paths', label: 'Ścieżki', count: paths.length }, { id: 'def', label: 'Efekty zdefiniowane', count: defined.length || undefined }, { id: 'meas', label: 'Pomiar' }, { id: 'mi', label: 'Indeksy modyfikacji', count: r.mi.length || undefined }]} /></div>
               <div className="pad scroll-x">
-                {tab === 'paths' ? <ResultTable dense columns={[{ key: 'path', label: 'Ścieżka', type: 'text' }, { key: 'label', label: 'Etykieta', type: 'text' }, { key: 'b', label: 'β', type: 'est' }, { key: 'ci', label: '95% CI', type: 'ci' }, { key: 'raw', label: 'B', type: 'num', digits: 3 }, { key: 'se', label: 'SE', type: 'num', digits: 3 }, { key: 'p', label: 'p', type: 'p' }]} rows={paths} note="β — współczynnik standaryzowany; B, SE — niestandaryzowane." /> : null}
+                {tab === 'paths' ? <ResultTable dense columns={[{ key: 'path', label: 'Ścieżka', type: 'text' }, { key: 'label', label: 'Etykieta', type: 'text' }, { key: 'b', label: 'β', type: 'est' }, { key: 'ci', label: '95% CI', type: 'ci' }, { key: 'raw', label: 'B', type: 'num', digits: 3 }, { key: 'se', label: 'SE', type: 'num', digits: 3 }, { key: 'p', label: 'p', type: 'p' }]} rows={paths} note="β - współczynnik standaryzowany; B, SE - niestandaryzowane." /> : null}
                 {tab === 'def' ? (defined.length ? <ResultTable dense columns={[{ key: 'name', label: 'Efekt', type: 'var' }, { key: 'expr', label: 'Wyrażenie', type: 'text' }, { key: 'b', label: 'Standaryzowany', type: 'est' }, { key: 'ci', label: '95% CI', type: 'ci' }, { key: 'raw', label: 'B', type: 'num', digits: 3 }, { key: 'method', label: 'CI', type: 'text' }]} rows={defined}
                   note="Efekt pośredni oceniaj po przedziale bootstrap: istotny, gdy nie obejmuje zera (Preacher i Hayes, 2008)." /> :
                   <Interpretation tone="info" title="Brak efektów zdefiniowanych">Nadaj ścieżkom etykiety i zdefiniuj efekt, np. <span className="mono">M ~ a*X</span>, <span className="mono">Y ~ b*M</span>, <span className="mono">ind := a*b</span>. Szablony mediacji są w module Mediacja i moderacja.</Interpretation>) : null}

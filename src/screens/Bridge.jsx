@@ -112,13 +112,13 @@ export default function BridgeScreen() {
       {running && !preview ? <Progress indeterminate label="Estymacja punktowa i bootstrap" detail={`${settings.compareR} prób, każda liczy 7 podejść · ziarno ${settings.seed}`} /> : null}
       {!r ? (
         <Interpretation tone="brand" icon="bridge" title="Jedna zależność, siedem podejść">
-          Porównanie pokazuje, jak wynik zmienia się z reprezentacją konstruktów: średnie pozycji, wyniki czynnikowe, korekty błędu pomiaru, SAM, przybliżenie ESEM i SEM łączny. Wszystkie podejścia liczy się w modelu zredukowanym — tylko wybrana zmienna zależna i predyktory, bez pozostałych skal ani kowariancji reszt z modułu SEM. Wybierz zmienne i uruchom porównanie. Przy {settings.compareR} próbach bootstrap trwa to zwykle 1–3 minuty.
+          Porównanie pokazuje, jak wynik zmienia się z reprezentacją konstruktów: średnie pozycji, wyniki czynnikowe, korekty błędu pomiaru, SAM, przybliżenie ESEM i SEM łączny. Wszystkie podejścia liczy się w modelu zredukowanym - tylko wybrana zmienna zależna i predyktory, bez pozostałych skal ani kowariancji reszt z modułu SEM. Wybierz zmienne i uruchom porównanie. Przy {settings.compareR} próbach bootstrap trwa to zwykle 1–3 minuty.
         </Interpretation>
       ) : (
         <>
           <div className="tiles">
             <StatTile label="Rozrzut między podejściami" value={n2(r.spread)} icon="split" note="max − min β" tone={r.spread > 0.15 ? 'ok' : 'good'} />
-            <StatTile label="Średnie pozycji vs SEM łączny" value={Number.isFinite(r.underestimate) ? pct(r.underestimate, 0) : '—'} icon="minus" tone={Math.abs(r.underestimate) > 0.15 ? 'ok' : 'good'} note="różnica względna oszacowań (opisowa)" />
+            <StatTile label="Średnie pozycji vs SEM łączny" value={Number.isFinite(r.underestimate) ? pct(r.underestimate, 0) : '-'} icon="minus" tone={Math.abs(r.underestimate) > 0.15 ? 'ok' : 'good'} note="różnica względna oszacowań (opisowa)" />
             <StatTile label="Dopuszczalne losowania" value={`${r.R_ok} z ${r.R}`} icon="reliability" tone={r.R_ok < 0.95 * r.R ? 'ok' : 'good'} note="minimum po podejściach (bootstrap)" />
             <StatTile label="W 95% CI SEM łącznego" value={`${r.agree} z 7`} icon="check" note="opis zgodności, nie test" />
           </div>
@@ -132,7 +132,7 @@ export default function BridgeScreen() {
                 reference={ref.est} referenceLabel="SEM łączny" referenceShort="SEM" band={Number.isFinite(ref.lo) ? [ref.lo, ref.hi] : undefined} bandLabel="95% CI SEM łącznego"
                 highlightLabel="sugerowane" otherLabel="pozostałe" selected={sel} onSelect={setSel} tooltip legend fluid axisLabel="β standaryzowane" label="Wykres leśny efektu w siedmiu podejściach" />
             </Panel>
-            <Panel title="Kolejne różnice między podejściami" subtitle="Różnice arytmetyczne oszacowań — opis, nie rozkład obciążenia na przyczyny">
+            <Panel title="Kolejne różnice między podejściami" subtitle="Różnice arytmetyczne oszacowań - opis, nie rozkład obciążenia na przyczyny">
               <WaterfallChart steps={r.waterfall.map((s) => ({ label: s.label, value: s.value, kind: s.kind }))} fluid height={300} axisLabel="β" startLabel="start" endLabel="wynik" asideLabel="osobno" legend label="Kolejne różnice oszacowań między podejściami" />
             </Panel>
           </div>
@@ -140,7 +140,7 @@ export default function BridgeScreen() {
             <div className="pad-x"><ResultTable dense onRowClick={(row, i) => setSel(i)}
               columns={[{ key: 'label', label: 'Podejście', type: 'text' }, { key: 'sub', label: 'Rodzaj', type: 'text' }, { key: 'est', label: 'β', type: 'num', digits: 2 }, { key: 'ci', label: '95% CI', type: 'ci' }, { key: 'se', label: 'SE (boot)', type: 'num', digits: 3 }, { key: 'delta', label: 'Δ vs SEM', type: 'text', align: 'num' },
                 { key: 'nv', label: 'Losowania dopuszczalne', type: 'text', align: 'num' }, { key: 'v', label: 'Modeluje błąd pomiaru', type: 'verdict' }]}
-              rows={rows.map((x, i) => ({ label: x.label, sub: x.sub, est: x.est, ci: Number.isFinite(x.lo) ? [x.lo, x.hi] : undefined, se: x.se, delta: x.id === 'sem' || !Number.isFinite(x.delta) ? '—' : pct(x.delta, 0), nv: x.n_valid != null ? `${x.n_valid}/${r.R_done}` : '—', v: x.corrects_error ? 'good' : 'poor', selected: sel === i }))}
+              rows={rows.map((x, i) => ({ label: x.label, sub: x.sub, est: x.est, ci: Number.isFinite(x.lo) ? [x.lo, x.hi] : undefined, se: x.se, delta: x.id === 'sem' || !Number.isFinite(x.delta) ? '-' : pct(x.delta, 0), nv: x.n_valid != null ? `${x.n_valid}/${r.R_done}` : '-', v: x.corrects_error ? 'good' : 'poor', selected: sel === i }))}
               note="Wyniki czynnikowe (regresyjne) są obciążone, gdy służą jako predyktory i zmienna zależna jednocześnie (Skrondal i Laake, 2001). Kolumna „modeluje błąd pomiaru” opisuje założenie podejścia, a nie trafność wyniku. Losowania z rozwiązaniem niezbieżnym lub niedopuszczalnym (przypadek Heywooda) są wykluczane osobno dla każdego podejścia; przedział podaje się przy co najmniej 50 dopuszczalnych losowaniach i 80% udziale." /></div>
           </Panel>
           {mode !== 'simple' ? <CodeExport snippets={{ lavaan: `library(lavaan)\nmodel <- '\n${r.syntax}\n'\nfit_sem <- sem(model, data = dane)\nfit_sam <- sam(model, data = dane, sam.method = "local")\nstandardizedSolution(fit_sem); standardizedSolution(fit_sam)`, python: `from semplex.bridge import CompareJob\njob = CompareJob(dane, skale, "${r.y}", ${JSON.stringify(r.xs)}, R=${r.R}, seed=${r.seed})\nwhile not job.step(10): pass\nprint(job.result()["rows"])`, metody: methodsParagraph(r, lang) }} defaultLang="metody" meta={`ziarno ${r.seed}`} /> : null}

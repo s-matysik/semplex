@@ -89,7 +89,7 @@ def sniff(filename, raw=None, path=None, encoding="auto", sep="auto", decimal="a
 
 
 def clean_source(columns):
-    """Plik źródłowy bez kolumn pominiętych przy imporcie (m.in. danych osobowych) — do zapisu projektu.
+    """Plik źródłowy bez kolumn pominiętych przy imporcie (m.in. danych osobowych) - do zapisu projektu.
 
     Zwraca tekst CSV (UTF-8, separator ',', wartości jak w pliku źródłowym) i ustawienia, z którymi trzeba go wczytać."""
     raw = STATE["raw"]
@@ -613,7 +613,7 @@ def compare_models(models, part="cfa", estimator="ML"):
             if not (a["admissible"] and b["admissible"]):
                 reasons.append("rozwiązanie niedopuszczalne (przypadek Heywooda)")
             if not reasons and not (a["free"] <= b["free"]):
-                # bez potwierdzonego zagnieżdżenia Δχ² nie jest testem modeli zagnieżdżonych — porównujemy tylko indeksy
+                # bez potwierdzonego zagnieżdżenia Δχ² nie jest testem modeli zagnieżdżonych - porównujemy tylko indeksy
                 reasons.append("nie potwierdzono zagnieżdżenia (zbiory wolnych parametrów); porównaj CFI, AIC i BIC")
             if reasons:
                 skipped.append({"restricted": a["id"], "general": b["id"], "reasons": reasons})
@@ -623,7 +623,7 @@ def compare_models(models, part="cfa", estimator="ML"):
             ddf = a["df"] - b["df"]
             t = {"restricted": a["id"], "general": b["id"], "dchi2": d, "ddf": ddf, "p": float(st.chi2.sf(max(d, 0), ddf)),
                  "dcfi": a["fit"]["cfi"] - b["fit"]["cfi"], "scaled": False, "nesting": "verified" if nested else "unverified",
-                 "warnings": [] if nested else ["Nie stwierdzono zawierania wolnych parametrów — upewnij się, że modele są zagnieżdżone."]}
+                 "warnings": [] if nested else ["Nie stwierdzono zawierania wolnych parametrów - upewnij się, że modele są zagnieżdżone."]}
             ca, cb = a["fit"].get("scaling"), b["fit"].get("scaling")
             if ca and cb:
                 # Satorra-Bentler (2001) scaled difference, as lavaan::anova() for MLM
@@ -636,7 +636,7 @@ def compare_models(models, part="cfa", estimator="ML"):
                     # niedodatni czynnik skalujący: test skalowany nie istnieje; nie podstawiamy wyniku ML
                     t.update({"dchi2": float("nan"), "dchi2_ml": d, "cd": cd, "p": float("nan"), "scaled": False, "invalid": True,
                               "method": "Satorra-Bentler 2001"})
-                    t["warnings"].append("Czynnik skalujący różnicy jest niedodatni — skalowanego testu Δχ² nie można obliczyć "
+                    t["warnings"].append("Czynnik skalujący różnicy jest niedodatni - skalowanego testu Δχ² nie można obliczyć "
                                          "(rozważ test Satorry–Bentlera, 2010).")
                 if "cfi_scaled" in a["fit"] and "cfi_scaled" in b["fit"]:
                     t["dcfi"] = a["fit"]["cfi_scaled"] - b["fit"]["cfi_scaled"]

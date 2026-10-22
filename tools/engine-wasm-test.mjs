@@ -100,7 +100,7 @@ const tCmp = (Date.now() - tcm) / 1000;
 check('porównanie podejść', cmp[0].rows.every((r, i) => close(r.est, FIX['job:compare'][0].rows[i].est, 1e-3)), cmp[0].rows.map((r) => r.id + '=' + r.est.toFixed(3)).join(' '));
 const tAll = (Date.now() - t1) / 1000;
 
-for (const r of results) console.log(`${r.ok ? 'OK  ' : 'BŁĄD'} ${r.name}${r.ok ? '' : '  — ' + (r.detail || '')}`);
+for (const r of results) console.log(`${r.ok ? 'OK  ' : 'BŁĄD'} ${r.name}${r.ok ? '' : '  - ' + (r.detail || '')}`);
 console.log(`\nPyodide ${versions.pyodide} · numpy ${versions.numpy} · scipy ${versions.scipy} · pandas ${versions.pandas}`);
 console.log(`Czasy [s]: start ${tReady.toFixed(1)} · EFA ${tEfa.toFixed(1)} · CFA ${tCfa.toFixed(2)} · bootstrap 30 ${tBoot.toFixed(1)} · porównanie 20×7 ${tCmp.toFixed(1)} · cała ścieżka ${tAll.toFixed(1)}`);
 const failed = results.filter((r) => !r.ok).length;

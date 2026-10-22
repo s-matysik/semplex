@@ -70,9 +70,9 @@ export default function RelScreen() {
   const insp = cur ? (
     <>
       <div className="eyebrow">Analiza pozycji</div>
-      <h2 className="sub">{cur.id} — {cur.name}</h2>
+      <h2 className="sub">{cur.id} - {cur.name}</h2>
       <div className="row tight"><Verdict level={grade(cur.omega, RULES.omega)}>ω = {n2(cur.omega)}</Verdict><span className="subtle">α = {n2(cur.alpha)}</span></div>
-      <p className="subtle">Odznacz pozycję, aby zobaczyć ω po jej usunięciu. To symulacja — dane i skala się nie zmieniają.</p>
+      <p className="subtle">Odznacz pozycję, aby zobaczyć ω po jej usunięciu. To symulacja - dane i skala się nie zmieniają.</p>
       {cur.item_rows.map((it) => {
         const off = !!sim[cur.id + ':' + it.item];
         const gain = it.omega_del != null ? it.omega_del - cur.omega : null;
@@ -81,12 +81,12 @@ export default function RelScreen() {
             <div className="row tight">
               <Checkbox checked={!off} onChange={(c) => setSim(Object.assign({}, sim, { [cur.id + ':' + it.item]: !c }))} label={<><span className="mono">{it.item}</span> <span className="muted">{it.label}</span></>} ariaLabel={`Uwzględnij pozycję ${it.item}`} />
             </div>
-            <div className="subtle">λ = {n2(it.loading)} · r(pozycja–reszta) = {n2(it.r_ir)} · ω bez pozycji = {it.omega_del == null ? '—' : n2(it.omega_del)}
+            <div className="subtle">λ = {n2(it.loading)} · r(pozycja–reszta) = {n2(it.r_ir)} · ω bez pozycji = {it.omega_del == null ? '-' : n2(it.omega_del)}
               {gain != null && gain > 0.005 ? <> <Badge tone="ok" icon="ok">ω +{n2(gain)}</Badge></> : null}</div>
             {off ? (
               <Interpretation tone={gain > 0.005 ? 'warn' : 'info'} title={it.omega_del == null ? 'Skala nie może mieć mniej niż dwóch pozycji' : `Bez ${it.item}: ω = ${n2(it.omega_del)} (${gain >= 0 ? '+' : '−'}${n2(Math.abs(gain))})`}
                 actions={it.omega_del != null && cur.k > 2 ? <Button size="sm" variant="secondary" icon="trash" onClick={() => setConfirm({ scale: cur.id, item: it.item, gain })}>Usuń ze skali</Button> : null}>
-                {it.omega_del == null ? 'Zostaw pozycję w skali.' : gain > 0.005 ? `Zysk ${n2(gain)} warto zestawić z utratą treści: skala zostanie z ${cur.k - 1} pozycjami.` : 'Usunięcie nie poprawia rzetelności — zostaw pozycję.'}
+                {it.omega_del == null ? 'Zostaw pozycję w skali.' : gain > 0.005 ? `Zysk ${n2(gain)} warto zestawić z utratą treści: skala zostanie z ${cur.k - 1} pozycjami.` : 'Usunięcie nie poprawia rzetelności - zostaw pozycję.'}
               </Interpretation>
             ) : null}
           </div>
@@ -107,7 +107,7 @@ export default function RelScreen() {
       {!r ? <Loading /> : (
         <>
           <div className="tiles">
-            {r.scales.slice(0, 4).map((s) => <StatTile key={s.id} label={`${s.id} — ${s.name}`} value={n2(s.omega)} unit="ω" icon="reliability" tone={grade(s.omega, RULES.omega)} meter={s.omega} note={`α = ${n2(s.alpha)} [${n2(s.alpha_lo)}; ${n2(s.alpha_hi)}] · ${s.k} poz.`} />)}
+            {r.scales.slice(0, 4).map((s) => <StatTile key={s.id} label={`${s.id} - ${s.name}`} value={n2(s.omega)} unit="ω" icon="reliability" tone={grade(s.omega, RULES.omega)} meter={s.omega} note={`α = ${n2(s.alpha)} [${n2(s.alpha_lo)}; ${n2(s.alpha_hi)}] · ${s.k} poz.`} />)}
           </div>
           <Interpretation tone={weak.length ? 'warn' : 'good'} title={weak.length ? `Rzetelność poniżej 0,70: ${weak.map((s) => s.id).join(', ')}` : 'Wszystkie skale są rzetelne'} source="ω: McDonald (1999); progi: Nunnally (1978)"
             actions={<Term term="Dlaczego ω, a nie α?" definition="α zakłada równe ładunki wszystkich pozycji (tau-równoważność); ω liczy rzetelność z ładunków modelu i nie zaniża jej przy nierównych ładunkach." source="McNeish (2018)" />}>
@@ -120,7 +120,7 @@ export default function RelScreen() {
                 min={0.4} max={1} tickStep={0.1} axisLabel="Rzetelność" selected={cur && cur.id} onSelect={(id) => { setSel(id); setDrawer(true); }} legend tooltip fluid label="Rzetelność skal na tle progów" />
             </Panel>
             {v ? (
-              <Panel title={<Term term="HTMT i √AVE" definition="HTMT < 0,85 i √AVE większe od korelacji z innymi czynnikami świadczą o trafności różnicowej." source="Henseler i in. (2015); Fornell i Larcker (1981)">Trafność różnicowa</Term>} subtitle="Pod przekątną korelacje czynników, nad — HTMT, na przekątnej √AVE">
+              <Panel title={<Term term="HTMT i √AVE" definition="HTMT < 0,85 i √AVE większe od korelacji z innymi czynnikami świadczą o trafności różnicowej." source="Henseler i in. (2015); Fornell i Larcker (1981)">Trafność różnicowa</Term>} subtitle="Pod przekątną korelacje czynników, nad - HTMT, na przekątnej √AVE">
                 <ValidityMatrix factors={v.factors} ave={v.rows.map((x) => x.ave)} phi={v.phi} htmt={v.htmt} htmtCut={0.85} htmtNear={0.8} />
               </Panel>
             ) : <Panel title="Trafność różnicowa"><span className="muted">{r.validity && r.validity.error ? r.validity.error : 'Potrzebne są co najmniej dwie skale.'}</span></Panel>}
@@ -137,7 +137,7 @@ export default function RelScreen() {
               </Panel>
               <Interpretation tone={badHtmt.length || badAve.length ? 'warn' : 'good'} title={badHtmt.length ? 'Część skal słabo się od siebie różni' : badAve.length ? 'Trafność zbieżna wymaga uwagi' : 'Trafność zbieżna i różnicowa są spełnione'} source="Henseler, Ringle i Sarstedt (2015)">
                 {badHtmt.length ? `HTMT ≥ 0,85: ${badHtmt.join(', ')}. Rozważ połączenie skal albo sprawdź pozycje o podobnej treści. ` : ''}
-                {badAve.length ? `AVE < 0,50: ${badAve.map((x) => x.factor + ' (' + n2(x.ave) + ')').join(', ')} — pozycje wyjaśniają mniej niż połowę wariancji czynnika. ` : ''}
+                {badAve.length ? `AVE < 0,50: ${badAve.map((x) => x.factor + ' (' + n2(x.ave) + ')').join(', ')} - pozycje wyjaśniają mniej niż połowę wariancji czynnika. ` : ''}
                 {!badHtmt.length && !badAve.length ? `AVE od ${n2(Math.min(...v.rows.map((x) => x.ave)))} do ${n2(Math.max(...v.rows.map((x) => x.ave)))}; największy HTMT = ${n2(Math.max(...v.htmt.flatMap((row, i) => row.filter((_, j) => j > i))))}.` : ''}
               </Interpretation>
             </>

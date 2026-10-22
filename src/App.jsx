@@ -18,7 +18,7 @@ import ReportScreen from './screens/Report.jsx';
 import LogScreen from './screens/Log.jsx';
 import PlannedScreen from './screens/Planned.jsx';
 
-const LABELS = { data: 'Dane i czyszczenie', stats: 'Opisowe i testy', rel: 'Rzetelność i trafność', efa: 'EFA', cfa: 'CFA', sem: 'SEM — edytor modelu',
+const LABELS = { data: 'Dane i czyszczenie', stats: 'Opisowe i testy', rel: 'Rzetelność i trafność', efa: 'EFA', cfa: 'CFA', sem: 'SEM - edytor modelu',
   med: 'Mediacja i moderacja', bridge: 'Porównanie podejść', groups: 'Porównanie grup', power: 'Moc i wielkość próby', pls: 'PLS-SEM, IPMA, NCA',
   ml: 'Modele wielopoziomowe', report: 'Raport', log: 'Dziennik decyzji' };
 
@@ -113,7 +113,7 @@ const METHODS = [
   ['rel', 'ω McDonalda i α Cronbacha', 'reliability', 'omega alpha reliability psych semTools'], ['rel', 'CR, AVE i HTMT', 'reliability', 'validity fornell larcker htmt'],
   ['efa', 'Analiza równoległa i konsensus kryteriów', 'efa', 'parallel analysis fa.parallel hull map'], ['efa', 'EFA z rotacją oblimin / geomin / promax', 'efa', 'factor analysis fa psych rotation'],
   ['cfa', 'Konfirmacyjna analiza czynnikowa', 'cfa', 'cfa lavaan confirmatory'], ['cfa', 'Indeksy modyfikacji', 'cfa', 'modification indices modindices mi'],
-  ['sem', 'Edytor modelu SEM', 'sem', 'sem lavaan path structural'], ['med', 'Mediacja — szablon 4 (PROCESS)', 'mediation', 'mediation indirect process model 4'],
+  ['sem', 'Edytor modelu SEM', 'sem', 'sem lavaan path structural'], ['med', 'Mediacja - szablon 4 (PROCESS)', 'mediation', 'mediation indirect process model 4'],
   ['med', 'Moderacja z obszarem Johnsona-Neymana', 'mediation', 'moderation interaction johnson neyman model 1'],
   ['bridge', 'Porównanie podejść: sumy, SAM, ESEM, SEM', 'bridge', 'sam esem croon factor scores compare approaches'],
   ['report', 'Raport APA (PL/EN)', 'report', 'report apa docx html'], ['log', 'Dziennik decyzji', 'history', 'decision log history undo'],
@@ -145,7 +145,7 @@ function HelpDialog() {
       actions={<Button variant="primary" onClick={() => setState({ help: false })}>Zamknij</Button>}
       footNote={v ? `SEMplex ${v.semplex} · Pyodide ${v.pyodide} · numpy ${v.numpy} · scipy ${v.scipy} · pandas ${v.pandas}` : undefined}>
       <div className="stack">
-        <p className="lead">SEMplex prowadzi przez ścieżkę Dane → Rzetelność → EFA → CFA → SEM → Raport. Obliczenia wykonuje silnik w Pythonie uruchomiony w Twojej przeglądarce (WebAssembly) — dane nie są wysyłane na żaden serwer.</p>
+        <p className="lead">SEMplex prowadzi przez ścieżkę Dane → Rzetelność → EFA → CFA → SEM → Raport. Obliczenia wykonuje silnik w Pythonie uruchomiony w Twojej przeglądarce (WebAssembly) - dane nie są wysyłane na żaden serwer.</p>
         <table className="tbl"><tbody>
           <tr><td><Kbd>Ctrl</Kbd> <Kbd>K</Kbd></td><td>Paleta poleceń: metody, moduły, polecenia (<span className="mono">&gt;</span> polecenia, <span className="mono">?</span> pomoc)</td></tr>
           <tr><td><Kbd>Ctrl</Kbd> <Kbd>S</Kbd></td><td>Zapisz projekt do pliku .sxp</td></tr>

@@ -53,7 +53,7 @@ def _term(term, line):
         else:
             raise SyntaxIssue((line, f"Nie rozpoznano modyfikatora „{mod}”."))
     if term == "1":
-        return None, mods  # wyraz wolny — struktura średnich nie jest obsługiwana
+        return None, mods  # wyraz wolny - struktura średnich nie jest obsługiwana
     if not re.fullmatch(_NAME, term):
         raise SyntaxIssue((line, f"„{term}” nie jest poprawną nazwą zmiennej."))
     return term, mods
@@ -70,7 +70,7 @@ def parse(text):
                 break
         if op is None:
             if any(c in st for c in ("==", "<", ">")):
-                res["warnings"].append({"line": line, "message": "Ograniczenia nierówności i równości wyrażeń nie są jeszcze obsługiwane — wiersz pominięto.", "level": "warn"})
+                res["warnings"].append({"line": line, "message": "Ograniczenia nierówności i równości wyrażeń nie są jeszcze obsługiwane - wiersz pominięto.", "level": "warn"})
             else:
                 res["errors"].append({"line": line, "message": "Brak operatora: użyj =~ (pomiar), ~ (regresja), ~~ (kowariancja) albo := (efekt)."})
             continue
@@ -99,7 +99,7 @@ def parse(text):
             continue
         for name, mods in terms:
             if name is None:
-                res["warnings"].append({"line": line, "message": "Wyrazy wolne (~ 1) są pomijane — model nie ma struktury średnich.", "level": "warn"})
+                res["warnings"].append({"line": line, "message": "Wyrazy wolne (~ 1) są pomijane - model nie ma struktury średnich.", "level": "warn"})
                 continue
             item = {"lhs": lhs, "rhs": name, "line": line, **mods}
             key = {"=~": "measurement", "~": "regressions", "~~": "covariances"}[op]

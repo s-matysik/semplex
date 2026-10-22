@@ -2,7 +2,7 @@
 
 Model populacyjny (standaryzowane zmienne latentne):
   SAT, LOY, TRU, VAL z rozkładu normalnego o macierzy korelacji Φ (r od 0,29 do 0,58)
-  ENG — słaby czynnik zaangażowania (Q13–Q15, Q17, Q18); Q16 ładuje SAT i LOY.
+  ENG - słaby czynnik zaangażowania (Q13–Q15, Q17, Q18); Q16 ładuje SAT i LOY.
 Q6 jest odwrócona treścią (ujemny ładunek na LOY). 12 nieuważnych respondentów (jednakowe
 odpowiedzi, krótki czas), ok. 2% braków MCAR, kolumna e-mail do pokazania ochrony danych osobowych.
 Uruchom:  python tools/make_sample.py

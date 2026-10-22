@@ -180,7 +180,7 @@
   ],
   "recommended": "sam",
   "reasons": [
-   "Predyktory s\u0105 bardzo silnie skorelowane na poziomie latentnym (r = 0,89). Efekty cz\u0105stkowe s\u0105 niestabilne i zale\u017c\u0105 od podej\u015bcia \u2014 ostro\u017cnie interpretuj ich oddzielne wk\u0142ady. \u0141\u0105czenie konstrukt\u00f3w wymaga uzasadnienia teoretycznego, a nie tylko wysokiej korelacji.",
+   "Predyktory s\u0105 bardzo silnie skorelowane na poziomie latentnym (r = 0,89). Efekty cz\u0105stkowe s\u0105 niestabilne i zale\u017c\u0105 od podej\u015bcia - ostro\u017cnie interpretuj ich oddzielne wk\u0142ady. \u0141\u0105czenie konstrukt\u00f3w wymaga uzasadnienia teoretycznego, a nie tylko wysokiej korelacji.",
    "Regu\u0142a heurystyczna (N < 300 lub CFI < 0,90): sugerujemy obejrze\u0107 wynik SAM, kt\u00f3ry w lokalnej estymacji ogranicza przenoszenie b\u0142\u0119dnej specyfikacji jednej skali na \u015bcie\u017cki strukturalne. Tu N = 250, CFI = 0,967.",
    "Sugestia nie zast\u0119puje oceny modelu pomiarowego ani nie wskazuje wyniku \u201eprawdziwego\u201d."
   ],
@@ -427,7 +427,7 @@
   ],
   "recommended": "sam",
   "reasons": [
-   "Predyktory s\u0105 bardzo silnie skorelowane na poziomie latentnym (r = 0,89). Efekty cz\u0105stkowe s\u0105 niestabilne i zale\u017c\u0105 od podej\u015bcia \u2014 ostro\u017cnie interpretuj ich oddzielne wk\u0142ady. \u0141\u0105czenie konstrukt\u00f3w wymaga uzasadnienia teoretycznego, a nie tylko wysokiej korelacji.",
+   "Predyktory s\u0105 bardzo silnie skorelowane na poziomie latentnym (r = 0,89). Efekty cz\u0105stkowe s\u0105 niestabilne i zale\u017c\u0105 od podej\u015bcia - ostro\u017cnie interpretuj ich oddzielne wk\u0142ady. \u0141\u0105czenie konstrukt\u00f3w wymaga uzasadnienia teoretycznego, a nie tylko wysokiej korelacji.",
    "Regu\u0142a heurystyczna (N < 300 lub CFI < 0,90): sugerujemy obejrze\u0107 wynik SAM, kt\u00f3ry w lokalnej estymacji ogranicza przenoszenie b\u0142\u0119dnej specyfikacji jednej skali na \u015bcie\u017cki strukturalne. Tu N = 250, CFI = 0,967.",
    "Sugestia nie zast\u0119puje oceny modelu pomiarowego ani nie wskazuje wyniku \u201eprawdziwego\u201d."
   ],

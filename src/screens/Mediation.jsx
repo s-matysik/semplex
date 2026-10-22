@@ -78,10 +78,10 @@ export default function MedScreen() {
           <StatTile label="Efekt pośredni a·b" value={n3(d.ind.std)} icon="mediation" tone={indSig ? 'good' : 'ok'} note={b.ind_std ? `95% CI ${ci(b.ind_std[0], b.ind_std[1], 3)} · bootstrap` : 'czekaj na bootstrap'} />
           <StatTile label="Efekt bezpośredni c′" value={n3(r.paths.c.std)} icon="path" note={`${pTxt(r.paths.c.p)}`} />
           <StatTile label="Efekt całkowity" value={n3(d.total.std)} icon="arrow-right" note={b.total_std ? `95% CI ${ci(b.total_std[0], b.total_std[1], 3)}` : ''} />
-          <StatTile label="Proporcja zapośredniczona" value={r.prop_mediated != null ? `${Math.round(100 * r.prop_mediated)}%` : '—'} icon="layers" note="a·b / c (miara opisowa)" />
+          <StatTile label="Proporcja zapośredniczona" value={r.prop_mediated != null ? `${Math.round(100 * r.prop_mediated)}%` : '-'} icon="layers" note="a·b / c (miara opisowa)" />
         </div>
         <Interpretation tone={indSig ? 'good' : 'info'} title={`${v.spec.m} pośredniczy w związku ${v.spec.x} z ${v.spec.y}: ${type}`} source="Bootstrap percentylowy: Preacher i Hayes (2008); typy mediacji: Zhao, Lynch i Chen (2010)">
-          Efekt pośredni wynosi β = <b>{n3(d.ind.std)}</b>{b.ind_std ? <>, 95% CI [{n3(b.ind_std[0])}; {n3(b.ind_std[1])}] — przedział {indSig ? 'nie obejmuje' : 'obejmuje'} zera</> : ''}. Efekt bezpośredni c′ = {n3(r.paths.c.std)} ({pTxt(r.paths.c.p)}). {r.latent ? 'Model na zmiennych latentnych — ścieżki są wolne od błędu pomiaru.' : 'Model na średnich skal — ścieżki są zaniżone przez błąd pomiaru.'}
+          Efekt pośredni wynosi β = <b>{n3(d.ind.std)}</b>{b.ind_std ? <>, 95% CI [{n3(b.ind_std[0])}; {n3(b.ind_std[1])}] - przedział {indSig ? 'nie obejmuje' : 'obejmuje'} zera</> : ''}. Efekt bezpośredni c′ = {n3(r.paths.c.std)} ({pTxt(r.paths.c.p)}). {r.latent ? 'Model na zmiennych latentnych - ścieżki są wolne od błędu pomiaru.' : 'Model na średnich skal - ścieżki są zaniżone przez błąd pomiaru.'}
         </Interpretation>
         <div className="cols">
           <Panel title="Diagram statystyczny" subtitle="Współczynniki standaryzowane">
@@ -148,10 +148,10 @@ export default function MedScreen() {
       <ChoiceGroup options={TEMPLATES} value={tpl} onChange={setTpl} columns={5} label="Szablon modelu" />
       <Panel title="Zmienne">
         <div className="form">
-          <Field label="X — predyktor"><Select value={x} onChange={(e) => setX(e.target.value)} options={options} /></Field>
-          {tpl !== '1' ? <Field label="M — mediator"><Select value={m} onChange={(e) => setM(e.target.value)} options={options} /></Field> : null}
-          {tpl !== '4' ? <Field label="W — moderator"><Select value={w} onChange={(e) => setW(e.target.value)} options={options} /></Field> : null}
-          <Field label="Y — zmienna zależna"><Select value={y} onChange={(e) => setY(e.target.value)} options={options} /></Field>
+          <Field label="X - predyktor"><Select value={x} onChange={(e) => setX(e.target.value)} options={options} /></Field>
+          {tpl !== '1' ? <Field label="M - mediator"><Select value={m} onChange={(e) => setM(e.target.value)} options={options} /></Field> : null}
+          {tpl !== '4' ? <Field label="W - moderator"><Select value={w} onChange={(e) => setW(e.target.value)} options={options} /></Field> : null}
+          <Field label="Y - zmienna zależna"><Select value={y} onChange={(e) => setY(e.target.value)} options={options} /></Field>
         </div>
         <div className="row" style={{ marginTop: 12 }}>
           {tpl === '4' ? <Switch label="Zmienne latentne (SEM)" hint="Wyłącz, aby liczyć na średnich skal jak PROCESS" checked={latent} onChange={setLatent} /> : null}

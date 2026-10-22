@@ -16,7 +16,7 @@ export function Head({ eyebrow, title, meta, children }) {
   );
 }
 
-/* Ekran z kolumną inspektora (poniżej 1280 px — szuflada). */
+/* Ekran z kolumną inspektora (poniżej 1280 px - szuflada). */
 export function Screen({ children, inspector, inspectorTitle, inspectorOpen, onInspectorClose }) {
   const narrow = useMedia('(max-width: 1279px)');
   const [own, setOwn] = useState(false);
@@ -68,7 +68,7 @@ export function StaleNote({ stale, onRun, running }) {
   return (
     <Interpretation tone="warn" title="Wyniki są nieaktualne" icon="refresh"
       actions={onRun ? <Button size="sm" variant="secondary" icon="refresh" loading={running} onClick={onRun}>Przelicz teraz</Button> : null}>
-      Od ostatniego uruchomienia zmieniły się dane, model albo ustawienia. Liczby poniżej pochodzą z poprzedniego przebiegu — nie raportuj ich przed przeliczeniem.
+      Od ostatniego uruchomienia zmieniły się dane, model albo ustawienia. Liczby poniżej pochodzą z poprzedniego przebiegu - nie raportuj ich przed przeliczeniem.
     </Interpretation>
   );
 }

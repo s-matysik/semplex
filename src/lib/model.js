@@ -116,7 +116,7 @@ export function cfaSyntaxFromScales(scales, skip = []) {
   return Object.entries(scales)
     .map(([f, items]) => [f, items.filter((i) => !skip.includes(i))])
     .filter(([, items]) => items.length > 0)
-    .map(([f, items]) => (items.length === 1 ? `# ${f} =~ ${items[0]}  (czynnik z jedną pozycją — pominięty)` : `${f} =~ ${items.join(' + ')}`))
+    .map(([f, items]) => (items.length === 1 ? `# ${f} =~ ${items[0]}  (czynnik z jedną pozycją - pominięty)` : `${f} =~ ${items.join(' + ')}`))
     .join('\n');
 }
 

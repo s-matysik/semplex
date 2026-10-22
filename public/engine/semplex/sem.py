@@ -405,7 +405,7 @@ def fit_model(text, data=None, cov=None, n=None, estimator="ML", std_lv=False, s
             Iinv = np.linalg.inv(Info)
         except np.linalg.LinAlgError:
             Iinv = np.linalg.pinv(Info)
-            out.warnings_se = "Macierz informacji jest osobliwa — model może być nieidentyfikowany empirycznie."
+            out.warnings_se = "Macierz informacji jest osobliwa - model może być nieidentyfikowany empirycznie."
         acov = Iinv / N
         if estimator in ("MLM", "MLR") and X is not None:
             Dup, pairs = _duplication(p)

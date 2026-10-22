@@ -1,4 +1,4 @@
-// SEMplex — adapter ES dla aplikacji (Vite, Next, webpack 5).
+// SEMplex - adapter ES dla aplikacji (Vite, Next, webpack 5).
 // bundle.js jest klasycznym skryptem, który czyta window.React i ustawia window.SEMplex.
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
