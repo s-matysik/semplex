@@ -1,5 +1,5 @@
-"""Testy zgodności silnika SEMplex z lavaan (wartości referencyjne z samouczka lavaan, Rosseel 2012).
-Uruchom:  python -m pytest tests -q
+"""Compatibility tests for the SEMplex engine with lavaan (reference values from the lavaan tutorial, Rosseel 2012).
+Run:  python -m pytest tests -q
 """
 import json
 import os
@@ -98,7 +98,7 @@ def test_efa_recovers_three_factors(hs):
     res = E.efa(R, 3, "minres", "oblimin")
     L = np.abs(res["loadings"])
     groups = [set(np.argmax(L[i:i + 3], 1)) for i in (0, 3, 6)]
-    assert all(len(g) == 1 for g in groups)  # każda trójka pozycji na jednym czynniku
+    assert all(len(g) == 1 for g in groups)  # each triplet of items on one factor
     assert E.kmo(R)[0] == pytest.approx(0.752, abs=2e-3)
 
 

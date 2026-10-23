@@ -1,4 +1,4 @@
-name: Buduj i publikuj na GitHub Pages
+name: Build and deploy to GitHub Pages
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Testy silnika (zgodność z lavaan)
+      - name: Engine tests (agreement with lavaan)
         run: |
           pip install numpy scipy pandas openpyxl pytest
           python -m pytest tests -q
@@ -31,12 +31,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Zależności
+      - name: Dependencies
         run: npm install --no-audit --no-fund
-      - name: Budowanie
+      - name: Build
         run: npm run build
-      - name: Test interfejsu
+      - name: Interface test (Polish)
         run: npm run test:ui
+      - name: Interface test (English)
+        run: npm run test:ui
+        env:
+          SX_LANG: en
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

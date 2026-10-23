@@ -1,7 +1,7 @@
-/* Budowanie aplikacji SEMplex do folderu dist/ (statyczny hosting: GitHub Pages, Netlify, dowolny serwer).
-   Używa esbuild-wasm w tym samym procesie Node - bez procesów potomnych i bez binariów zależnych od systemu,
-   więc działa identycznie lokalnie i w GitHub Actions.
-   Uruchom:  node tools/build.mjs        (albo npm run build) */
+/* Building the SEMplex app into the dist/ folder (static hosting: GitHub Pages, Netlify, any server).
+   Uses esbuild-wasm in the same Node process - no child processes and no system-dependent binaries,
+   so it works identically locally and in GitHub Actions.
+   Run:  node tools/build.mjs        (or npm run build) */
 globalThis.self = globalThis;
 import fs from 'node:fs';
 import path from 'node:path';

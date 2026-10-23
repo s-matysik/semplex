@@ -1,8 +1,8 @@
-/* Wątek obliczeń: Pyodide (CPython w WebAssembly) + silnik SEMplex w Pythonie.
-   Dane trafiają tu z karty przeglądarki i nigdzie dalej - sieć służy tylko do pobrania środowiska. */
+/* Computation thread: Pyodide (CPython in WebAssembly) + the SEMplex engine in Python.
+   Data arrives here from the browser tab and goes nowhere else - the network is only used to download the environment. */
 const PYODIDE_VERSION = '0.29.5';
 const PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
-const FILES = ['__init__', 'syntax', 'sem', 'efa', 'data', 'measure', 'bridge', 'mediation', 'api'];
+const FILES = ['__init__', 'syntax', 'sem', 'efa', 'data', 'measure', 'bridge', 'mediation', 'i18n', 'api'];
 
 let py = null;
 let callPy = null;
@@ -15,7 +15,7 @@ async function init(engineUrl, version, indexURL, indexPath) {
   const base = indexURL || PYODIDE_URL;
   status('runtime', 0.04, 'Pobieranie środowiska Python (Pyodide ' + PYODIDE_VERSION + ')');
   const { loadPyodide } = await import(/* @vite-ignore */ base + 'pyodide.mjs');
-  py = await loadPyodide({ indexURL: indexPath || base });  // indexPath: tylko test w Node
+  py = await loadPyodide({ indexURL: indexPath || base });  // indexPath: Node test only
   status('packages', 0.35, 'Wczytywanie numpy, scipy i pandas');
   await py.loadPackage(['numpy', 'scipy', 'pandas'], { messageCallback: () => {}, errorCallback: () => {} });
   status('engine', 0.85, 'Wczytywanie silnika SEMplex');
@@ -36,7 +36,7 @@ async function init(engineUrl, version, indexURL, indexPath) {
 async function ensureExcel() {
   if (excelReady) return;
   status('packages', 0.5, 'Wczytywanie obsługi plików Excel');
-  // openpyxl nie należy do pakietów dystrybucji Pyodide - instalacja z PyPI (czysty Python)
+  // openpyxl is not part of the Pyodide distribution packages - install from PyPI (pure Python)
   await py.loadPackage('micropip', { messageCallback: () => {}, errorCallback: () => {} });
   await py.runPythonAsync("import micropip\nawait micropip.install('openpyxl')");
   excelReady = true;

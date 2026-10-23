@@ -1,10 +1,10 @@
-"""Silnik SEM: model RAM, estymacja ML z gradientem analitycznym, błędy standardowe
-(informacja oczekiwana lub sandwich Satorry-Bentlera), dopasowanie, rozwiązanie
-standaryzowane, efekty zdefiniowane, indeksy modyfikacji i bootstrap.
+"""SEM engine: RAM model, ML estimation with analytic gradient, standard errors
+(expected information or Satorra-Bentler sandwich), fit, standardized
+solution, defined effects, modification indices, and bootstrap.
 
-Konwencje zgodne z lavaan (domyślne cfa()/sem()): macierz kowariancji próby z dzielnikiem N,
-T = N * F_ML, pierwszy ładunek ustalony na 1, wolne kowariancje egzogenicznych zmiennych.
-Licencja MIT. Implementacja od zera.
+Conventions consistent with lavaan (default cfa()/sem()): sample covariance matrix with divisor N,
+T = N * F_ML, first loading fixed to 1, free covariances of exogenous variables.
+MIT license. From-scratch implementation.
 """
 import math
 import re
@@ -12,10 +12,11 @@ import numpy as np
 from scipy import optimize, stats
 
 from . import syntax
+from . import i18n as I18N
 
 
 class ModelError(Exception):
-    """Błąd specyfikacji: (komunikat, szczegóły techniczne)."""
+    """Specification error: (message, technical details)."""
 
 
 # --------------------------------------------------------------------------- specyfikacja
@@ -24,7 +25,7 @@ class Spec:
         p = syntax.parse(text)
         if p["errors"]:
             e = p["errors"][0]
-            raise ModelError(f"Wiersz {e['line']}: {e['message']}")
+            raise ModelError(I18N.T("Wiersz {p0}: {p1}", p0=e['line'], p1=e['message']))
         self.parsed = p
         self.warnings = list(p["warnings"])
         self.std_lv = std_lv
@@ -41,9 +42,9 @@ class Spec:
         obs = [v for v in names if v not in lvs]
         missing = [v for v in obs if v not in observed_available]
         if missing:
-            raise ModelError("Zmienne nie występują w danych ani nie są zdefiniowane jako latentne: " + ", ".join(missing))
+            raise ModelError(I18N.T("Zmienne nie występują w danych ani nie są zdefiniowane jako latentne: ") + ", ".join(missing))
         if not obs:
-            raise ModelError("Model nie zawiera zmiennych obserwowalnych.")
+            raise ModelError(I18N.T("Model nie zawiera zmiennych obserwowalnych."))
         order = [v for v in observed_available if v in obs]
         self.obs, self.lat = order, lvs
         self.vars = order + lvs
@@ -67,7 +68,7 @@ class Spec:
             seen[key] = len(params)
             params.append({"mat": mat, "i": i, "j": j, "op": op, "lhs": lhs, "rhs": rhs, **fields})
 
-        # ładunki
+        # loadings
         first = {}
         for m in P["measurement"]:
             lv, ind = m["lhs"], m["rhs"]
@@ -108,7 +109,7 @@ class Spec:
                 i, j = idx[exo[a]], idx[exo[b]]
                 if ("S", min(i, j), max(i, j)) not in seen:
                     add("S", i, j, "~~", exo[a], exo[b], {})
-        # kowariancje reszt czystych zmiennych zależnych (tylko po lewej stronie ~)
+        # residual covariances of pure dependent variables (only on the left side of ~)
         pure_y = [v for v in self.vars if v in lhs_reg and v not in rhs_reg and v not in indicators]
         for a in range(len(pure_y)):
             for b in range(a + 1, len(pure_y)):
@@ -116,7 +117,7 @@ class Spec:
                 if ("S", min(i, j), max(i, j)) not in seen:
                     add("S", i, j, "~~", pure_y[a], pure_y[b], {})
 
-        # odwzorowanie parametrów wolnych (wspólne etykiety = ograniczenie równości)
+        # mapping of free parameters (shared labels = equality constraint)
         free_index, labels = {}, {}
         k = 0
         for prm in params:
@@ -141,7 +142,7 @@ class Spec:
         for i in range(self.p):
             self.F[i, i] = 1.0
 
-    # macierze z wektora parametrów
+    # matrices from the parameter vector
     def matrices(self, theta):
         A = np.zeros((self.m, self.m))
         S = np.zeros((self.m, self.m))
@@ -208,7 +209,7 @@ def _fml(spec, theta, Sobs, logdetS):
 
 
 def dsigma(spec, theta):
-    """Pochodne Σ po każdym wolnym parametrze: tablica (q, p, p)."""
+    """Derivatives of Σ with respect to each free parameter: array (q, p, p)."""
     A, S = spec.matrices(theta)
     B = np.linalg.inv(np.eye(spec.m) - A)
     FB = spec.F @ B
@@ -248,7 +249,7 @@ def candidate_dsigma(spec, theta, cands):
     return out
 
 
-# --------------------------------------------------------------------------- wartości startowe
+# --------------------------------------------------------------------------- starting values
 def start_values(spec, Sobs):
     th = np.zeros(spec.q)
     set_ = np.zeros(spec.q, bool)
@@ -341,7 +342,7 @@ def _gamma(X, pairs):
 
 
 def fit_model(text, data=None, cov=None, n=None, estimator="ML", std_lv=False, se=True, theta0=None, mi=False, names=None):
-    """Szacuje model. data: DataFrame (kompletne przypadki) albo cov + n."""
+    """Estimates the model. data: DataFrame (complete cases) or cov + n."""
     if data is not None:
         avail = list(data.columns)
     else:
@@ -357,10 +358,10 @@ def fit_model(text, data=None, cov=None, n=None, estimator="ML", std_lv=False, s
         Sobs = np.asarray(cov, float)[np.ix_(idx, idx)]
     Sobs = np.atleast_2d(Sobs)
     if spec.df() < 0:
-        raise ModelError(f"Model nie jest identyfikowany: {spec.q} parametrów przy {spec.p * (spec.p + 1) // 2} momentach (df = {spec.df()}).")
+        raise ModelError(I18N.T("Model nie jest identyfikowany: {p0} parametrów przy {p1} momentach (df = {p2}).", p0=spec.q, p1=spec.p * (spec.p + 1) // 2, p2=spec.df()))
     sign, logdetS = np.linalg.slogdet(Sobs)
     if sign <= 0:
-        raise ModelError("Macierz kowariancji próby nie jest dodatnio określona (np. zmienna stała albo liniowo zależne zmienne).")
+        raise ModelError(I18N.T("Macierz kowariancji próby nie jest dodatnio określona (np. zmienna stała albo liniowo zależne zmienne)."))
     th0 = start_values(spec, Sobs) if theta0 is None else np.array(theta0, float)
     fun = lambda t: _fml(spec, t, Sobs, logdetS)
     res = optimize.minimize(fun, th0, jac=True, method="L-BFGS-B", options={"maxiter": 10000, "ftol": 1e-14, "gtol": 1e-9, "maxcor": 30})
@@ -381,7 +382,7 @@ def fit_model(text, data=None, cov=None, n=None, estimator="ML", std_lv=False, s
     p, q, N = spec.p, spec.q, n
     T = N * f
     dfm = spec.df()
-    # model bazowy (niezależności)
+    # baseline model (independence)
     Tb = N * (np.sum(np.log(np.diag(Sobs))) - logdetS)
     dfb = p * (p - 1) // 2
     out.chi2, out.df, out.chi2_base, out.df_base = float(T), int(dfm), float(Tb), int(dfb)
@@ -396,7 +397,7 @@ def fit_model(text, data=None, cov=None, n=None, estimator="ML", std_lv=False, s
     Si = np.linalg.inv(Sigma)
     D = dsigma(spec, theta) if q else np.zeros((0, p, p))
     M = np.einsum("ab,kbc->kac", Si, D)
-    Info = 0.5 * np.einsum("kab,lba->kl", M, M)  # informacja na obserwację
+    Info = 0.5 * np.einsum("kab,lba->kl", M, M)  # information per observation
     out.info = Info
     scale = 1.0
     acov = None
@@ -405,7 +406,7 @@ def fit_model(text, data=None, cov=None, n=None, estimator="ML", std_lv=False, s
             Iinv = np.linalg.inv(Info)
         except np.linalg.LinAlgError:
             Iinv = np.linalg.pinv(Info)
-            out.warnings_se = "Macierz informacji jest osobliwa - model może być nieidentyfikowany empirycznie."
+            out.warnings_se = I18N.T("Macierz informacji jest osobliwa - model może być nieidentyfikowany empirycznie.")
         acov = Iinv / N
         if estimator in ("MLM", "MLR") and X is not None:
             Dup, pairs = _duplication(p)
@@ -532,11 +533,11 @@ _SAFE = re.compile(r"^[A-Za-z0-9_.+\-*/() ]+$")
 
 def eval_expr(expr, values):
     if not _SAFE.match(expr):
-        raise ModelError("Niedozwolone znaki w wyrażeniu efektu.")
+        raise ModelError(I18N.T("Niedozwolone znaki w wyrażeniu efektu."))
     names = re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", expr)
     for nm in names:
         if nm not in values:
-            raise ModelError(f"Etykieta „{nm}” z wyrażenia nie występuje w modelu.")
+            raise ModelError(I18N.T("Etykieta „{p0}” z wyrażenia nie występuje w modelu.", p0=nm))
     safe = expr
     for nm in sorted(set(names), key=len, reverse=True):
         safe = re.sub(rf"(?<![A-Za-z0-9_.]){re.escape(nm)}(?![A-Za-z0-9_.])", f"__v['{nm}']", safe)
@@ -602,8 +603,8 @@ def param_table(o, ci_level=0.95):
                      "free": k is not None, "est": float(est), "se": float(se), "z": float(zval), "p": float(p),
                      "ci_lo": float(est - z * se) if k is not None else float(est), "ci_hi": float(est + z * se) if k is not None else float(est),
                      "std": float(std), "std_se": float(sse),
-                     # standaryzowany parametr ma własną niepewność także wtedy, gdy wersja niestandaryzowana jest ustalona
-                     # (np. ładunek markerowy = 1); CI = std ± z·SE(std), jak standardizedSolution() w lavaan
+                     # a standardized parameter has its own uncertainty even when the unstandardized version is fixed
+                     # (e.g. marker loading = 1); CI = std ± z·SE(std), like standardizedSolution() in lavaan
                      "std_lo": float(std - z * sse) if np.isfinite(sse) and sse > 1e-10 else float(std),
                      "std_hi": float(std + z * sse) if np.isfinite(sse) and sse > 1e-10 else float(std)})
     return rows
@@ -671,7 +672,7 @@ def modification_indices(o, min_mi=3.84, limit=30):
 
 # --------------------------------------------------------------------------- bootstrap
 def bootstrap(text, data, R=500, seed=1, estimator="ML", std_lv=False, progress=None, targets=None):
-    """Bootstrap nieparametryczny: zwraca percentylowe 95% CI dla parametrów i efektów."""
+    """Nonparametric bootstrap: returns percentile 95% CIs for parameters and effects."""
     base = fit_model(text, data=data, estimator="ML", std_lv=std_lv, se=False)
     rng = np.random.default_rng(seed)
     X = data.reset_index(drop=True)

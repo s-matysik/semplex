@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// base './' - aplikacja działa z dowolnej ścieżki (GitHub Pages: https://<użytkownik>.github.io/<repozytorium>/).
-// semplex-ui ładuje bundle przez top-level await, więc cel kompilacji to ES2022.
+// base './' - the application works from any path (GitHub Pages: https://<user>.github.io/<repository>/).
+// semplex-ui loads the bundle via top-level await, so the compilation target is ES2022.
 export default defineConfig({
   base: './',
   plugins: [react()],

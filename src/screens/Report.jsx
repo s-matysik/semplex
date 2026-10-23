@@ -5,6 +5,7 @@ import { Head, Screen, NeedData } from '../ui.jsx';
 import { fitSentence } from '../lib/fit.js';
 import { download, copyText } from '../lib/model.js';
 import { methodsParagraph } from './Bridge.jsx';
+import { t as tr } from '../i18n/index.js';
 
 const T = {
   pl: { title: 'Wyniki', sample: 'Próba', meas: 'Model pomiarowy', rel: 'Rzetelność i trafność', efa: 'Eksploracyjna analiza czynnikowa', struct: 'Model strukturalny', med: 'Mediacja', bridge: 'Porównanie podejść', log: 'Decyzje analityczne', soft: 'Oprogramowanie',
@@ -14,8 +15,8 @@ const T = {
 };
 
 function useFmt(lang) {
-  const o = lang === 'en' ? { decimal: '.' } : {};
-  const lz = lang === 'en' ? { decimal: '.', leadingZero: false } : {};
+  const o = lang === 'en' ? { decimal: '.' } : { decimal: ',' };
+  const lz = lang === 'en' ? { decimal: '.', leadingZero: false } : { decimal: ',' };
   return {
     d2: (v) => (v == null ? '-' : format.num(v, 2, o)), d3: (v) => (v == null ? '-' : format.num(v, 3, o)),
     b2: (v) => (v == null ? '-' : format.num(v, 2, lz)), b3: (v) => (v == null ? '-' : format.num(v, 3, lz)),
@@ -29,6 +30,7 @@ export default function ReportScreen() {
   const [inc, setInc] = useState({ efa: true, rel: true, cfa: true, sem: true, med: true, bridge: true, log: true });
   const ref = useRef(null);
   const F = useFmt(lang);
+  const NO = lang === 'en' ? { decimal: '.' } : { decimal: ',' };
   const t = T[lang];
   if (!s.data) return <Screen><NeedData what="Raport składa się z wyników modułów." /></Screen>;
   const R = (k) => (s.results[k] && s.results[k].value ? s.results[k].value : null);
@@ -40,11 +42,11 @@ export default function ReportScreen() {
 
   const sections = [];
   sections.push(<section key="sample"><h2>{t.sample}</h2><p>{pl
-    ? `Analizowano odpowiedzi ${d.n} respondentów${d.n_excluded ? ` (z ${d.n_total}; wykluczono ${d.n_excluded} osób odpowiadających nieuważnie)` : ''}. Braki danych stanowiły ${format.num(100 * d.missing_pct, 1)}% odpowiedzi; ${cfa && cfa.missing_mode === 'em' ? 'CFA oszacowano z macierzy kowariancji z algorytmu EM (tryb niezwalidowany), pozostałe analizy modeli wykorzystywały przypadki kompletne' : 'analizy modeli wykorzystywały przypadki kompletne'}.${s.split.use && s.split.info ? ` Próbę losowo podzielono (ziarno ${s.split.info.seed}${s.split.info.strata ? `, warstwami według zmiennej ${s.split.info.strata}` : ''}) na część eksploracyjną (n = ${s.split.info.n_efa}) i walidacyjną (n = ${s.split.info.n_cfa}).` : ''}`
+    ? `Analizowano odpowiedzi ${d.n} respondentów${d.n_excluded ? ` (z ${d.n_total}; wykluczono ${d.n_excluded} osób odpowiadających nieuważnie)` : ''}. Braki danych stanowiły ${format.num(100 * d.missing_pct, 1, NO)}% odpowiedzi; ${cfa && cfa.missing_mode === 'em' ? 'CFA oszacowano z macierzy kowariancji z algorytmu EM (tryb niezwalidowany), pozostałe analizy modeli wykorzystywały przypadki kompletne' : 'analizy modeli wykorzystywały przypadki kompletne'}.${s.split.use && s.split.info ? ` Próbę losowo podzielono (ziarno ${s.split.info.seed}${s.split.info.strata ? `, warstwami według zmiennej ${s.split.info.strata}` : ''}) na część eksploracyjną (n = ${s.split.info.n_efa}) i walidacyjną (n = ${s.split.info.n_cfa}).` : ''}`
     : `Responses of ${d.n} participants were analyzed${d.n_excluded ? ` (of ${d.n_total}; ${d.n_excluded} careless respondents were excluded)` : ''}. Missing data accounted for ${format.num(100 * d.missing_pct, 1, { decimal: '.' })}% of responses; ${cfa && cfa.missing_mode === 'em' ? 'the CFA was estimated from an EM covariance matrix (unvalidated option); other model-based analyses used complete cases' : 'model-based analyses used complete cases'}.${s.split.use && s.split.info ? ` The sample was randomly split (seed ${s.split.info.seed}${s.split.info.strata ? `, stratified by ${s.split.info.strata}` : ''}) into an exploratory (n = ${s.split.info.n_efa}) and a validation half (n = ${s.split.info.n_cfa}).` : ''}`}</p></section>);
 
   if (inc.efa && efa) sections.push(<section key="efa"><h2>{t.efa}</h2><p>{pl
-    ? `EFA (${efa.extraction}, rotacja ${efa.rotation}, korelacje ${efa.corr === 'polychoric' ? 'polichoryczne' : 'Pearsona'}) przeprowadzono na ${efa.n} obserwacjach; KMO = ${F.d2(efa.kmo)}, test Bartletta χ²(${efa.bartlett.df}) = ${F.d2(efa.bartlett.chi2)}, ${F.p(efa.bartlett.p)}. ${efa.nf.agree} z ${efa.nf.criteria.length} kryteriów liczby czynników (w tym analiza równoległa) wskazało rozwiązanie ${efa.nf.consensus}-czynnikowe; przyjęto ${efa.k} czynniki wyjaśniające ${format.num(100 * efa.total_explained, 1)}% wariancji.${efa.proposals.length ? ` Pozycje ${efa.proposals.map((p) => p.item).join(', ')} miały ${efa.proposals.some((p) => p.kind === 'cross') ? 'ładunki krzyżowe' : 'słabe ładunki'}${s.efaSkip.length ? `; w CFA pominięto: ${s.efaSkip.join(', ')}` : ''}.` : ''}`
+    ? `EFA (${efa.extraction}, rotacja ${efa.rotation}, korelacje ${efa.corr === 'polychoric' ? 'polichoryczne' : 'Pearsona'}) przeprowadzono na ${efa.n} obserwacjach; KMO = ${F.d2(efa.kmo)}, test Bartletta χ²(${efa.bartlett.df}) = ${F.d2(efa.bartlett.chi2)}, ${F.p(efa.bartlett.p)}. ${efa.nf.agree} z ${efa.nf.criteria.length} kryteriów liczby czynników (w tym analiza równoległa) wskazało rozwiązanie ${efa.nf.consensus}-czynnikowe; przyjęto ${efa.k} czynniki wyjaśniające ${format.num(100 * efa.total_explained, 1, NO)}% wariancji.${efa.proposals.length ? ` Pozycje ${efa.proposals.map((p) => p.item).join(', ')} miały ${efa.proposals.some((p) => p.kind === 'cross') ? 'ładunki krzyżowe' : 'słabe ładunki'}${s.efaSkip.length ? `; w CFA pominięto: ${s.efaSkip.join(', ')}` : ''}.` : ''}`
     : `EFA (${efa.extraction}, ${efa.rotation} rotation, ${efa.corr} correlations) was conducted on ${efa.n} observations; KMO = ${F.b2(efa.kmo)}, Bartlett's χ²(${efa.bartlett.df}) = ${F.d2(efa.bartlett.chi2)}, ${F.p(efa.bartlett.p)}. ${efa.nf.agree} of ${efa.nf.criteria.length} retention criteria (including parallel analysis) suggested ${efa.nf.consensus} factors; a ${efa.k}-factor solution explaining ${format.num(100 * efa.total_explained, 1, { decimal: '.' })}% of variance was retained.${s.efaSkip.length ? ` Items ${s.efaSkip.join(', ')} were omitted from the CFA.` : ''}`}</p></section>);
 
   if (inc.cfa && cfa) {
@@ -66,8 +68,8 @@ export default function ReportScreen() {
     const paths = sem.params.filter((p) => p.op === '~');
     const r2 = Object.entries(sem.r2).filter(([k]) => sem.latent.includes(k) && paths.some((p) => p.lhs === k));
     sections.push(<section key="sem"><h2>{t.struct}</h2><p>{pl
-      ? `Dopasowanie modelu strukturalnego: ${fitSentence(sem.fit, sem.estimator === 'MLM', 'pl')}. ${paths.map((p) => `Ścieżka ${p.rhs} → ${p.lhs}: β = ${F.d2(p.std)}, ${F.p(p.p)}`).join('; ')}. ${r2.map(([k, x]) => `Model wyjaśnił ${format.num(100 * x, 0)}% wariancji ${k}`).join(', ')}.`
-      : `Structural model fit: ${fitSentence(sem.fit, sem.estimator === 'MLM', 'en')}. ${paths.map((p) => `${p.rhs} → ${p.lhs}: β = ${F.b2(p.std)}, ${F.p(p.p)}`).join('; ')}. ${r2.map(([k, x]) => `The model explained ${format.num(100 * x, 0)}% of variance in ${k}`).join(', ')}.`}</p>
+      ? `Dopasowanie modelu strukturalnego: ${fitSentence(sem.fit, sem.estimator === 'MLM', 'pl')}. ${paths.map((p) => `Ścieżka ${p.rhs} → ${p.lhs}: β = ${F.d2(p.std)}, ${F.p(p.p)}`).join('; ')}. ${r2.map(([k, x]) => `Model wyjaśnił ${format.num(100 * x, 0, NO)}% wariancji ${k}`).join(', ')}.`
+      : `Structural model fit: ${fitSentence(sem.fit, sem.estimator === 'MLM', 'en')}. ${paths.map((p) => `${p.rhs} → ${p.lhs}: β = ${F.b2(p.std)}, ${F.p(p.p)}`).join('; ')}. ${r2.map(([k, x]) => `The model explained ${format.num(100 * x, 0, NO)}% of variance in ${k}`).join(', ')}.`}</p>
       <table><caption>{t.tabPath}</caption><thead><tr><th>{t.path}</th><th>β</th><th>B</th><th>SE</th><th>p</th></tr></thead>
         <tbody>{paths.map((p) => <tr key={p.lhs + p.rhs}><td>{p.rhs} → {p.lhs}</td><td>{F.b2(p.std)}</td><td>{F.d3(p.est)}</td><td>{F.d3(p.se)}</td><td>{F.p(p.p).replace(/^p\s=?\s?/, '')}</td></tr>)}</tbody></table></section>);
   }
@@ -92,17 +94,17 @@ export default function ReportScreen() {
 
   return (
     <Screen>
-      <Head eyebrow="Raport" title={pl ? 'Sekcja Wyniki gotowa do artykułu' : 'Results section (APA)'} meta={[<Badge key="l">{pl ? 'polski' : 'English · APA 7'}</Badge>, stale.length ? <Badge key="s" tone="ok" icon="refresh">nieaktualne: {stale.join(', ')}</Badge> : null].filter(Boolean)}>
-        <Segmented label="Język raportu" value={lang} onChange={setLang} options={[{ value: 'pl', label: 'PL' }, { value: 'en', label: 'EN' }]} />
-        <Button variant="secondary" icon="copy" onClick={() => copyText(ref.current ? ref.current.innerText : '').then(() => toast('Skopiowano tekst raportu.'))}>Kopiuj tekst</Button>
+      <Head eyebrow={tr("Raport")} title={pl ? tr("Sekcja Wyniki gotowa do artykułu") : tr("Results section (APA)")} meta={[<Badge key="l">{pl ? 'polski' : tr("English · APA 7")}</Badge>, stale.length ? <Badge key="s" tone="ok" icon="refresh">{tr("nieaktualne:")} {stale.join(', ')}</Badge> : null].filter(Boolean)}>
+        <Segmented label={tr("Język raportu")} value={lang} onChange={setLang} options={[{ value: 'pl', label: 'PL' }, { value: 'en', label: 'EN' }]} />
+        <Button variant="secondary" icon="copy" onClick={() => copyText(ref.current ? ref.current.innerText : '').then(() => toast(tr("Skopiowano tekst raportu.")))}>{tr("Kopiuj tekst")}</Button>
         <Button variant="secondary" icon="download" onClick={() => download(base + '.html', html(), 'text/html;charset=utf-8')}>HTML</Button>
-        <Button variant="secondary" icon="file" onClick={() => download(base + '.doc', html(), 'application/msword')}>Word</Button>
-        <Button variant="primary" icon="print" onClick={() => window.print()}>Drukuj / PDF</Button>
+        <Button variant="secondary" icon="file" onClick={() => download(base + '.doc', html(), 'application/msword')}>{tr("Word")}</Button>
+        <Button variant="primary" icon="print" onClick={() => window.print()}>{tr("Drukuj / PDF")}</Button>
       </Head>
-      {stale.length ? <Interpretation tone="warn" title="Część wyników jest nieaktualna">Moduły {stale.join(', ')} czekają na przeliczenie po zmianach w danych lub modelu. Przelicz je przed eksportem raportu.</Interpretation> : null}
-      <div className="row no-print">{[['efa', 'EFA'], ['rel', 'Rzetelność'], ['cfa', 'CFA'], ['sem', 'SEM'], ['med', 'Mediacja'], ['bridge', 'Porównanie podejść'], ['log', 'Dziennik decyzji']].map(([k, l]) =>
+      {stale.length ? <Interpretation tone="warn" title={tr("Część wyników jest nieaktualna")}>{tr("Moduły")} {stale.join(', ')} {tr("czekają na przeliczenie po zmianach w danych lub modelu. Przelicz je przed eksportem raportu.")}</Interpretation> : null}
+      <div className="row no-print">{[['efa', 'EFA'], ['rel', tr("Rzetelność")], ['cfa', 'CFA'], ['sem', 'SEM'], ['med', tr("Mediacja")], ['bridge', tr("Porównanie podejść")], ['log', tr("Dziennik decyzji")]].map(([k, l]) =>
         <Checkbox key={k} label={l} checked={inc[k]} onChange={(c) => setInc(Object.assign({}, inc, { [k]: c }))} />)}</div>
-      {empty ? <EmptyState icon="report" title="Raport jest jeszcze pusty" actions={<Button variant="primary" onClick={() => go('cfa')}>Przejdź do CFA</Button>}>Uruchom co najmniej EFA, CFA albo rzetelność - ich wyniki trafią tu automatycznie z tabelami APA.</EmptyState> :
+      {empty ? <EmptyState icon="report" title={tr("Raport jest jeszcze pusty")} actions={<Button variant="primary" onClick={() => go('cfa')}>{tr("Przejdź do CFA")}</Button>}>{tr("Uruchom co najmniej EFA, CFA albo rzetelność - ich wyniki trafią tu automatycznie z tabelami APA.")}</EmptyState> :
         <article className="report" ref={ref}>{sections}</article>}
     </Screen>
   );

@@ -1,35 +1,38 @@
-/* Stan aplikacji: jeden magazyn z subskrypcją (useSyncExternalStore). */
+/* Application state: a single store with subscription (useSyncExternalStore). */
 import { useSyncExternalStore, useRef } from 'react';
 import { createEngine } from './engine/client.js';
+import { getLang, setLangRaw } from './i18n/index.js';
+import { t } from './i18n/index.js';
 
 const initialTheme = document.documentElement.getAttribute('data-theme') || 'light';
 
 const SETTINGS_KEY = 'sx-settings';
 function loadSettings() {
-  try { return Object.assign({ seed: 1, bootR: 500, compareR: 200, stabilityB: 100, ciLevel: 0.95, lang: 'pl' }, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); }
-  catch (e) { return { seed: 1, bootR: 500, compareR: 200, stabilityB: 100, ciLevel: 0.95, lang: 'pl' }; }
+  try { return Object.assign({ seed: 1, bootR: 500, compareR: 200, stabilityB: 100, ciLevel: 0.95, lang: getLang() }, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); }
+  catch (e) { return { seed: 1, bootR: 500, compareR: 200, stabilityB: 100, ciLevel: 0.95, lang: getLang() }; }
 }
 
 const initial = {
-  engine: { status: 'loading', progress: 0, text: 'Uruchamianie silnika' },
+  engine: { status: 'loading', progress: 0, text: t("Uruchamianie silnika") },
   theme: initialTheme,
+  lang: getLang(),        // interface language (pl | en)
   mode: 'adv',
   module: 'data',
   palette: false,
   help: false,
   settingsOpen: false,
   project: { name: 'Nowy projekt', saved: true },
-  importDraft: null,      // wynik sniff + edytowane kolumny przed importem
-  data: null,             // podsumowanie danych z silnika
+  importDraft: null,      // sniff result + edited columns before import
+  data: null,             // data summary from the engine
   sampleMeta: null,
-  changes: [],            // zmiany danych: {id, kind: 'reverse'|'exclude', ...}
+  changes: [],            // data changes: {id, kind: 'reverse'|'exclude', ...}
   split: { use: true, seed: 1, strata: '', frac: 0.5, info: null },
   estimator: 'MLM',
   results: {},            // module -> { value, at, stale }
   syntax: { cfa: '', sem: '' },
-  efaSkip: [],            // pozycje pominięte w CFA
-  models: [],             // zapisane modele do porównania
-  layout: {},             // pozycje węzłów edytora SEM
+  efaSkip: [],            // items omitted in CFA
+  models: [],             // saved models for comparison
+  layout: {},             // SEM editor node items
   decisions: [],
   jobs: [],
   toast: null,
@@ -52,7 +55,7 @@ export function useStore(selector) {
   return useSyncExternalStore(subscribe, () => sel(state));
 }
 
-/* Hook z płytkim porównaniem dla selektorów zwracających obiekty. */
+/* Hook with shallow comparison for selectors returning objects. */
 export function useShallow(selector) {
   const prev = useRef(null);
   return useSyncExternalStore(subscribe, () => {
@@ -64,13 +67,13 @@ export function useShallow(selector) {
   });
 }
 
-/* ---------- silnik ---------- */
+/* ---------- engine ---------- */
 export const engine = createEngine((st) => setState((s) => ({ engine: Object.assign({}, s.engine, st) })));
 
-/* ---------- pomocnicze ---------- */
+/* ---------- helpers ---------- */
 export function now() {
   const d = new Date();
-  return d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString(getLang() === 'en' ? 'en-GB' : 'pl-PL', { hour: '2-digit', minute: '2-digit' });
 }
 let uid = 0;
 export function newId(prefix) { uid += 1; return `${prefix || 'id'}-${Date.now().toString(36)}-${uid}`; }
@@ -91,7 +94,7 @@ export function markStale(modules) {
   });
 }
 
-/* Zależności wyników: zmiana modułu unieważnia też jego bootstrap i moduły, które z niego korzystają. */
+/* Result dependencies: changing a module also invalidates its bootstrap and modules that depend on it. */
 const DEPENDENTS = {
   stats: [], rel: ['relBoot'], efa: ['efaStab'], cfa: ['cfaBoot', 'compare', 'sem', 'semBoot'], sem: ['semBoot'],
   med: [], bridge: [], compare: [],
@@ -104,7 +107,7 @@ export function withDependents(mods) {
 }
 export const DOWNSTREAM = withDependents(['stats', 'rel', 'efa', 'cfa', 'sem', 'med', 'bridge', 'compare']);
 
-/* ---------- dziennik decyzji ---------- */
+/* ---------- decision log ---------- */
 export function logDecision(entry) {
   const e = Object.assign({ id: newId('d'), time: now(), origin: 'manual', kind: 'change', reverted: false, stale: false, at: Date.now() }, entry);
   setState((s) => ({ decisions: s.decisions.concat([e]), project: Object.assign({}, s.project, { saved: false }) }));
@@ -115,7 +118,7 @@ export function markDecisionsStaleAfter(at) {
   setState((s) => ({ decisions: s.decisions.map((d) => (d.at > at && !d.reverted ? Object.assign({}, d, { stale: true }) : d)) }));
 }
 
-/* ---------- zmiany danych ---------- */
+/* ---------- data changes ---------- */
 export async function applyChanges(changes) {
   const summary = await engine.call('set_changes', { changes: changes.map(stripChange) });
   setState((s) => ({ changes, data: summary, split: Object.assign({}, s.split, { info: null }) }));
@@ -129,7 +132,7 @@ export async function addChange(change, decision) {
   const before = getState().changes;
   await applyChanges(before.concat([c]));
   const d = logDecision(Object.assign({ undo: { type: 'change', id: c.id } }, decision));
-  toast(decision.toast || decision.actionText || 'Zapisano zmianę', { actionLabel: 'Cofnij', onAction: () => revertDecision(d.id) });
+  toast(decision.toast || decision.actionText || t("Zapisano zmianę"), { actionLabel: t("Cofnij"), onAction: () => revertDecision(d.id) });
   return d;
 }
 
@@ -158,10 +161,10 @@ export async function revertDecision(id) {
   }
   setState((s) => ({ decisions: s.decisions.map((x) => (x.id === id ? Object.assign({}, x, { reverted: true }) : x)) }));
   markDecisionsStaleAfter(d.at);
-  toast('Decyzję cofnięto. Wyniki zależne czekają na przeliczenie.', { icon: 'undo' });
+  toast(t("Decyzję cofnięto. Wyniki zależne czekają na przeliczenie."), { icon: 'undo' });
 }
 
-/* ---------- zadania w tle ---------- */
+/* ---------- background tasks ---------- */
 export function startJob(job) {
   const j = Object.assign({ id: newId('job'), status: 'running', progress: 0, signal: { cancelled: false } }, job);
   setState((s) => ({ jobs: [j].concat(s.jobs).slice(0, 12) }));
@@ -175,7 +178,7 @@ export function cancelJob(id) {
   if (j) { j.signal.cancelled = true; updateJob(id, { status: 'cancelled' }); }
 }
 
-/* Uruchamia zadanie silnika z paskiem w JobTray. */
+/* Runs an engine task with a progress bar in JobTray. */
 export async function runEngineJob({ label, module, icon, kind, params, chunk, previewEvery, onPreview, resultArgs }) {
   const j = startJob({ label, module, icon: icon || 'shuffle' });
   const t0 = performance.now();
@@ -198,13 +201,19 @@ export async function runEngineJob({ label, module, icon, kind, params, chunk, p
   }
 }
 
-/* ---------- ustawienia i motyw ---------- */
+/* ---------- settings and theme ---------- */
 export function setSettings(patch) {
   setState((s) => {
     const settings = Object.assign({}, s.settings, patch);
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
     return { settings };
   });
+}
+/* Interface language; report language follows it, but can later be changed independently. */
+export function setLang(l) {
+  setLangRaw(l);
+  setSettings({ lang: l === 'en' ? 'en' : 'pl' });
+  setState({ lang: l === 'en' ? 'en' : 'pl' });
 }
 export function toggleTheme() {
   const t = getState().theme === 'dark' ? 'light' : 'dark';
@@ -214,5 +223,5 @@ export function toggleTheme() {
 }
 export function go(module) { setState({ module, palette: false }); window.scrollTo && window.scrollTo(0, 0); }
 
-/* Uchwyt diagnostyczny (tylko odczyt i nawigacja) - używany przez test interfejsu tools/ui-test.mjs. */
+/* Diagnostic handle (read-only and navigation) - used by the interface test tools/ui-test.mjs. */
 if (typeof window !== 'undefined') window.__semplex = { getState, go, setState, revertDecision };

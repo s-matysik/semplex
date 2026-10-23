@@ -1,11 +1,12 @@
-/* Model: składnia ↔ węzły i krawędzie, automatyczny układ diagramu, eksport kodu. */
+/* Model: syntax ↔ nodes and edges, automatic diagram layout, code export. */
 import { lavaan } from 'semplex-ui';
+import { t } from '../i18n/index.js';
 
 export function parseModel(text) {
   try { return lavaan.parse(text || ''); } catch (e) { return { nodes: [], edges: [], defined: [], errors: [{ line: 1, message: String(e.message || e) }] }; }
 }
 
-/* Poziomy zmiennych wg ścieżek strukturalnych (najdłuższa droga od zmiennych egzogenicznych). */
+/* Variable levels by structural paths (longest path from exogenous variables). */
 function levels(nodes, edges) {
   const paths = edges.filter((e) => e.kind === 'path');
   const lvl = {};
@@ -18,7 +19,7 @@ function levels(nodes, edges) {
   return lvl;
 }
 
-/* Układ dla ModelCanvas / PathDiagram. Zwraca {id: {x, y}} (środki węzłów). */
+/* Layout for ModelCanvas / PathDiagram. Returns {id: {x, y}} (node centers). */
 export function autoLayout(model, opts = {}) {
   const { nodes, edges } = model;
   const latent = nodes.filter((n) => n.kind === 'latent').map((n) => n.id);
@@ -61,13 +62,13 @@ export function autoLayout(model, opts = {}) {
       if (!isLat && !its.length) pos[id].x = pos[id].x;
     });
   });
-  // przesunięcie, aby wszystko było w dodatnich współrzędnych
+  // offset so that everything is in positive coordinates
   const minX = Math.min(...Object.values(pos).map((p) => p.x), 0);
   if (minX < 30) Object.values(pos).forEach((p) => { p.x += 30 - minX; });
   return pos;
 }
 
-/* Dane dla PathDiagram z wyniku silnika. */
+/* Data for PathDiagram from the engine result. */
 export function pathDiagramFromFit(res, opts = {}) {
   const model = parseModel(res.syntax);
   const pos = autoLayout(model, opts);
@@ -88,7 +89,7 @@ export function pathDiagramFromFit(res, opts = {}) {
     else prm = std[e.from + '~~' + e.to] || std[e.to + '~~' + e.from];
     edges.push({ from: e.from, to: e.to, kind: e.kind, est: prm ? prm.std : undefined, p: prm && prm.free ? prm.p : undefined, bend: e.kind === 'cov' ? -26 : undefined });
   });
-  // kowariancje czynników egzogenicznych (dodane automatycznie przez silnik)
+  // covariances of exogenous factors (added automatically by the engine)
   res.params.filter((p) => p.op === '~~' && p.lhs !== p.rhs && res.latent.includes(p.lhs) && res.latent.includes(p.rhs)).forEach((p) => {
     if (!edges.some((e) => e.kind === 'cov' && ((e.from === p.lhs && e.to === p.rhs) || (e.from === p.rhs && e.to === p.lhs)))) {
       edges.push({ from: p.lhs, to: p.rhs, kind: 'cov', est: p.std, p: p.p, bend: -26 });
@@ -99,7 +100,7 @@ export function pathDiagramFromFit(res, opts = {}) {
   return { nodes, edges, width, height };
 }
 
-/* Estymaty w formacie ModelCanvas (klucz edgeKey). */
+/* Estimates in ModelCanvas format (edgeKey key). */
 export function canvasEstimates(res) {
   const est = {};
   res.params.forEach((p) => {
@@ -120,23 +121,23 @@ export function cfaSyntaxFromScales(scales, skip = []) {
     .join('\n');
 }
 
-/* ---------- eksport kodu ---------- */
-/* Kod do odtworzenia modelu. Czyta plik danych analitycznych pobrany przyciskiem „Dane analityczne (CSV)”:
-   zawiera dokładnie te wiersze i zmienne, na których policzono model (po przekodowaniu, odwróceniu, wykluczeniach
-   i wyborze części próby), więc kod nie musi powtarzać przygotowania danych. */
+/* ---------- code export ---------- */
+/* Code to reproduce the model. Reads the analytical data file downloaded via the "Analytical data (CSV)" button:
+   it contains exactly the rows and variables on which the model was computed (after recoding, reversing, exclusions
+   and sample subset selection), so the code does not need to repeat data preparation. */
 export const ANALYSIS_FILE = 'semplex_dane_analityczne.csv';
 export function codeSnippets(syntax, { estimator = 'ML', part, seed = 1, kind = 'cfa', bootstrap, version = '', missing = 'listwise' } = {}) {
   const est = estimator === 'MLM' ? 'MLM' : 'ML';
   const fn = kind === 'sem' ? 'sem' : 'cfa';
   const em = missing === 'em';
-  const head = `SEMplex ${version}; dane: ${ANALYSIS_FILE}${part ? ` (część próby „${part}”, podział losowy z ziarnem ${seed})` : ''}`
+  const head = t("SEMplex {0}; dane: {1}{2}", { 0: version, 1: ANALYSIS_FILE, 2: part ? t(" (część próby „{0}”, podział losowy z ziarnem {1})", { 0: part, 1: seed }) : '' })
     + (em ? `\n# Uwaga: w SEMplex użyto kowariancji z algorytmu EM (dwuetapowo). Plik zawiera dane z brakami;\n# missing = "fiml" w lavaan to inna metoda (pełna informacja) i da nieco inne wyniki.` : '');
   const py = `# ${head}
 # Silnik SEMplex: folder public/engine/semplex z repozytorium (ten sam kod, który liczy w przeglądarce)
 import pandas as pd
 from semplex.sem import fit_model, param_table
 
-dane = pd.read_csv("${ANALYSIS_FILE}").drop(columns=["row_id"])${em ? '\n# fit_model liczy na kompletnych przypadkach; tryb EM interfejsu odpowiada semplex.api.fit(..., missing="em")' : ''}
+dane = pd.read_csv("${ANALYSIS_FILE}").drop(columns=["row_id"])${em ? t("\n# fit_model liczy na kompletnych przypadkach; tryb EM interfejsu odpowiada semplex.api.fit(..., missing=\"em\")") : ''}
 model = """
 ${syntax.trim()}
 """
@@ -153,7 +154,7 @@ dane$row_id <- NULL
 model <- '
 ${syntax.trim()}
 '
-fit <- ${fn}(model, data = dane, estimator = "${est}"${em ? ', missing = "fiml"' : ''})
+fit <- ${fn}(model, data = dane, estimator = "${est}"${em ? t(", missing = \"fiml\"") : ''})
 summary(fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
 modindices(fit, sort. = TRUE, maximum.number = 10)${bootstrap ? `\n# bootstrap (inny generator liczb losowych niż w SEMplex): set.seed(${seed}); fit_b <- ${fn}(model, data = dane, se = "bootstrap", bootstrap = ${bootstrap})` : ''}
 `;

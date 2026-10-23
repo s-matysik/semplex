@@ -1,10 +1,11 @@
-"""Eksploracyjna analiza czynnikowa: korelacje (Pearson, polichoryczne), KMO, Bartlett,
-ekstrakcja (minres, ML, PAF), rotacje GPA (varimax, quartimax, promax, oblimin, geomin),
-kryteria liczby czynników z konsensusem, stabilność bootstrap, wyniki czynnikowe.
-Licencja MIT. Implementacja od zera.
+"""Exploratory factor analysis: correlations (Pearson, polychoric), KMO, Bartlett,
+extraction (minres, ML, PAF), GPA rotations (varimax, quartimax, promax, oblimin, geomin),
+number-of-factors criteria with consensus, bootstrap stability, factor scores.
+MIT License. Implementation from scratch.
 """
 import math
 import numpy as np
+from . import i18n as I18N
 from scipy import optimize, stats
 
 # --------------------------------------------------------------------------- korelacje
@@ -12,7 +13,7 @@ _GL_X, _GL_W = np.polynomial.legendre.leggauss(40)
 
 
 def bvn_cdf(h, k, r):
-    """P(X < h, Y < k) dla standardowego rozkładu dwuwymiarowego (wzór Shepparda, kwadratura Gaussa)."""
+    """P(X < h, Y < k) for the standard bivariate distribution (Sheppard's formula, Gaussian quadrature)."""
     h = np.clip(np.asarray(h, float), -12, 12)
     k = np.clip(np.asarray(k, float), -12, 12)
     base = stats.norm.cdf(h) * stats.norm.cdf(k)
@@ -54,7 +55,7 @@ def polychoric_pair(x, y):
 
 
 def polychoric_matrix(X, nodes=16, iters=34):
-    """Polichoryczne korelacje wszystkich par naraz (dwuetapowo: progi z brzegów, r metodą złotego podziału)."""
+    """Polychoric correlations for all pairs at once (two-step: thresholds from margins, r via golden-section method)."""
     n, p = X.shape
     cats = [np.unique(X[:, j]) for j in range(p)]
     cmax = max(len(c) for c in cats)
@@ -72,7 +73,7 @@ def polychoric_matrix(X, nodes=16, iters=34):
         np.add.at(tab[q], (codes[:, i], codes[:, j]), 1)
     I = np.array([a for a, _ in pairs])
     J = np.array([b for _, b in pairs])
-    # siatka wierzchołków komórek: (P, cmax+1, cmax+1); P(komórka) z różnic skumulowanych
+    # grid of cell vertices: (P, cmax+1, cmax+1); P(cell) from cumulative differences
     h = np.broadcast_to(T[I][:, :, None], (P, cmax + 1, cmax + 1))
     k = np.broadcast_to(T[J][:, None, :], (P, cmax + 1, cmax + 1))
     base = stats.norm.cdf(h) * stats.norm.cdf(k)
@@ -120,7 +121,7 @@ def nearest_pd(R, eps=1e-6):
 
 
 def correlation(X, kind="pearson"):
-    """X: ndarray bez braków. Zwraca (R, wygładzona?)."""
+    """X: ndarray without missing values. Returns (R, smoothed?)."""
     if kind == "pearson":
         return np.corrcoef(X, rowvar=False), False
     if kind == "spearman":
@@ -132,7 +133,7 @@ def is_ordinal(X, max_cats=7):
     return all(len(np.unique(X[:, j])) <= max_cats and np.allclose(X[:, j], np.round(X[:, j])) for j in range(X.shape[1]))
 
 
-# --------------------------------------------------------------------------- adekwatność
+# --------------------------------------------------------------------------- adequacy
 def kmo(R):
     Ri = np.linalg.inv(R)
     d = np.sqrt(np.diag(Ri))
@@ -154,7 +155,7 @@ def bartlett(R, n):
 
 
 def kmo_label(v):
-    for cut, lab in ((0.9, "znakomita"), (0.8, "dobra"), (0.7, "przeciętna"), (0.6, "mierna"), (0.5, "słaba")):
+    for cut, lab in ((0.9, "znakomita"), (0.8, "dobra"), (0.7, I18N.T("przeciętna")), (0.6, "mierna"), (0.5, I18N.T("słaba"))):
         if v >= cut:
             return lab
     return "niedopuszczalna"
@@ -308,11 +309,11 @@ def _kaiser(A):
 
 
 def rotate(L, method="oblimin"):
-    """Zwraca (ładunki wzorca, Phi). Rotacje ortogonalne mają Phi = I."""
+    """Returns (pattern loadings, Phi). Orthogonal rotations have Phi = I."""
     k = L.shape[1]
     if k == 1 or method in ("none", None):
         return L.copy(), np.eye(k)
-    if method == "varimax":  # z normalizacją Kaisera, jak stats::varimax
+    if method == "varimax":  # with Kaiser normalization, like stats::varimax
         An, h = _kaiser(L)
         Lr, _ = _gpf_orth(An, _vgq_varimax)
         return Lr * h[:, None], np.eye(k)
@@ -333,7 +334,7 @@ def rotate(L, method="oblimin"):
 
 
 def tidy(L, Phi):
-    """Znaki kolumn dodatnie, kolejność wg sumy kwadratów."""
+    """Column signs positive, order by sum of squares."""
     L = L.copy()
     Phi = Phi.copy()
     sg = np.sign(L.sum(0))
@@ -359,7 +360,7 @@ def efa(R, k, extraction="minres", rotation="oblimin"):
     return {"loadings": L, "phi": Phi, "h2": h2, "structure": S, "rmsr": rmsr, "ss": ssl, "var_explained": ssl / p, "info": info}
 
 
-# --------------------------------------------------------------------------- liczba czynników
+# --------------------------------------------------------------------------- number of factors
 def parallel(n, p, iters=100, seed=1, pct=95):
     rng = np.random.default_rng(seed)
     ev = np.zeros((iters, p))
@@ -462,12 +463,12 @@ def hull(R, n, kmax):
         cfi = 1 - max(chi2 - df, 0) / max(chi0 - df0, chi2 - df, 1e-12)
         npar = p * k - k * (k - 1) / 2
         pts.append((k, npar, cfi))
-    # tylko rosnące dopasowanie
+    # only increasing fit
     mono = [pts[0]]
     for pt in pts[1:]:
         if pt[2] > mono[-1][2]:
             mono.append(pt)
-    # górna otoczka wypukła
+    # upper convex hull
     changed = True
     while changed and len(mono) > 2:
         changed = False
@@ -551,7 +552,7 @@ def n_factors(R, n, seed=1, iters=100):
             continue
         k = int(res[cid])
         votes[k] = votes.get(k, 0) + weights[kind]
-        crit.append({"id": cid, "name": name, "source": src, "k": k, "recommended": kind == "rec", "aux": kind == "aux"})
+        crit.append({"id": cid, "name": I18N.T(name), "source": I18N.T(src), "k": k, "recommended": kind == "rec", "aux": kind == "aux"})
     best = sorted(votes.items(), key=lambda kv: (-kv[1], abs(kv[0] - k_pa)))[0][0]
     agree = sum(1 for c in crit if c["k"] == best)
     agree_rec = sum(1 for c in crit if c["k"] == best and c["recommended"])
@@ -559,9 +560,9 @@ def n_factors(R, n, seed=1, iters=100):
             "agree": agree, "agree_rec": agree_rec, "n_rec": sum(1 for c in crit if c["recommended"]), "seed": seed}
 
 
-# --------------------------------------------------------------------------- stabilność i wyniki
+# --------------------------------------------------------------------------- stability and scores
 def _match(Lb, L):
-    """Permutacja i znaki kolumn Lb najlepiej zgodne z L (kongruencja Tuckera)."""
+    """Permutation and column signs of Lb that best match L (Tucker's congruence)."""
     k = L.shape[1]
     num = L.T @ Lb
     den = np.sqrt(np.outer((L ** 2).sum(0), (Lb ** 2).sum(0)))

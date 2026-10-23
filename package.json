@@ -4,7 +4,7 @@
   "version": "1.3.0",
   "type": "module",
   "license": "MIT",
-  "description": "SEMplex - analiza ankiet w przeglądarce: dane, rzetelność, EFA, CFA, SEM, mediacja, porównanie podejść i raport APA.",
+  "description": "SEMplex - survey analysis in the browser (Polish and English interface): data screening, reliability, EFA, CFA, SEM, mediation, approach comparison and APA report.",
   "scripts": {
     "build": "node tools/build.mjs",
     "test:ui": "node tools/ui-test.mjs",

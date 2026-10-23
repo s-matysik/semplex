@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Panel, ForestPlot, WaterfallChart, ResultTable, Interpretation, StatTile, Field, Select, Button, Badge, Progress, Segmented, Verdict, CodeExport, Term } from 'semplex-ui';
+import { Panel, ForestPlot, WaterfallChart, ResultTable, Interpretation, StatTile, Field, Select, Button, Badge, Progress, Segmented, Verdict, CodeExport, Term, format } from 'semplex-ui';
 import { useStore, runEngineJob, setResult, logDecision, toast } from '../store.js';
 import { Head, Screen, NeedData, EngineErrorView, useRun, Loading, StaleNote, SeedBadge } from '../ui.jsx';
 import { n2, n3, int, ci, pct } from '../lib/fit.js';
 import { copyText } from '../lib/model.js';
+import { t } from '../i18n/index.js';
 
+const n2pl = (v) => (v == null || Number.isNaN(v) ? '-' : format.num(v, 2, { decimal: ',' }));
 const listJoin = (a, w) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' ' + w + ' ' + a[a.length - 1] : a.join(''));
 const EN_LABEL = {
   sum: 'regression on item means', fscore: 'factor-score regression', croon: "Croon's correction",
@@ -17,9 +19,9 @@ const PL_LABEL = {
   esem: 'przybliżenie ESEM (rotacja target rozwiązania ML)', sem: 'SEM łączny',
 };
 
-/* Porównanie z SEM łącznym opisane neutralnie: wyższa / niższa wartość, przeciwny znak albo brak odniesienia. */
+/* Comparison with the combined SEM described neutrally: higher / lower value, opposite sign, or no reference. */
 function contrast(sum, sem, lang) {
-  const f = (v) => (lang === 'en' ? v.toFixed(2) : n2(v));
+  const f = (v) => (lang === 'en' ? v.toFixed(2) : n2pl(v));
   if (!Number.isFinite(sem.est) || Math.abs(sem.est) < 0.05) {
     return lang === 'en' ? `the jointly estimated SEM coefficient was close to zero (β = ${f(sem.est)}), so relative differences are not reported`
       : `współczynnik SEM łącznego był bliski zeru (β = ${f(sem.est)}), więc nie podano różnic względnych`;
@@ -38,7 +40,7 @@ function contrast(sum, sem, lang) {
 export function methodsParagraph(r, lang = 'pl') {
   const sem = r.rows.find((x) => x.id === 'sem');
   const sum = r.rows.find((x) => x.id === 'sum');
-  const f = (v) => (lang === 'en' ? v.toFixed(2) : n2(v));
+  const f = (v) => (lang === 'en' ? v.toFixed(2) : n2pl(v));
   const lo = Math.min(...r.rows.map((x) => x.est));
   const hi = Math.max(...r.rows.map((x) => x.est));
   const minValid = Math.min(...r.rows.map((x) => x.n_valid != null ? x.n_valid : r.R_ok));
@@ -50,7 +52,7 @@ export function methodsParagraph(r, lang = 'pl') {
   }
   return `Aby sprawdzić, jak zależność ${r.x} → ${r.y} zależy od sposobu reprezentacji konstruktów, porównano siedem podejść na tych samych kompletnych przypadkach (N = ${r.n}) w modelu zredukowanym, obejmującym tylko ${[...r.xs, r.y].join(', ')}: ${listJoin(r.rows.map((x) => PL_LABEL[x.id]), 'i')}. `
     + `Przedziały ufności to 95% percentylowe przedziały bootstrap (${r.R} prób, ziarno ${r.seed}); losowania z rozwiązaniem niezbieżnym lub niedopuszczalnym wykluczano osobno dla każdego podejścia (co najmniej ${minValid} dopuszczalnych losowań na podejście)${noCi.length ? `; nie podano przedziału dla: ${noCi.join(', ')}` : ''}. `
-    + `Standaryzowane oszacowania wyniosły od ${n2(lo)} do ${n2(hi)}; ${contrast(sum, sem, 'pl')}. Różnice opisują wrażliwość wyniku na sposób modelowania i nie są rozkładem obciążenia.`;
+    + `Standaryzowane oszacowania wyniosły od ${n2pl(lo)} do ${n2pl(hi)}; ${contrast(sum, sem, 'pl')}. Różnice opisują wrażliwość wyniku na sposób modelowania i nie są rozkładem obciążenia.`;
 }
 
 export default function BridgeScreen() {
@@ -69,18 +71,18 @@ export default function BridgeScreen() {
   const { running, error, setError, run } = useRun();
 
   if (!data) return <Screen><NeedData /></Screen>;
-  if (scales.length < 2) return <Screen><Interpretation tone="warn" title="Potrzebne są co najmniej dwie skale">Zdefiniuj skale w module Dane → Skale.</Interpretation></Screen>;
+  if (scales.length < 2) return <Screen><Interpretation tone="warn" title={t("Potrzebne są co najmniej dwie skale")}>{t("Zdefiniuj skale w module Dane → Skale.")}</Interpretation></Screen>;
 
   async function compute() {
     await run(async () => {
       const R = settings.compareR;
       setPreview(null);
-      const out = await runEngineJob({ label: `Porównanie podejść (${R} prób × 7)`, module: 'Porównanie podejść', icon: 'bridge', kind: 'compare',
+      const out = await runEngineJob({ label: t("Porównanie podejść ({0} prób × 7)", { 0: R }), module: 'Porównanie podejść', icon: 'bridge', kind: 'compare',
         params: { y, xs, R, seed: settings.seed, part: 'all' }, chunk: 5, previewEvery: 4, onPreview: setPreview, resultArgs: xs.map((_, i) => ({ xi: i })) });
       if (!out.cancelled) {
         setXi(0);
         setResult('bridge', Object.assign({}, out.result[0], { byX: out.result }));
-        logDecision({ module: 'Porównanie podejść', moduleIcon: 'bridge', kind: 'run', origin: 'manual', action: `Porównano 7 podejść dla ${xs.join(', ')} → ${y}`, reason: `Bootstrap ${R} prób, ziarno ${settings.seed}. Rekomendacja: ${out.result[0].rows.find((x) => x.id === out.result[0].recommended).label}.` });
+        logDecision({ module: 'Porównanie podejść', moduleIcon: 'bridge', kind: 'run', origin: 'manual', action: t("Porównano 7 podejść dla {0} → {1}", { 0: xs.join(', '), 1: y }), reason: t("Bootstrap {0} prób, ziarno {1}. Rekomendacja: {2}.", { 0: R, 1: settings.seed, 2: out.result[0].rows.find((x) => x.id === out.result[0].recommended).label }) });
       }
     });
   }
@@ -94,56 +96,56 @@ export default function BridgeScreen() {
 
   return (
     <Screen>
-      <Head eyebrow="Most EFA – regresja – SEM" title="Czy wynik zależy od metody" meta={r ? [<Badge key="n">N = {int(r.n)}</Badge>, <SeedBadge key="s" seed={r.seed} R={r.R_ok} />, partial ? <Badge key="p" tone="ok" icon="refresh">wynik częściowy</Badge> : null].filter(Boolean) : [<Badge key="new" tone="brand">nowe</Badge>]}>
-        <Field label="Zmienna zależna"><Select value={y} onChange={(e) => { setY(e.target.value); setXs(xs.filter((x) => x !== e.target.value)); }} options={scales} /></Field>
+      <Head eyebrow={t("Most EFA – regresja – SEM")} title={t("Czy wynik zależy od metody")} meta={r ? [<Badge key="n">N = {int(r.n)}</Badge>, <SeedBadge key="s" seed={r.seed} R={r.R_ok} />, partial ? <Badge key="p" tone="ok" icon="refresh">wynik częściowy</Badge> : null].filter(Boolean) : [<Badge key="new" tone="brand">{t("nowe")}</Badge>]}>
+        <Field label={t("Zmienna zależna")}><Select value={y} onChange={(e) => { setY(e.target.value); setXs(xs.filter((x) => x !== e.target.value)); }} options={scales} /></Field>
         {(xs.length ? xs : ['']).map((xv, i) => (
-          <Field key={'x' + i} label={i === 0 ? 'Predyktory' : `Predyktor ${i + 1}`}>
-            <Select value={xv || ''} aria-label={`Predyktor ${i + 1}`}
+          <Field key={'x' + i} label={i === 0 ? t("Predyktory") : t("Predyktor {0}", { 0: i + 1 })}>
+            <Select value={xv || ''} aria-label={t("Predyktor {0}", { 0: i + 1 })}
               onChange={(e) => { const nx = (xs.length ? xs : ['']).slice(); nx[i] = e.target.value; setXs(nx.filter((v, k) => v && nx.indexOf(v) === k)); }}
               options={scales.filter((s) => s !== y && (s === xv || !xs.includes(s)))} />
           </Field>))}
-        <Button variant="secondary" icon="plus" disabled={xs.length >= scales.length - 1} onClick={() => setXs(xs.concat(scales.filter((s) => s !== y && !xs.includes(s)).slice(0, 1)))}>Dodaj predyktor</Button>
-        <Button variant="primary" icon="play" loading={running} disabled={!xs.length} onClick={compute}>Porównaj 7 podejść</Button>
+        <Button variant="secondary" icon="plus" disabled={xs.length >= scales.length - 1} onClick={() => setXs(xs.concat(scales.filter((s) => s !== y && !xs.includes(s)).slice(0, 1)))}>{t("Dodaj predyktor")}</Button>
+        <Button variant="primary" icon="play" loading={running} disabled={!xs.length} onClick={compute}>{t("Porównaj 7 podejść")}</Button>
       </Head>
-      {xs.length > 1 ? <div className="row"><span className="subtle">Model: {y} ~ {xs.join(' + ')}</span>{full && full.byX && full.byX.length > 1 ? <Segmented size="sm" label="Pokaż efekt" value={String(xi)} onChange={(v) => setXi(Number(v))} options={full.byX.map((x, i) => ({ value: String(i), label: `${x.x} → ${x.y}` }))} /> : null}
-        <Button size="sm" variant="ghost" icon="x" onClick={() => { setXs(xs.slice(0, 1)); setXi(0); }}>Tylko pierwszy predyktor</Button></div> : null}
+      {xs.length > 1 ? <div className="row"><span className="subtle">{t("Model:")} {y} ~ {xs.join(' + ')}</span>{full && full.byX && full.byX.length > 1 ? <Segmented size="sm" label={t("Pokaż efekt")} value={String(xi)} onChange={(v) => setXi(Number(v))} options={full.byX.map((x, i) => ({ value: String(i), label: `${x.x} → ${x.y}` }))} /> : null}
+        <Button size="sm" variant="ghost" icon="x" onClick={() => { setXs(xs.slice(0, 1)); setXi(0); }}>{t("Tylko pierwszy predyktor")}</Button></div> : null}
       <EngineErrorView error={error} onClose={() => setError(null)} />
       <StaleNote stale={res && res.stale} onRun={compute} running={running} />
-      {running && !preview ? <Progress indeterminate label="Estymacja punktowa i bootstrap" detail={`${settings.compareR} prób, każda liczy 7 podejść · ziarno ${settings.seed}`} /> : null}
+      {running && !preview ? <Progress indeterminate label={t("Estymacja punktowa i bootstrap")} detail={t("{0} prób, każda liczy 7 podejść · ziarno {1}", { 0: settings.compareR, 1: settings.seed })} /> : null}
       {!r ? (
-        <Interpretation tone="brand" icon="bridge" title="Jedna zależność, siedem podejść">
-          Porównanie pokazuje, jak wynik zmienia się z reprezentacją konstruktów: średnie pozycji, wyniki czynnikowe, korekty błędu pomiaru, SAM, przybliżenie ESEM i SEM łączny. Wszystkie podejścia liczy się w modelu zredukowanym - tylko wybrana zmienna zależna i predyktory, bez pozostałych skal ani kowariancji reszt z modułu SEM. Wybierz zmienne i uruchom porównanie. Przy {settings.compareR} próbach bootstrap trwa to zwykle 1–3 minuty.
+        <Interpretation tone="brand" icon="bridge" title={t("Jedna zależność, siedem podejść")}>
+          {t("Porównanie pokazuje, jak wynik zmienia się z reprezentacją konstruktów: średnie pozycji, wyniki czynnikowe, korekty błędu pomiaru, SAM, przybliżenie ESEM i SEM łączny. Wszystkie podejścia liczy się w modelu zredukowanym - tylko wybrana zmienna zależna i predyktory, bez pozostałych skal ani kowariancji reszt z modułu SEM. Wybierz zmienne i uruchom porównanie. Przy")} {settings.compareR} próbach bootstrap trwa to zwykle 1–3 minuty.
         </Interpretation>
       ) : (
         <>
           <div className="tiles">
-            <StatTile label="Rozrzut między podejściami" value={n2(r.spread)} icon="split" note="max − min β" tone={r.spread > 0.15 ? 'ok' : 'good'} />
-            <StatTile label="Średnie pozycji vs SEM łączny" value={Number.isFinite(r.underestimate) ? pct(r.underestimate, 0) : '-'} icon="minus" tone={Math.abs(r.underestimate) > 0.15 ? 'ok' : 'good'} note="różnica względna oszacowań (opisowa)" />
-            <StatTile label="Dopuszczalne losowania" value={`${r.R_ok} z ${r.R}`} icon="reliability" tone={r.R_ok < 0.95 * r.R ? 'ok' : 'good'} note="minimum po podejściach (bootstrap)" />
-            <StatTile label="W 95% CI SEM łącznego" value={`${r.agree} z 7`} icon="check" note="opis zgodności, nie test" />
+            <StatTile label={t("Rozrzut między podejściami")} value={n2(r.spread)} icon="split" note={t("max − min β")} tone={r.spread > 0.15 ? 'ok' : 'good'} />
+            <StatTile label={t("Średnie pozycji vs SEM łączny")} value={Number.isFinite(r.underestimate) ? pct(r.underestimate, 0) : '-'} icon="minus" tone={Math.abs(r.underestimate) > 0.15 ? 'ok' : 'good'} note={t("różnica względna oszacowań (opisowa)")} />
+            <StatTile label={t("Dopuszczalne losowania")} value={`${r.R_ok} z ${r.R}`} icon="reliability" tone={r.R_ok < 0.95 * r.R ? 'ok' : 'good'} note={t("minimum po podejściach (bootstrap)")} />
+            <StatTile label={t("W 95% CI SEM łącznego")} value={`${r.agree} z 7`} icon="check" note={t("opis zgodności, nie test")} />
           </div>
-          <Interpretation tone="brand" title={`Sugestia do dalszej inspekcji (reguła heurystyczna): ${recRow.label}`} icon="info" source="SAM: Rosseel i Loh (2024); ESEM: Asparouhov i Muthén (2009); korekta Croona: Croon (2002). Progi reguły (N = 300, CFI = 0,90, różnica 0,05, ładunek krzyżowy 0,20) są umowne."
-            actions={<><Button size="sm" variant="ghost" icon="copy" onClick={() => copyText(methodsParagraph(r, lang)).then(() => toast('Skopiowano akapit do Metod.'))}>Kopiuj akapit</Button><Segmented size="sm" label="Język akapitu" value={lang} onChange={setLang} options={[{ value: 'pl', label: 'PL' }, { value: 'en', label: 'EN' }]} /></>}>
+          <Interpretation tone="brand" title={t("Sugestia do dalszej inspekcji (reguła heurystyczna): {0}", { 0: recRow.label })} icon="info" source={t("SAM: Rosseel i Loh (2024); ESEM: Asparouhov i Muthén (2009); korekta Croona: Croon (2002). Progi reguły (N = 300, CFI = 0,90, różnica 0,05, ładunek krzyżowy 0,20) są umowne.")}
+            actions={<><Button size="sm" variant="ghost" icon="copy" onClick={() => copyText(methodsParagraph(r, lang)).then(() => toast(t("Skopiowano akapit do Metod.")))}>{t("Kopiuj akapit")}</Button><Segmented size="sm" label={t("Język akapitu")} value={lang} onChange={setLang} options={[{ value: 'pl', label: 'PL' }, { value: 'en', label: 'EN' }]} /></>}>
             {r.reasons.join(' ')} β = <b>{n2(recRow.est)}</b>{Number.isFinite(recRow.lo) ? ` [${n2(recRow.lo)}; ${n2(recRow.hi)}]` : ''}.
           </Interpretation>
           <div className="cols">
-            <Panel title={`Efekt ${r.x} → ${r.y} w siedmiu podejściach`} subtitle="Standaryzowane β z 95% CI bootstrap; pasmo = CI SEM łącznego">
+            <Panel title={t("Efekt {0} → {1} w siedmiu podejściach", { 0: r.x, 1: r.y })} subtitle={t("Standaryzowane β z 95% CI bootstrap; pasmo = CI SEM łącznego")}>
               <ForestPlot rows={rows.map((x) => ({ label: x.label, sub: x.sub, est: x.est, lo: Number.isFinite(x.lo) ? x.lo : x.est, hi: Number.isFinite(x.hi) ? x.hi : x.est, highlight: x.id === r.recommended, muted: x.id === 'fscore' }))}
-                reference={ref.est} referenceLabel="SEM łączny" referenceShort="SEM" band={Number.isFinite(ref.lo) ? [ref.lo, ref.hi] : undefined} bandLabel="95% CI SEM łącznego"
-                highlightLabel="sugerowane" otherLabel="pozostałe" selected={sel} onSelect={setSel} tooltip legend fluid axisLabel="β standaryzowane" label="Wykres leśny efektu w siedmiu podejściach" />
+                reference={ref.est} referenceLabel={t("SEM łączny")} referenceShort="SEM" band={Number.isFinite(ref.lo) ? [ref.lo, ref.hi] : undefined} bandLabel={t("95% CI SEM łącznego")}
+                highlightLabel="sugerowane" otherLabel={t("pozostałe")} selected={sel} onSelect={setSel} tooltip legend fluid axisLabel={t("β standaryzowane")} label={t("Wykres leśny efektu w siedmiu podejściach")} />
             </Panel>
-            <Panel title="Kolejne różnice między podejściami" subtitle="Różnice arytmetyczne oszacowań - opis, nie rozkład obciążenia na przyczyny">
-              <WaterfallChart steps={r.waterfall.map((s) => ({ label: s.label, value: s.value, kind: s.kind }))} fluid height={300} axisLabel="β" startLabel="start" endLabel="wynik" asideLabel="osobno" legend label="Kolejne różnice oszacowań między podejściami" />
+            <Panel title={t("Kolejne różnice między podejściami")} subtitle={t("Różnice arytmetyczne oszacowań - opis, nie rozkład obciążenia na przyczyny")}>
+              <WaterfallChart steps={r.waterfall.map((s) => ({ label: s.label, value: s.value, kind: s.kind }))} fluid height={300} axisLabel="β" startLabel="start" endLabel={t("wynik")} asideLabel="osobno" legend label={t("Kolejne różnice oszacowań między podejściami")} />
             </Panel>
           </div>
-          <Panel flush title="Wszystkie podejścia">
+          <Panel flush title={t("Wszystkie podejścia")}>
             <div className="pad-x"><ResultTable dense onRowClick={(row, i) => setSel(i)}
-              columns={[{ key: 'label', label: 'Podejście', type: 'text' }, { key: 'sub', label: 'Rodzaj', type: 'text' }, { key: 'est', label: 'β', type: 'num', digits: 2 }, { key: 'ci', label: '95% CI', type: 'ci' }, { key: 'se', label: 'SE (boot)', type: 'num', digits: 3 }, { key: 'delta', label: 'Δ vs SEM', type: 'text', align: 'num' },
-                { key: 'nv', label: 'Losowania dopuszczalne', type: 'text', align: 'num' }, { key: 'v', label: 'Modeluje błąd pomiaru', type: 'verdict' }]}
+              columns={[{ key: 'label', label: t("Podejście"), type: 'text' }, { key: 'sub', label: t("Rodzaj"), type: 'text' }, { key: 'est', label: 'β', type: 'num', digits: 2 }, { key: 'ci', label: t("95% CI"), type: 'ci' }, { key: 'se', label: t("SE (boot)"), type: 'num', digits: 3 }, { key: 'delta', label: t("Δ vs SEM"), type: 'text', align: 'num' },
+                { key: 'nv', label: t("Losowania dopuszczalne"), type: 'text', align: 'num' }, { key: 'v', label: t("Modeluje błąd pomiaru"), type: 'verdict' }]}
               rows={rows.map((x, i) => ({ label: x.label, sub: x.sub, est: x.est, ci: Number.isFinite(x.lo) ? [x.lo, x.hi] : undefined, se: x.se, delta: x.id === 'sem' || !Number.isFinite(x.delta) ? '-' : pct(x.delta, 0), nv: x.n_valid != null ? `${x.n_valid}/${r.R_done}` : '-', v: x.corrects_error ? 'good' : 'poor', selected: sel === i }))}
-              note="Wyniki czynnikowe (regresyjne) są obciążone, gdy służą jako predyktory i zmienna zależna jednocześnie (Skrondal i Laake, 2001). Kolumna „modeluje błąd pomiaru” opisuje założenie podejścia, a nie trafność wyniku. Losowania z rozwiązaniem niezbieżnym lub niedopuszczalnym (przypadek Heywooda) są wykluczane osobno dla każdego podejścia; przedział podaje się przy co najmniej 50 dopuszczalnych losowaniach i 80% udziale." /></div>
+              note={t("Wyniki czynnikowe (regresyjne) są obciążone, gdy służą jako predyktory i zmienna zależna jednocześnie (Skrondal i Laake, 2001). Kolumna „modeluje błąd pomiaru” opisuje założenie podejścia, a nie trafność wyniku. Losowania z rozwiązaniem niezbieżnym lub niedopuszczalnym (przypadek Heywooda) są wykluczane osobno dla każdego podejścia; przedział podaje się przy co najmniej 50 dopuszczalnych losowaniach i 80% udziale.")} /></div>
           </Panel>
-          {mode !== 'simple' ? <CodeExport snippets={{ lavaan: `library(lavaan)\nmodel <- '\n${r.syntax}\n'\nfit_sem <- sem(model, data = dane)\nfit_sam <- sam(model, data = dane, sam.method = "local")\nstandardizedSolution(fit_sem); standardizedSolution(fit_sam)`, python: `from semplex.bridge import CompareJob\njob = CompareJob(dane, skale, "${r.y}", ${JSON.stringify(r.xs)}, R=${r.R}, seed=${r.seed})\nwhile not job.step(10): pass\nprint(job.result()["rows"])`, metody: methodsParagraph(r, lang) }} defaultLang="metody" meta={`ziarno ${r.seed}`} /> : null}
+          {mode !== 'simple' ? <CodeExport snippets={{ lavaan: `library(lavaan)\nmodel <- '\n${r.syntax}\n'\nfit_sem <- sem(model, data = dane)\nfit_sam <- sam(model, data = dane, sam.method = "local")\nstandardizedSolution(fit_sem); standardizedSolution(fit_sam)`, python: `from semplex.bridge import CompareJob\njob = CompareJob(dane, skale, "${r.y}", ${JSON.stringify(r.xs)}, R=${r.R}, seed=${r.seed})\nwhile not job.step(10): pass\nprint(job.result()["rows"])`, metody: methodsParagraph(r, lang) }} defaultLang="metody" meta={t("ziarno {0}", { 0: r.seed })} /> : null}
         </>
       )}
     </Screen>

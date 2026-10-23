@@ -1,16 +1,24 @@
-/* Klient silnika: kolejka wywołań do wątku Pyodide i zadania długie liczone porcjami. */
+/* Engine client: call queue for the Pyodide thread and long tasks computed in chunks. */
+import { getLang } from '../i18n/index.js';
+
+/* Computation thread messages are in Polish; we translate them here (the thread doesn't know the interface language). */
+function statusText(s) {
+  const m = /^(.*)\(Pyodide ([^)]+)\)$/.exec(s || '');
+  return m ? t(m[1] + '(Pyodide {0})', { 0: m[2] }) : t(s);
+}
+import { t } from '../i18n/index.js';
 export const ENGINE_VERSION = '1.3.0';
 
 export class EngineError extends Error {
   constructor(res) {
-    super(res.message || 'Błąd silnika');
+    super(res.message || t("Błąd silnika"));
     this.kind = res.kind || 'engine';
     this.trace = res.trace || '';
   }
 }
 
 export function createEngine(onStatus) {
-  // Wątek leży w public/engine/, więc ta sama ścieżka działa w trybie deweloperskim i po zbudowaniu.
+  // The thread lives in public/engine/, so the same path works in dev mode and after building.
   const worker = new Worker(new URL('engine/worker.js?v=' + ENGINE_VERSION, document.baseURI), { type: 'module' });
   const pending = new Map();
   let seq = 0;
@@ -19,8 +27,8 @@ export function createEngine(onStatus) {
 
   worker.onmessage = (e) => {
     const m = e.data;
-    if (m.type === 'status') { onStatus && onStatus({ status: m.stage === 'ready' ? 'ready' : 'loading', stage: m.stage, progress: m.progress, text: m.text }); return; }
-    if (m.type === 'ready') { onStatus && onStatus({ status: 'ready', progress: 1, versions: m.versions, text: 'Silnik gotowy' }); readyResolve(m.versions); return; }
+    if (m.type === 'status') { onStatus && onStatus({ status: m.stage === 'ready' ? 'ready' : 'loading', stage: m.stage, progress: m.progress, text: statusText(m.text) }); return; }
+    if (m.type === 'ready') { onStatus && onStatus({ status: 'ready', progress: 1, versions: m.versions, text: t("Silnik gotowy") }); readyResolve(m.versions); return; }
     if (m.type === 'fatal') { onStatus && onStatus({ status: 'error', error: m.message, text: m.message }); readyReject(new Error(m.message)); return; }
     if (m.type === 'result') {
       const p = pending.get(m.id);
@@ -29,7 +37,7 @@ export function createEngine(onStatus) {
       if (m.ok) p.resolve(m.result); else p.reject(new EngineError(m));
     }
   };
-  worker.onerror = (e) => { onStatus && onStatus({ status: 'error', error: e.message || 'Wątek obliczeń zakończył się błędem.' }); };
+  worker.onerror = (e) => { onStatus && onStatus({ status: 'error', error: e.message || t("Wątek obliczeń zakończył się błędem.") }); };
 
   const engineUrl = new URL('engine/', document.baseURI).href;
   worker.postMessage({ type: 'init', engineUrl, version: ENGINE_VERSION });
@@ -42,16 +50,16 @@ export function createEngine(onStatus) {
     });
   }
 
-  async function call(fn, args) { await ready; return send({ type: 'call', fn, args: args || {} }); }
+  async function call(fn, args) { await ready; return send({ type: 'call', fn, args: Object.assign({ _lang: getLang() }, args || {}) }); }
 
   async function uploadFile(name, bytes, args) {
     await ready;
     const buf = bytes instanceof ArrayBuffer ? bytes : bytes.buffer;
     const copy = buf.slice(0);
-    return send({ type: 'file', name, bytes: copy, args: args || {} }, [copy]);
+    return send({ type: 'file', name, bytes: copy, args: Object.assign({ _lang: getLang() }, args || {}) }, [copy]);
   }
 
-  /* Zadanie długie: start → porcje → wynik. onProgress(done, total, preview); signal.cancelled przerywa. */
+  /* Long task: start → chunks → result. onProgress(done, total, preview); signal.cancelled aborts. */
   async function runJob(kind, params, { onProgress, signal, chunk, previewEvery, resultArgs } = {}) {
     const start = await call('job_start', { kind, params });
     const id = start.id;

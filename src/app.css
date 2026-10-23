@@ -1,4 +1,4 @@
-/* Rama aplikacji SEMplex - wyłącznie tokeny z tokens.css. */
+/* SEMplex application frame - tokens from tokens.css only. */
 html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); }
 * { box-sizing: border-box; }
 
@@ -47,7 +47,7 @@ p.lead { margin: 0; color: var(--ink-muted); max-width: 72ch; line-height: 22px;
   .cols, .cols.even { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* Tabela prosta (podgląd importu, tabele pomocnicze) */
+/* Simple table (import preview, helper tables) */
 .tbl { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 20px; }
 .tbl th { text-align: left; font-weight: 600; color: var(--ink-muted); font-size: 12px; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); white-space: nowrap; }
 .tbl td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); vertical-align: middle; }
@@ -55,17 +55,17 @@ p.lead { margin: 0; color: var(--ink-muted); max-width: 72ch; line-height: 22px;
 .tbl tr.is-muted td { color: var(--ink-subtle); }
 .tbl select, .tbl input { font: inherit; }
 
-/* Ekran startowy silnika */
+/* Engine start screen */
 .boot { display: flex; flex-direction: column; gap: var(--space-3); }
 
-/* Edytor modelu */
+/* Model editor */
 .editor { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-4); align-items: stretch; }
 .canvas-wrap { position: relative; height: 520px; display: flex; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); }
 .canvas-wrap .sx-mc { flex: 1; }
 .canvas-wrap .tb { position: absolute; top: var(--space-4); left: var(--space-4); z-index: 5; }
 @media (max-width: 1279px) { .editor { grid-template-columns: minmax(0, 1fr); } }
 
-/* Raport */
+/* Report */
 .report { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-8); font-family: var(--font-serif); line-height: 1.6; max-width: 900px; }
 .report h2 { font-family: var(--font-sans); font-size: 18px; margin: var(--space-6) 0 var(--space-2); }
 .report h3 { font-family: var(--font-sans); font-size: 14px; margin: var(--space-4) 0 var(--space-2); }

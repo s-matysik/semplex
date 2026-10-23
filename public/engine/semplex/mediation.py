@@ -1,12 +1,13 @@
-"""Mediacja i moderacja: szablony PROCESS 4 (mediacja, na zmiennych latentnych przez SEM albo
-na średnich skal), 1 (moderacja z obszarem Johnsona-Neymana) i 7 (moderowana mediacja, ścieżka a).
-Przedziały efektów pośrednich: percentylowy bootstrap. Licencja MIT.
+"""Mediation and moderation: PROCESS templates 4 (mediation, on latent variables via SEM or
+on scale means), 1 (moderation with Johnson-Neyman region) and 7 (moderated mediation, path a).
+Indirect effect intervals: percentile bootstrap. MIT License.
 """
 import math
 import numpy as np
 from scipy import stats
 
 from . import sem as semmod
+from . import i18n as I18N
 
 
 def _ols(y, X):
@@ -28,7 +29,7 @@ def latent_model4_syntax(scales, x, m, y, covs=()):
 
 
 class Model4Job:
-    """Mediacja X → M → Y na zmiennych latentnych z bootstrapem efektu pośredniego."""
+    """Mediation X → M → Y on latent variables with bootstrap of the indirect effect."""
 
     def __init__(self, df, scales, x, m, y, R=500, seed=1, latent=True):
         self.latent = latent
@@ -85,7 +86,7 @@ class Model4Job:
 
 
 def model1(df, scales, x, w, y, center=True, probe="sd"):
-    """Moderacja: Y = b0 + b1 X + b2 W + b3 XW. Zwraca efekt warunkowy i obszar Johnsona-Neymana."""
+    """Moderation: Y = b0 + b1 X + b2 W + b3 XW. Returns the conditional effect and the Johnson-Neyman region."""
     D = {}
     for f in (x, w, y):
         D[f] = df[scales[f]].mean(axis=1).to_numpy() if f in scales else df[f].to_numpy(float)
@@ -123,8 +124,8 @@ def model1(df, scales, x, w, y, center=True, probe="sd"):
     sig_share = float(np.mean([abs(b[1] + b[3] * (wv - mw)) / math.sqrt(V[1, 1] + 2 * (wv - mw) * V[1, 3] + (wv - mw) ** 2 * V[3, 3]) > tcrit for wv in W]))
     probes = []
     sdw = W.std(ddof=1)
-    vals = [(mw - sdw, "M − 1 SD"), (W.mean(), "M"), (W.mean() + sdw, "M + 1 SD")] if probe == "sd" else \
-        [(np.percentile(W, 16), "16. percentyl"), (np.percentile(W, 50), "mediana"), (np.percentile(W, 84), "84. percentyl")]
+    vals = [(mw - sdw, I18N.T("M − 1 SD")), (W.mean(), "M"), (W.mean() + sdw, I18N.T("M + 1 SD"))] if probe == "sd" else \
+        [(np.percentile(W, 16), I18N.T("16. percentyl")), (np.percentile(W, 50), "mediana"), (np.percentile(W, 84), I18N.T("84. percentyl"))]
     for wv, lab in vals:
         wc = wv - mw
         est = b[1] + b[3] * wc
@@ -139,7 +140,7 @@ def model1(df, scales, x, w, y, center=True, probe="sd"):
 
 
 class Model7Job:
-    """Moderowana mediacja (W moderuje ścieżkę a) na średnich skal; indeks moderowanej mediacji (Hayes, 2015)."""
+    """Moderated mediation (W moderates path a) at scale means; index of moderated mediation (Hayes, 2015)."""
 
     def __init__(self, df, scales, x, m, y, w, R=1000, seed=1):
         cols = {}
@@ -177,8 +178,8 @@ class Model7Job:
 
 
 class Model14Job:
-    """Moderowana mediacja drugiego etapu (W moderuje ścieżkę b; PROCESS 14) na średnich skal.
-    Indeks moderowanej mediacji = a·b3 (Hayes, 2015)."""
+    """Second-stage moderated mediation (W moderates path b; PROCESS 14) at scale means.
+    Index of moderated mediation = a·b3 (Hayes, 2015)."""
 
     def __init__(self, df, scales, x, m, y, w, R=1000, seed=1):
         cols = {}

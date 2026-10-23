@@ -1,6 +1,6 @@
-"""Statystyki opisowe, korelacje, test Mardii, porównania grup oraz rzetelność i trafność
-(α z CI Feldta, ω z jednoczynnikowej CFA, analiza pozycji, CR, AVE, MSV, HTMT, Fornell-Larcker).
-Licencja MIT.
+"""Descriptive statistics, correlations, Mardia's test, group comparisons, and reliability and validity
+(α with Feldt CI, ω from single-factor CFA, item analysis, CR, AVE, MSV, HTMT, Fornell-Larcker).
+MIT License.
 """
 import math
 import numpy as np
@@ -78,7 +78,7 @@ def group_compare(df, var, group, labels=None):
     return {"test": "anova", "F": float(F), "df1": k - 1, "df2": N - k, "p": float(p), "eta2": float(ssb / sst), "groups": desc}
 
 
-# --------------------------------------------------------------------------- rzetelność
+# --------------------------------------------------------------------------- reliability
 def alpha_ci(alpha, n, k, level=0.95):
     a = (1 - level) / 2
     df1, df2 = n - 1, (n - 1) * (k - 1)
@@ -152,7 +152,7 @@ def omega_bootstrap(df, items, R=300, seed=1, progress=None):
 
 
 def validity_from_cfa(fit, scales, df):
-    """CR, AVE, MSV, √AVE, korelacje czynników i HTMT z wyniku CFA."""
+    """CR, AVE, MSV, √AVE, factor correlations and HTMT from the CFA result."""
     spec = fit.spec
     lv = [f for f in scales if f in spec.lat]
     std_load = {f: [] for f in lv}

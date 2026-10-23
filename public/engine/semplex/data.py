@@ -1,7 +1,7 @@
-"""Moduł danych: odczyt pliku z wykrywaniem kodowania i separatorów, typy zmiennych, kody braków,
-dane osobowe, skale odpowiedzi tekstowych, wyniki skal, pozycje do odwrócenia, nieuważni
-respondenci, odstający, wzorce braków, test MCAR Little'a, kowariancja EM.
-Licencja MIT.
+"""Data module: file reading with encoding and separator detection, variable types, missing value codes,
+personal data, text response scales, scale scores, items to reverse, careless
+respondents, outliers, missing data patterns, Little's MCAR test, EM covariance.
+MIT License.
 """
 import io
 import math
@@ -9,6 +9,7 @@ import re
 import unicodedata
 import numpy as np
 import pandas as pd
+from . import i18n as I18N
 from scipy import stats
 
 # --------------------------------------------------------------------------- odczyt pliku
@@ -140,7 +141,7 @@ def pii_kind(colname, values):
             return "PESEL"
         if "adres" in t or "address" in t or "ip" in t:
             return "adres"
-        return "imię lub nazwisko"
+        return I18N.T("imię lub nazwisko")
     return None
 
 
@@ -193,7 +194,7 @@ def infer_type(series_num, series_raw, colname=""):
 
 
 def inspect(df_raw, info, missing_codes):
-    """Tabela zmiennych do ekranu importu."""
+    """Variable table for the import screen."""
     used = set()
     codes = set(str(c).strip() for c in missing_codes)
     cols = []
@@ -253,7 +254,7 @@ def build(df_raw, columns, missing_codes, decimal=".", reverse_scale=False):
 
 # --------------------------------------------------------------------------- skale i pozycje
 def guess_scales(names):
-    """Grupuje pozycje po wspólnym przedrostku literowym (SAT1, SAT2 → SAT)."""
+    """Groups items by common letter prefix (SAT1, SAT2 → SAT)."""
     groups = {}
     for n in names:
         m = re.match(r"^([A-Za-z]+?)_?(\d+)[a-zA-Z]?$", n)
@@ -287,7 +288,7 @@ def reverse_value(x, lo, hi):
     return lo + hi - x
 
 
-# --------------------------------------------------------------------------- nieuważni i odstający
+# --------------------------------------------------------------------------- careless respondents and outliers
 def longstring(X):
     out = np.zeros(X.shape[0], int)
     for r in range(X.shape[0]):

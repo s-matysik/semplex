@@ -1,8 +1,9 @@
-"""Parser składni lavaan (podzbiór): =~, ~, ~~, := oraz modyfikatory etykiet i wartości stałych.
+"""Parser for lavaan syntax (subset): =~, ~, ~~, := and label and fixed-value modifiers.
 
-Licencja MIT. Implementacja od zera, bez kodu lavaan.
+MIT license. From-scratch implementation, without lavaan code.
 """
 import re
+from . import i18n as I18N
 
 _NAME = r"[A-Za-z_.][A-Za-z0-9_.]*"
 _OPS = [":=", "=~", "~~", "~"]
@@ -21,7 +22,7 @@ def _strip_comment(line):
 
 
 def _statements(text):
-    """Łączy wiersze kontynuowane plusem i zwraca listę (nr_wiersza, instrukcja)."""
+    """Joins lines continued with a plus sign and returns a list of (line_number, statement)."""
     out = []
     for no, raw in enumerate(text.splitlines(), start=1):
         for part in _strip_comment(raw).split(";"):
@@ -51,16 +52,16 @@ def _term(term, line):
         elif re.fullmatch(_NAME, mod):
             mods["label"] = mod
         else:
-            raise SyntaxIssue((line, f"Nie rozpoznano modyfikatora „{mod}”."))
+            raise SyntaxIssue((line, I18N.T("Nie rozpoznano modyfikatora „{p0}”.", p0=mod)))
     if term == "1":
-        return None, mods  # wyraz wolny - struktura średnich nie jest obsługiwana
+        return None, mods  # intercept - mean structure is not supported
     if not re.fullmatch(_NAME, term):
-        raise SyntaxIssue((line, f"„{term}” nie jest poprawną nazwą zmiennej."))
+        raise SyntaxIssue((line, I18N.T("„{p0}” nie jest poprawną nazwą zmiennej.", p0=term)))
     return term, mods
 
 
 def parse(text):
-    """Zwraca słownik: lines (lista instrukcji), defined, errors, warnings."""
+    """Returns a dictionary: lines (list of statements), defined, errors, warnings."""
     res = {"measurement": [], "regressions": [], "covariances": [], "defined": [], "errors": [], "warnings": []}
     for line, st in _statements(text or ""):
         op = None
@@ -70,7 +71,7 @@ def parse(text):
                 break
         if op is None:
             if any(c in st for c in ("==", "<", ">")):
-                res["warnings"].append({"line": line, "message": "Ograniczenia nierówności i równości wyrażeń nie są jeszcze obsługiwane - wiersz pominięto.", "level": "warn"})
+                res["warnings"].append({"line": line, "message": I18N.T("Ograniczenia nierówności i równości wyrażeń nie są jeszcze obsługiwane - wiersz pominięto."), "level": "warn"})
             else:
                 res["errors"].append({"line": line, "message": "Brak operatora: użyj =~ (pomiar), ~ (regresja), ~~ (kowariancja) albo := (efekt)."})
             continue
@@ -78,18 +79,18 @@ def parse(text):
         lhs, rhs = lhs.strip(), rhs.strip()
         if op == ":=":
             if not re.fullmatch(_NAME, lhs):
-                res["errors"].append({"line": line, "message": f"Nazwa efektu „{lhs}” jest niepoprawna."})
+                res["errors"].append({"line": line, "message": I18N.T("Nazwa efektu „{p0}” jest niepoprawna.", p0=lhs)})
                 continue
-            if not re.fullmatch(r"[A-Za-z0-9_.+\-*/() ]+", rhs):
-                res["errors"].append({"line": line, "message": "Wyrażenie efektu może zawierać tylko etykiety, liczby i + − * / ( )."})
+            if not re.fullmatch("[A-Za-z0-9_.+\\-*/() ]+", rhs):
+                res["errors"].append({"line": line, "message": I18N.T("Wyrażenie efektu może zawierać tylko etykiety, liczby i + − * / ( ).")})
                 continue
             res["defined"].append({"name": lhs, "expr": rhs, "line": line})
             continue
         if not re.fullmatch(_NAME, lhs):
-            res["errors"].append({"line": line, "message": f"„{lhs}” nie jest poprawną nazwą zmiennej."})
+            res["errors"].append({"line": line, "message": I18N.T("„{p0}” nie jest poprawną nazwą zmiennej.", p0=lhs)})
             continue
         if not rhs:
-            res["errors"].append({"line": line, "message": "Po operatorze brakuje zmiennych."})
+            res["errors"].append({"line": line, "message": I18N.T("Po operatorze brakuje zmiennych.")})
             continue
         try:
             terms = [_term(t, line) for t in rhs.split("+") if t.strip()]
@@ -99,7 +100,7 @@ def parse(text):
             continue
         for name, mods in terms:
             if name is None:
-                res["warnings"].append({"line": line, "message": "Wyrazy wolne (~ 1) są pomijane - model nie ma struktury średnich.", "level": "warn"})
+                res["warnings"].append({"line": line, "message": I18N.T("Wyrazy wolne (~ 1) są pomijane - model nie ma struktury średnich."), "level": "warn"})
                 continue
             item = {"lhs": lhs, "rhs": name, "line": line, **mods}
             key = {"=~": "measurement", "~": "regressions", "~~": "covariances"}[op]
@@ -108,7 +109,7 @@ def parse(text):
 
 
 def print_model(measurement, regressions=(), covariances=(), defined=()):
-    """Odwrotność parse: model jako tekst w sekcjach."""
+    """Inverse of parse: model as text in sections."""
     out = []
     if measurement:
         out.append("# model pomiarowy")

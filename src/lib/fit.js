@@ -1,5 +1,6 @@
-/* Oceny wskaźników z progami i źródłami (słowo + ikona + kolor przez Verdict/FitIndex). */
+/* Indicator assessments with thresholds and sources (word + icon + color via Verdict/FitIndex). */
 import { format } from 'semplex-ui';
+import { t, lazy } from '../i18n/index.js';
 
 export const n2 = (v) => (v == null || Number.isNaN(v) ? '-' : format.num(v, 2));
 export const n3 = (v) => (v == null || Number.isNaN(v) ? '-' : format.num(v, 3));
@@ -15,7 +16,7 @@ export const pTxt = (v) => {
 };
 export const ci = (lo, hi, d = 2) => `[${format.num(lo, d)}; ${format.num(hi, d)}]`;
 
-export const TONE_WORD = { good: 'dobre', ok: 'dopuszczalne', poor: 'słabe' };
+export const TONE_WORD = lazy(() => ({ good: t("dobre"), ok: 'dopuszczalne', poor: t("słabe") }));
 
 export function grade(value, rule) {
   if (value == null || Number.isNaN(value)) return undefined;
@@ -23,25 +24,25 @@ export function grade(value, rule) {
   return value <= rule.good ? 'good' : value <= rule.ok ? 'ok' : 'poor';
 }
 
-export const RULES = {
-  cfi: { dir: 'min', good: 0.95, ok: 0.90, label: '≥ 0,95', source: 'Hu i Bentler (1999)', scale: [0.8, 1], cut: 0.95,
-    term: 'Comparative Fit Index: o ile model jest lepszy od modelu niezależności (0–1).' },
-  tli: { dir: 'min', good: 0.95, ok: 0.90, label: '≥ 0,95', source: 'Hu i Bentler (1999)', scale: [0.8, 1], cut: 0.95,
-    term: 'Tucker–Lewis Index: jak CFI, z karą za złożoność modelu.' },
-  rmsea: { dir: 'max', good: 0.06, ok: 0.08, label: '≤ 0,06', source: 'Hu i Bentler (1999); Browne i Cudeck (1993)', scale: [0, 0.12], cut: 0.06,
-    term: 'Root Mean Square Error of Approximation: błąd przybliżenia na stopień swobody; przedział 90%.' },
-  srmr: { dir: 'max', good: 0.08, ok: 0.10, label: '≤ 0,08', source: 'Hu i Bentler (1999)', scale: [0, 0.15], cut: 0.08,
-    term: 'Standardized Root Mean Square Residual: średnia reszta korelacji.' },
-  omega: { dir: 'min', good: 0.70, ok: 0.60, label: '≥ 0,70', source: 'Nunnally (1978); McDonald (1999)' },
-  alpha: { dir: 'min', good: 0.70, ok: 0.60, label: '≥ 0,70', source: 'Nunnally (1978)' },
-  cr: { dir: 'min', good: 0.70, ok: 0.60, label: '≥ 0,70', source: 'Hair i in. (2019)' },
-  ave: { dir: 'min', good: 0.50, ok: 0.40, label: '≥ 0,50', source: 'Fornell i Larcker (1981)' },
-  htmt: { dir: 'max', good: 0.85, ok: 0.90, label: '< 0,85', source: 'Henseler, Ringle i Sarstedt (2015)' },
-  kmo: { dir: 'min', good: 0.80, ok: 0.60, label: '≥ 0,60', source: 'Kaiser (1974)' },
-  loading: { dir: 'min', good: 0.50, ok: 0.40, label: '≥ 0,40', source: 'Stevens (2002)' },
-};
+export const RULES = lazy(() => ({
+  cfi: { dir: 'min', good: 0.95, ok: 0.90, label: '≥ 0,95', source: t("Hu i Bentler (1999)"), scale: [0.8, 1], cut: 0.95,
+    term: t("Comparative Fit Index: o ile model jest lepszy od modelu niezależności (0–1).") },
+  tli: { dir: 'min', good: 0.95, ok: 0.90, label: '≥ 0,95', source: t("Hu i Bentler (1999)"), scale: [0.8, 1], cut: 0.95,
+    term: t("Tucker–Lewis Index: jak CFI, z karą za złożoność modelu.") },
+  rmsea: { dir: 'max', good: 0.06, ok: 0.08, label: '≤ 0,06', source: t("Hu i Bentler (1999); Browne i Cudeck (1993)"), scale: [0, 0.12], cut: 0.06,
+    term: t("Root Mean Square Error of Approximation: błąd przybliżenia na stopień swobody; przedział 90%.") },
+  srmr: { dir: 'max', good: 0.08, ok: 0.10, label: '≤ 0,08', source: t("Hu i Bentler (1999)"), scale: [0, 0.15], cut: 0.08,
+    term: t("Standardized Root Mean Square Residual: średnia reszta korelacji.") },
+  omega: { dir: 'min', good: 0.70, ok: 0.60, label: '≥ 0,70', source: t("Nunnally (1978); McDonald (1999)") },
+  alpha: { dir: 'min', good: 0.70, ok: 0.60, label: '≥ 0,70', source: t("Nunnally (1978)") },
+  cr: { dir: 'min', good: 0.70, ok: 0.60, label: '≥ 0,70', source: t("Hair i in. (2019)") },
+  ave: { dir: 'min', good: 0.50, ok: 0.40, label: '≥ 0,50', source: t("Fornell i Larcker (1981)") },
+  htmt: { dir: 'max', good: 0.85, ok: 0.90, label: '< 0,85', source: t("Henseler, Ringle i Sarstedt (2015)") },
+  kmo: { dir: 'min', good: 0.80, ok: 0.60, label: '≥ 0,60', source: t("Kaiser (1974)") },
+  loading: { dir: 'min', good: 0.50, ok: 0.40, label: '≥ 0,40', source: t("Stevens (2002)") },
+}));
 
-/* Zestaw FitIndex dla wyniku CFA/SEM; estymator MLM → wartości skalowane. */
+/* FitIndex set for the CFA/SEM result; MLM estimator → scaled values. */
 export function fitIndices(fit, scaled) {
   const s = scaled && fit.chi2_scaled != null;
   const v = (k) => (s && fit[k + '_scaled'] != null ? fit[k + '_scaled'] : fit[k]);
@@ -50,7 +51,7 @@ export function fitIndices(fit, scaled) {
   const ratio = fit.df > 0 ? chi / fit.df : null;
   const out = [
     { key: 'chi', label: 'χ²/df', value: ratio == null ? '-' : format.num(ratio, 2), verdict: ratio == null ? undefined : ratio <= 3 ? 'good' : ratio <= 5 ? 'ok' : 'poor',
-      threshold: '≤ 3', source: `χ²(${fit.df}) = ${format.num(chi, 2)}; ${pTxt(p)}${s ? ' · Satorra–Bentler' : ''}` },
+      threshold: '≤ 3', source: `χ²(${fit.df}) = ${format.num(chi, 2)}; ${pTxt(p)}${s ? t(" · Satorra–Bentler") : ''}` },
   ];
   ['cfi', 'tli', 'rmsea', 'srmr'].forEach((k) => {
     if (k === 'tli') return;
@@ -83,10 +84,13 @@ export function fitSentence(fit, scaled, lang = 'pl') {
     const pp = format.p(p, o);
     return `χ²(${fit.df}) = ${format.num(chi, 2, { decimal: '.' })}, p ${pp.startsWith('<') ? pp : '= ' + pp}, CFI = ${f(cfi, 3)}, TLI = ${f(s ? fit.tli_scaled : fit.tli, 3)}, RMSEA = ${f(rmsea, 3)}, 90% CI [${f(lo, 3)}, ${f(hi, 3)}], SRMR = ${f(fit.srmr, 3)}`;
   }
-  return `χ²(${fit.df}) = ${format.num(chi, 2)}; ${pTxt(p)}; CFI = ${n3(cfi)}; TLI = ${n3(s ? fit.tli_scaled : fit.tli)}; RMSEA = ${n3(rmsea)} [${n3(lo)}; ${n3(hi)}]; SRMR = ${n3(fit.srmr)}`;
+  const PLo = { decimal: ',' };
+  const q3 = (x) => (x == null || Number.isNaN(x) ? '-' : format.num(x, 3, PLo));
+  const qp = (v) => { const s0 = format.p(v, PLo); return s0.startsWith('<') ? 'p ' + s0 : 'p = ' + s0; };
+  return `χ²(${fit.df}) = ${format.num(chi, 2, PLo)}; ${qp(p)}; CFI = ${q3(cfi)}; TLI = ${q3(s ? fit.tli_scaled : fit.tli)}; RMSEA = ${q3(rmsea)} [${q3(lo)}; ${q3(hi)}]; SRMR = ${q3(fit.srmr)}`;
 }
 
-export const ESTIMATORS = [
-  { value: 'ML', label: 'ML', hint: 'Największa wiarygodność; zakłada normalność wielowymiarową.' },
-  { value: 'MLM', label: 'MLM (Satorra–Bentler)', hint: 'Odporne błędy i skalowane χ²; zalecane przy skośnych pozycjach Likerta.' },
-];
+export const ESTIMATORS = lazy(() => ([
+  { value: 'ML', label: 'ML', hint: t("Największa wiarygodność; zakłada normalność wielowymiarową.") },
+  { value: 'MLM', label: t("MLM (Satorra–Bentler)"), hint: t("Odporne błędy i skalowane χ²; zalecane przy skośnych pozycjach Likerta.") },
+]));

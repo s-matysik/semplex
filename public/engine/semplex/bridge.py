@@ -1,16 +1,17 @@
-"""Most EFA – regresja – SEM: ten sam efekt strukturalny liczony kilkoma podejściami.
+"""Bridge EFA - regression - SEM: the same structural effect computed via several approaches.
 
-Podejścia: regresja na sumach (średnich) pozycji, regresja na wynikach czynnikowych (Thurstone),
-korekta Croona, pojedynczy wskaźnik z korektą α, SAM lokalny (Rosseel i Loh, 2024),
-ESEM (rotacja target; efekt z macierzy Φ przy nasyconej części strukturalnej) oraz pełny SEM.
-Wszystkie β są standaryzowane. Przedziały: percentylowy bootstrap.
-Licencja MIT.
+Approaches: regression on sums (means) of items, regression on factor scores (Thurstone),
+Croon's correction, single indicator with alpha correction, local SAM (Rosseel and Loh, 2024),
+ESEM (target rotation; effect from the Phi matrix with a saturated structural part), and full SEM.
+All betas are standardized. Intervals: percentile bootstrap.
+MIT License.
 """
 import math
 import numpy as np
 
 from . import sem as semmod
 from . import efa as efamod
+from . import i18n as I18N
 from .data import cronbach_alpha
 
 APPROACHES = [
@@ -25,7 +26,7 @@ APPROACHES = [
 
 
 def _beta_from_cov(C, ypos, xpos):
-    """Standaryzowane współczynniki regresji y na x z macierzy kowariancji/korelacji."""
+    """Standardized regression coefficients of y on x from the covariance/correlation matrix."""
     d = np.sqrt(np.diag(C))
     Rm = C / np.outer(d, d)
     Rxx = Rm[np.ix_(xpos, xpos)]
@@ -40,7 +41,7 @@ def _cfa_syntax(scales, factors):
 
 def _thurstone(X, S, Lam, Phi, Theta):
     Sig = Lam @ Phi @ Lam.T + Theta
-    A = Phi @ Lam.T @ np.linalg.inv(Sig)  # wagi wyników regresyjnych (k x p)
+    A = Phi @ Lam.T @ np.linalg.inv(Sig)  # regression score weights (k x p)
     return A
 
 
@@ -66,12 +67,12 @@ def _target_rotate(L, T):
 
 
 def _pl(x, fmt):
-    """Liczba w polskim zapisie (przecinek dziesiętny)."""
-    return format(x, fmt).replace('.', ',')
+    """Number with the decimal separator of the interface language."""
+    return I18N.num(x, fmt)
 
 
 def estimate_all(D, scales, y, xs, theta_cache=None):
-    """D: DataFrame kompletnych przypadków. Zwraca słownik id → β (lista dla predyktorów) oraz dodatki."""
+    """D: DataFrame of complete cases. Returns a dictionary id → beta (list for predictors) plus extras."""
     factors = [*xs, y]
     items = [it for f in factors for it in scales[f]]
     X = D[items].to_numpy(float)
@@ -80,11 +81,11 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
     cache = theta_cache if theta_cache is not None else {}
     ypos, xpos = len(factors) - 1, list(range(len(xs)))
 
-    # 1. sumy (średnie) pozycji
+    # 1. sums (means) of items
     M = np.column_stack([D[scales[f]].mean(axis=1).to_numpy() for f in factors])
     out["sum"] = _beta_from_cov(np.cov(M, rowvar=False), ypos, xpos)
 
-    # CFA wspólna (do wyników czynnikowych i Croona)
+    # shared CFA (for factor scores and Croon's method)
     cfa = semmod.fit_model(_cfa_syntax(scales, factors), data=D[items], se=False, theta0=cache.get("cfa"))
     cache["cfa"] = cfa.theta
     Lam, Phi, Theta = _measurement(cfa, factors, items)
@@ -106,7 +107,7 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
     why = {"fscore": None if cfa_ok else ("cfa_nonconverged" if not cfa.converged else "cfa_inadmissible"),
            "croon": None if valid["croon"] else ("cfa_nonconverged" if not cfa.converged else "cfa_inadmissible" if cfa.heywood else "croon_nonpositive")}
 
-    # 4. pojedynczy wskaźnik z korektą α
+    # 4. single indicator with α correction
     parts, alphas = [], {}
     Ds = D.copy()
     for f in factors:
@@ -150,7 +151,7 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
     valid["sam"] = bool(all(blk_flags) and np.all(np.diag(Veta) > 0))
     why["sam"] = None if valid["sam"] else ("block_nonconverged_or_inadmissible" if not all(blk_flags) else "latent_cov_nonpositive")
 
-    # 6. ESEM: EFA (ML) z rotacją target zgodną ze skalami; Φ → β
+    # 6. ESEM: EFA (ML) with target rotation matching the scales; Φ → β
     Rm = np.corrcoef(X, rowvar=False)
     L0, _ = efamod.extract(Rm, k, "ml")
     Tg = np.zeros((p, k))
@@ -158,7 +159,7 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
     for j, f in enumerate(factors):
         Tg[pos:pos + len(scales[f]), j] = 1
         pos += len(scales[f])
-    # rotacja target z zerami poza skalą: kolumna j odpowiada czynnikowi j celu; ustalamy tylko znaki
+    # target rotation with zeros outside the scale: column j corresponds to target factor j; we only fix the signs
     Lr, PhiE = _target_rotate(L0, Tg)
     sg = np.sign((Lr * Tg).sum(0))
     sg[sg == 0] = 1
@@ -170,7 +171,7 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
     valid["esem"] = bool(np.all(np.isfinite(out["esem"])) and np.all(np.diag(PhiM) > 0))
     why["esem"] = None if valid["esem"] else "esem_invalid"
 
-    # 7. pełny SEM
+    # 7. full SEM
     syn = _cfa_syntax(scales, factors) + f"\n{y} ~ " + " + ".join(xs)
     full = semmod.fit_model(syn, data=D[items], se=False, theta0=cache.get("sem"))
     cache["sem"] = full.theta
@@ -243,7 +244,7 @@ class CompareJob:
             ok = n_valid >= MIN_VALID_DRAWS and share >= MIN_VALID_SHARE
             lo, hi = (float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5))) if ok else (float("nan"), float("nan"))
             se = float(d.std(ddof=1)) if ok else float("nan")
-            rows.append({"id": key, "label": label, "sub": sub, "est": est, "lo": lo, "hi": hi, "se": se,
+            rows.append({"id": key, "label": I18N.T(label), "sub": I18N.T(sub), "est": est, "lo": lo, "hi": hi, "se": se,
                          "point_valid": bool(self.extra["valid"].get(key, False)), "n_valid": n_valid, "valid_share": share,
                          "rejected": dict(self.rejected[key]), "ci_available": ok, "low_valid_share": share < 0.95})
         ref = rows[-1]
@@ -256,15 +257,15 @@ class CompareJob:
         spread = max(g.values()) - min(g.values())
         total = g["sem"] - g["sum"]
         steps = [
-            # kolejne różnice między podejściami - opis, a nie zidentyfikowany rozkład obciążenia
-            {"label": "Średnie pozycji", "value": g["sum"], "kind": "start"},
-            {"label": "Pojedynczy wskaźnik − średnie", "value": g["single"] - g["sum"], "kind": "step"},
-            {"label": "SAM − pojedynczy wskaźnik", "value": g["sam"] - g["single"], "kind": "step"},
-            {"label": "SEM łączny − SAM", "value": g["sem"] - g["sam"], "kind": "step"},
-            {"label": "SEM łączny", "value": g["sem"], "kind": "end"},
-            {"label": "ESEM (przybliżenie) − SEM łączny", "value": g["esem"] - g["sem"], "kind": "aside"},
+            # further differences between approaches - a description, not an identified bias distribution
+            {"label": I18N.T("Średnie pozycji"), "value": g["sum"], "kind": "start"},
+            {"label": I18N.T("Pojedynczy wskaźnik − średnie"), "value": g["single"] - g["sum"], "kind": "step"},
+            {"label": I18N.T("SAM − pojedynczy wskaźnik"), "value": g["sam"] - g["single"], "kind": "step"},
+            {"label": I18N.T("SEM łączny − SAM"), "value": g["sem"] - g["sam"], "kind": "step"},
+            {"label": I18N.T("SEM łączny"), "value": g["sem"], "kind": "end"},
+            {"label": I18N.T("ESEM (przybliżenie) − SEM łączny"), "value": g["esem"] - g["sem"], "kind": "aside"},
         ]
-        # opisowy udział pierwszego kroku w różnicy średnie → SEM; poza [0, 1] nie ma interpretacji udziału
+        # descriptive share of the first step in the means → SEM difference; outside [0, 1] the share has no interpretation
         share_me = (g["single"] - g["sum"]) / total if abs(total) > 1e-9 else float("nan")
         if not (0.0 <= share_me <= 1.0):
             share_me = float("nan")
@@ -272,28 +273,22 @@ class CompareJob:
         cfi = self.extra["cfa_fit"]["cfi"]
         if n < 300 or cfi < 0.90:
             rec = "sam"
-            reasons = [f"Reguła heurystyczna (N < 300 lub CFI < 0,90): sugerujemy obejrzeć wynik SAM, który w lokalnej estymacji "
-                       f"ogranicza przenoszenie błędnej specyfikacji jednej skali na ścieżki strukturalne. Tu N = {n}, CFI = {_pl(cfi, '.3f')}.",
-                       "Sugestia nie zastępuje oceny modelu pomiarowego ani nie wskazuje wyniku „prawdziwego”."]
+            reasons = [I18N.T("Reguła heurystyczna (N < 300 lub CFI < 0,90): sugerujemy obejrzeć wynik SAM, który w lokalnej estymacji ogranicza przenoszenie błędnej specyfikacji jednej skali na ścieżki strukturalne. Tu N = {p0}, CFI = {p1}.", p0=n, p1=_pl(cfi, '.3f')),
+                       I18N.T("Sugestia nie zastępuje oceny modelu pomiarowego ani nie wskazuje wyniku „prawdziwego”.")]
         elif abs(g["esem"] - g["sem"]) > 0.05 and self.extra.get("esem_max_cross", 0) >= 0.20:
             rec = "esem"
-            reasons = [f"Reguła heurystyczna: przybliżenie ESEM różni się od SEM łącznego o {_pl(g['esem'] - g['sem'], '+.2f')}, a największy "
-                       f"ładunek krzyżowy wynosi {_pl(self.extra['esem_max_cross'], '.2f')} - sprawdź, czy ładunki krzyżowe mają uzasadnienie merytoryczne."]
+            reasons = [I18N.T("Reguła heurystyczna: przybliżenie ESEM różni się od SEM łącznego o {p0}, a największy ładunek krzyżowy wynosi {p1} - sprawdź, czy ładunki krzyżowe mają uzasadnienie merytoryczne.", p0=_pl(g['esem'] - g['sem'], '+.2f'), p1=_pl(self.extra['esem_max_cross'], '.2f'))]
         else:
             rec = "sem"
-            reasons = [f"Reguła heurystyczna: N = {n} ≥ 300 i CFI = {_pl(cfi, '.3f')} ≥ 0,90, a ładunki krzyżowe nie zmieniają wyniku - "
-                       "punktem odniesienia jest SEM łączny. Oceń dopasowanie także innymi wskaźnikami."]
+            reasons = [I18N.T("Reguła heurystyczna: N = {p0} ≥ 300 i CFI = {p1} ≥ 0,90, a ładunki krzyżowe nie zmieniają wyniku - punktem odniesienia jest SEM łączny. Oceń dopasowanie także innymi wskaźnikami.", p0=n, p1=_pl(cfi, '.3f'))]
         pred_r = self.extra.get("pred_r", 0.0)
         collinear = pred_r >= 0.85
         if collinear:
-            reasons = [f"Predyktory są bardzo silnie skorelowane na poziomie latentnym (r = {_pl(pred_r, '.2f')}). Efekty cząstkowe są niestabilne "
-                       "i zależą od podejścia - ostrożnie interpretuj ich oddzielne wkłady. Łączenie konstruktów wymaga uzasadnienia teoretycznego, "
-                       "a nie tylko wysokiej korelacji."] + reasons
+            reasons = [I18N.T("Predyktory są bardzo silnie skorelowane na poziomie latentnym (r = {p0}). Efekty cząstkowe są niestabilne i zależą od podejścia - ostrożnie interpretuj ich oddzielne wkłady. Łączenie konstruktów wymaga uzasadnienia teoretycznego, a nie tylko wysokiej korelacji.", p0=_pl(pred_r, '.2f'))] + reasons
         mean_alpha = float(np.mean(list(self.extra["alpha"].values())))
         bad = [r["label"] for r in rows if not r["ci_available"] or not r["point_valid"]]
         if bad:
-            reasons = [f"Część podejść nie ma wiarygodnego przedziału (za mało dopuszczalnych losowań bootstrap lub niedopuszczalne "
-                       f"rozwiązanie w próbie): {', '.join(bad)}."] + reasons
+            reasons = [I18N.T("Część podejść nie ma wiarygodnego przedziału (za mało dopuszczalnych losowań bootstrap lub niedopuszczalne rozwiązanie w próbie): {p0}.", p0=', '.join(bad))] + reasons
         return {"rows": rows, "spread": spread, "underestimate": rows[0]["delta"], "share_measurement": share_me,
                 "rule": "heuristic", "errors": self.errors, "reduced_model": True,
                 "agree": sum(r["agrees"] for r in rows), "waterfall": steps, "recommended": rec, "reasons": reasons,

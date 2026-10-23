@@ -1,7 +1,7 @@
-"""Warstwa sesji dla interfejsu: stan danych w pamięci przeglądarki i polecenia JSON.
+"""Session layer for the interface: data state in browser memory and JSON commands.
 
-Każda funkcja publiczna przyjmuje słownik i zwraca słownik gotowy do JSON (bez NaN).
-Długie obliczenia mają postać zadań: job_start → job_step (porcjami) → job_result.
+Each public function takes a dictionary and returns a dictionary ready for JSON (no NaN).
+Long computations take the form of jobs: job_start → job_step (in chunks) → job_result.
 """
 import json
 import math
@@ -16,6 +16,7 @@ from . import sem as S
 from . import measure as M
 from . import bridge as B
 from . import mediation as MED
+from . import i18n as I18N
 
 STATE = {"raw": None, "info": None, "base": None, "meta": {}, "changes": [], "work": None, "excluded": set(),
          "split": None, "split_seed": 1, "split_strata": None, "file": None, "sample_meta": None}
@@ -44,18 +45,19 @@ def _clean(o):
 
 
 def call(name, payload_json):
-    """Punkt wejścia z JavaScriptu: call('summary', '{}') → JSON."""
+    """Entry point from JavaScript: call('summary', '{}') → JSON."""
     t0 = time.time()
     try:
         fn = globals()[name]
         if name.startswith("_") or not callable(fn):
             raise KeyError(name)
         args = json.loads(payload_json) if payload_json else {}
+        I18N.set_lang(args.pop("_lang", "pl"))
         res = fn(**args)
         return json.dumps({"ok": True, "result": _clean(res), "ms": round((time.time() - t0) * 1000)}, ensure_ascii=False)
     except S.ModelError as e:
         return json.dumps({"ok": False, "kind": "model", "message": str(e)}, ensure_ascii=False)
-    except Exception as e:  # komunikat techniczny trafia do „Szczegółów technicznych”
+    except Exception as e:  # the technical message goes into "Technical details"
         import traceback
         return json.dumps({"ok": False, "kind": "engine", "message": f"{type(e).__name__}: {e}", "trace": traceback.format_exc()[-3000:]}, ensure_ascii=False)
 
@@ -89,9 +91,9 @@ def sniff(filename, raw=None, path=None, encoding="auto", sep="auto", decimal="a
 
 
 def clean_source(columns):
-    """Plik źródłowy bez kolumn pominiętych przy imporcie (m.in. danych osobowych) - do zapisu projektu.
+    """Source file without the columns skipped during import (including personal data) - for saving the project.
 
-    Zwraca tekst CSV (UTF-8, separator ',', wartości jak w pliku źródłowym) i ustawienia, z którymi trzeba go wczytać."""
+    Returns CSV text (UTF-8, ',' separator, values as in the source file) and the settings needed to load it."""
     raw = STATE["raw"]
     keep = [c["source"] for c in columns if c.get("type") != "skip" and c["source"] in raw.columns]
     dec = STATE["info"].get("decimal", ".")
@@ -153,10 +155,10 @@ def _analysis_df():
 
 def _require():
     if STATE["work"] is None:
-        raise S.ModelError("Wczytaj dane, zanim uruchomisz analizę.")
+        raise S.ModelError(I18N.T("Wczytaj dane, zanim uruchomisz analizę."))
 
 
-# --------------------------------------------------------------------------- przegląd danych
+# --------------------------------------------------------------------------- data overview
 def summary():
     _require()
     df = STATE["work"]
@@ -239,7 +241,7 @@ def careless(items=None, time_var=None, ls_cut=None, time_cut=None, maha_p=0.001
     df = STATE["work"]
     items = items or [i for s in STATE["scales"].values() for i in s] or [c for c in df.columns if STATE["meta"].get(c, {}).get("type") == "ordinal"]
     X = df[items].to_numpy(float)
-    Xraw = STATE["base"][items].to_numpy(float)  # odpowiedzi przed odwróceniem pozycji
+    Xraw = STATE["base"][items].to_numpy(float)  # responses before item reversal
     ls = D.longstring(Xraw)
     iv = D.irv(Xraw)
     d2, pm = D.mahalanobis(X)
@@ -254,9 +256,9 @@ def careless(items=None, time_var=None, ls_cut=None, time_cut=None, maha_p=0.001
         if ls[i] >= ls_cut:
             reasons.append(f"longstring {ls[i]}")
         if per_item is not None and per_item[i] < tcut:
-            reasons.append(f"{per_item[i]:.1f} s na pozycję")
+            reasons.append(I18N.T("{p0:.1f} s na pozycję", p0=per_item[i]))
         if pm[i] < maha_p:
-            reasons.append(f"Mahalanobis p = {pm[i]:.4f}")
+            reasons.append(I18N.T("Mahalanobis p = {p0:.4f}", p0=pm[i]))
         out.append({"row": i, "longstring": int(ls[i]), "irv": float(iv[i]), "d2": float(d2[i]), "p": float(pm[i]),
                     "sec_per_item": float(per_item[i]) if per_item is not None else None, "flag": bool(reasons), "reasons": reasons,
                     "both": bool(ls[i] >= ls_cut and per_item is not None and per_item[i] < tcut)})
@@ -306,7 +308,7 @@ def descriptives(vars=None, method="pearson", group=None):
     return {"rows": rows_, "vars": vars, "r": R, "p": P, "n": len(A), "mardia": mar, "groups": groups, "compare": comp, "group": group}
 
 
-# --------------------------------------------------------------------------- próba
+# --------------------------------------------------------------------------- sample
 def split(seed=1, strata=None, frac=0.5):
     _require()
     A = _analysis_df()
@@ -317,11 +319,11 @@ def split(seed=1, strata=None, frac=0.5):
 
 
 def analysis_csv(syntax, part="all", missing="listwise"):
-    """Dane dokładnie w postaci użytej w analizie modelu: po przekodowaniu, odwróceniu pozycji, wykluczeniach i wyborze
-    części próby; tylko zmienne modelu, z numerem wiersza pliku źródłowego. Z tym plikiem eksportowany kod odtwarza wynik."""
+    """Data exactly as used in the model analysis: after recoding, item reversal, exclusions, and selection
+    of the sample subset; model variables only, with the source file row number. The exported code reproduces the result with this file."""
     _require()
     if missing == "em":
-        # EM: eksport niepełnych danych (bez wierszy całkowicie pustych); kompletne przypadki nie odtwarzają kowariancji EM
+        # EM: export of incomplete data (excluding fully empty rows); complete cases do not reproduce the EM covariance
         A_ = _part(part)
         obs = S.Spec(syntax, list(A_.columns)).obs
         d = A_[obs].dropna(how="all")
@@ -330,13 +332,13 @@ def analysis_csv(syntax, part="all", missing="listwise"):
     steps = []
     for ch in STATE["changes"]:
         if ch["kind"] == "reverse":
-            steps.append(f"odwrócono {ch['var']} (skala {ch.get('lo')}–{ch.get('hi')})")
+            steps.append(I18N.T("odwrócono {p0} (skala {p1}–{p2})", p0=ch['var'], p1=ch.get('lo'), p2=ch.get('hi')))
         elif ch["kind"] == "exclude":
-            steps.append(f"wykluczono {len(ch['rows'])} wierszy")
+            steps.append(I18N.T("wykluczono {p0} wierszy", p0=len(ch['rows'])))
         elif ch["kind"] == "include":
-            steps.append(f"przywrócono {len(ch['rows'])} wierszy")
+            steps.append(I18N.T("przywrócono {p0} wierszy", p0=len(ch['rows'])))
         elif ch["kind"] == "drop_var":
-            steps.append(f"usunięto zmienną {ch['var']}")
+            steps.append(I18N.T("usunięto zmienną {p0}", p0=ch['var']))
     out = d.copy()
     out.insert(0, "row_id", out.index.astype(int) + 1)
     return {"csv": out.to_csv(index=False, lineterminator="\n"), "n": int(len(out)), "vars": list(obs), "part": part,
@@ -354,7 +356,7 @@ def _part(part):
     return A
 
 
-# --------------------------------------------------------------------------- rzetelność
+# --------------------------------------------------------------------------- reliability
 def reliability(scales=None, part="all"):
     _require()
     A = _part(part)
@@ -390,7 +392,7 @@ def efa_run(items, corr="auto", extraction="minres", rotation="oblimin", k=None,
     X = A[items].dropna().to_numpy(float)
     n = X.shape[0]
     if n < len(items) + 5:
-        raise S.ModelError(f"Za mało kompletnych przypadków do EFA: {n} przy {len(items)} pozycjach.")
+        raise S.ModelError(I18N.T("Za mało kompletnych przypadków do EFA: {p0} przy {p1} pozycjach.", p0=n, p1=len(items)))
     kind = ("polychoric" if E.is_ordinal(X) else "pearson") if corr == "auto" else corr
     R, smoothed = E.correlation(X, kind)
     kmo, msa = E.kmo(R)
@@ -399,7 +401,7 @@ def efa_run(items, corr="auto", extraction="minres", rotation="oblimin", k=None,
     kk = int(k or nf["consensus"])
     sol = E.efa(R, kk, extraction, rotation)
     L = sol["loadings"]
-    # nazwy czynników z większości pozycji skali
+    # factor names from the majority of scale items
     names = []
     inv = {i: s for s, its in STATE["scales"].items() for i in its}
     prim = np.argmax(np.abs(L), 1)
@@ -579,13 +581,13 @@ class _BootJob:
         return out
 
 
-# --------------------------------------------------------------------------- porównanie modeli
+# --------------------------------------------------------------------------- model comparison
 def compare_models(models, part="cfa", estimator="ML"):
-    """Porównanie modeli zagnieżdżonych: Δχ² (dla MLM skalowane metodą Satorry–Bentlera, 2001), ΔCFI, AIC, BIC.
+    """Comparison of nested models: Δχ² (for MLM scaled using the Satorra-Bentler method, 2001), ΔCFI, AIC, BIC.
 
-    Test liczy się tylko dla par z tymi samymi zmiennymi obserwowalnymi i tymi samymi wierszami danych, z rozwiązaniami
-    zbieżnymi i dopuszczalnymi. Zagnieżdżenie sprawdzane jest przez zawieranie zbiorów wolnych parametrów; gdy nie da się
-    go stwierdzić (np. ograniczenia równości), para jest pomijana i porównuje się tylko indeksy dopasowania."""
+    The test is computed only for pairs with the same observed variables and the same data rows, with solutions
+    that are convergent and admissible. Nesting is checked via containment of the sets of free parameters; when it
+    cannot be determined (e.g. equality constraints), the pair is skipped and only the fit indices are compared."""
     _require()
     from scipy import stats as st
     fits = []
@@ -605,16 +607,16 @@ def compare_models(models, part="cfa", estimator="ML"):
                 continue
             reasons = []
             if a["observed"] != b["observed"]:
-                reasons.append("różne zmienne obserwowalne")
+                reasons.append(I18N.T("różne zmienne obserwowalne"))
             if a["rows_id"] is None or a["rows_id"] != b["rows_id"]:
-                reasons.append("różne wiersze danych albo tryb EM")
+                reasons.append(I18N.T("różne wiersze danych albo tryb EM"))
             if not (a["converged"] and b["converged"]):
-                reasons.append("rozwiązanie niezbieżne")
+                reasons.append(I18N.T("rozwiązanie niezbieżne"))
             if not (a["admissible"] and b["admissible"]):
-                reasons.append("rozwiązanie niedopuszczalne (przypadek Heywooda)")
+                reasons.append(I18N.T("rozwiązanie niedopuszczalne (przypadek Heywooda)"))
             if not reasons and not (a["free"] <= b["free"]):
-                # bez potwierdzonego zagnieżdżenia Δχ² nie jest testem modeli zagnieżdżonych - porównujemy tylko indeksy
-                reasons.append("nie potwierdzono zagnieżdżenia (zbiory wolnych parametrów); porównaj CFI, AIC i BIC")
+                # without confirmed nesting, Δχ² is not a test of nested models - we only compare indices
+                reasons.append(I18N.T("nie potwierdzono zagnieżdżenia (zbiory wolnych parametrów); porównaj CFI, AIC i BIC"))
             if reasons:
                 skipped.append({"restricted": a["id"], "general": b["id"], "reasons": reasons})
                 continue
@@ -623,7 +625,7 @@ def compare_models(models, part="cfa", estimator="ML"):
             ddf = a["df"] - b["df"]
             t = {"restricted": a["id"], "general": b["id"], "dchi2": d, "ddf": ddf, "p": float(st.chi2.sf(max(d, 0), ddf)),
                  "dcfi": a["fit"]["cfi"] - b["fit"]["cfi"], "scaled": False, "nesting": "verified" if nested else "unverified",
-                 "warnings": [] if nested else ["Nie stwierdzono zawierania wolnych parametrów - upewnij się, że modele są zagnieżdżone."]}
+                 "warnings": [] if nested else [I18N.T("Nie stwierdzono zawierania wolnych parametrów - upewnij się, że modele są zagnieżdżone.")]}
             ca, cb = a["fit"].get("scaling"), b["fit"].get("scaling")
             if ca and cb:
                 # Satorra-Bentler (2001) scaled difference, as lavaan::anova() for MLM
@@ -633,11 +635,10 @@ def compare_models(models, part="cfa", estimator="ML"):
                     t.update({"dchi2": ds, "dchi2_ml": d, "cd": cd, "p": float(st.chi2.sf(max(ds, 0), ddf)), "scaled": True,
                               "method": "Satorra-Bentler 2001"})
                 else:
-                    # niedodatni czynnik skalujący: test skalowany nie istnieje; nie podstawiamy wyniku ML
+                    # non-positive scaling factor: the scaled test does not exist; we do not substitute the ML result
                     t.update({"dchi2": float("nan"), "dchi2_ml": d, "cd": cd, "p": float("nan"), "scaled": False, "invalid": True,
                               "method": "Satorra-Bentler 2001"})
-                    t["warnings"].append("Czynnik skalujący różnicy jest niedodatni - skalowanego testu Δχ² nie można obliczyć "
-                                         "(rozważ test Satorry–Bentlera, 2010).")
+                    t["warnings"].append(I18N.T("Czynnik skalujący różnicy jest niedodatni - skalowanego testu Δχ² nie można obliczyć (rozważ test Satorry–Bentlera, 2010)."))
                 if "cfi_scaled" in a["fit"] and "cfi_scaled" in b["fit"]:
                     t["dcfi"] = a["fit"]["cfi_scaled"] - b["fit"]["cfi_scaled"]
             tests.append(t)

@@ -1,7 +1,7 @@
-/* Test silnika w WebAssembly: uruchamia prawdziwy public/engine/worker.js z Pyodide w Node
-   i porównuje wyniki z nagraniem z CPython (tests/fixtures/engine.json).
-   Wymaga lokalnej kopii Pyodide:  node tools/engine-wasm-test.mjs <folder_pyodide>
-   (folder z pyodide.mjs, pyodide.asm.wasm, python_stdlib.zip, pyodide-lock.json i kołami numpy/scipy/pandas). */
+/* WebAssembly engine test: runs the real public/engine/worker.js with Pyodide in Node
+   and compares results against a recording from CPython (tests/fixtures/engine.json).
+   Requires a local copy of Pyodide:  node tools/engine-wasm-test.mjs <pyodide_folder>
+   (folder with pyodide.mjs, pyodide.asm.wasm, python_stdlib.zip, pyodide-lock.json and numpy/scipy/pandas wheels). */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';

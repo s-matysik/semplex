@@ -1,11 +1,11 @@
-"""Generuje przykładowy zbiór „Lojalność klientów 2026” (dane syntetyczne, ziarno 2026).
+"""Generates a sample dataset "Customer Loyalty 2026" (synthetic data, seed 2026).
 
-Model populacyjny (standaryzowane zmienne latentne):
-  SAT, LOY, TRU, VAL z rozkładu normalnego o macierzy korelacji Φ (r od 0,29 do 0,58)
-  ENG - słaby czynnik zaangażowania (Q13–Q15, Q17, Q18); Q16 ładuje SAT i LOY.
-Q6 jest odwrócona treścią (ujemny ładunek na LOY). 12 nieuważnych respondentów (jednakowe
-odpowiedzi, krótki czas), ok. 2% braków MCAR, kolumna e-mail do pokazania ochrony danych osobowych.
-Uruchom:  python tools/make_sample.py
+Population model (standardized latent variables):
+  SAT, LOY, TRU, VAL from a normal distribution with correlation matrix Φ (r from 0,29 to 0,58)
+  ENG - weak engagement factor (Q13–Q15, Q17, Q18); Q16 loads on SAT and LOY.
+Q6 is reverse-worded (negative loading on LOY). 12 inattentive respondents (identical
+responses, short time), about 2% MCAR missingness, email column to demonstrate personal data protection.
+Run:  python tools/make_sample.py
 """
 import json
 import os
@@ -14,7 +14,7 @@ import pandas as pd
 
 rng = np.random.default_rng(2026)
 N = 524
-# korelacje czynników jak na ekranach projektu (Φ): SAT, LOY, TRU, VAL
+# factor correlations as in the project screens (Φ): SAT, LOY, TRU, VAL
 PHI = np.array([[1.00, 0.58, 0.46, 0.39],
                 [0.58, 1.00, 0.41, 0.33],
                 [0.46, 0.41, 1.00, 0.29],
@@ -38,7 +38,7 @@ cuts = np.array([-1.45, -0.55, 0.35, 1.25])
 items = [f"Q{i}" for i in range(1, 19)]
 df = pd.DataFrame({q: np.digitize(cont[q] + 0.15, cuts) + 1 for q in items})
 
-# nieuważni: jednakowe odpowiedzi i krótki czas
+# inattentive: identical responses and short time
 careless = rng.choice(N, 12, replace=False)
 for r in careless:
     df.loc[r, items] = rng.integers(2, 5)

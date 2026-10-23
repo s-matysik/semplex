@@ -1,5 +1,6 @@
-/* Wywołania analiz wspólne dla ekranów. */
+/* Analysis calls shared across screens. */
 import { engine, getState, setState, setResult } from '../store.js';
+import { t } from '../i18n/index.js';
 
 export async function ensureSplit() {
   const s = getState();
@@ -19,9 +20,9 @@ export function partFor(stage) {
 }
 
 export function partLabel(part, info) {
-  if (part === 'efa') return `część eksploracyjna${info ? ' · n = ' + info.n_efa : ''}`;
-  if (part === 'cfa') return `część walidacyjna${info ? ' · n = ' + info.n_cfa : ''}`;
-  return 'cała próba';
+  if (part === 'efa') return t("część eksploracyjna{0}", { 0: info ? ' · n = ' + info.n_efa : '' });
+  if (part === 'cfa') return t("część walidacyjna{0}", { 0: info ? ' · n = ' + info.n_cfa : '' });
+  return t("cała próba");
 }
 
 export async function runFit(module, syntax, { part, estimator, mi = true } = {}) {

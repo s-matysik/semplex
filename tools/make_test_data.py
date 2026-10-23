@@ -1,15 +1,15 @@
-"""Syntetyczne zbiory do samodzielnego testowania SEMplex (ze znanymi wartościami populacyjnymi).
+"""Synthetic datasets for self-testing SEMplex (with known population values).
 
-  A  pracownicy_2026.csv     UTF-8, ';', przecinek dziesiętny, skala 1–7; SEM z mediacją i moderacją,
-                             pozycja odwrócona, braki zakodowane jako -9 (rozpoznawany domyślnie) i 99 (pułapka:
-                             nie ma go na liście domyślnej - trzeba go dopisać w polu „Kody braków” przy imporcie),
-                             dane osobowe, nieuważni respondenci
-  B  studenci_ankieta.xlsx   Excel, odpowiedzi zapisane słowami (skala 1–5), EFA z ładunkiem krzyżowym
-                             i słabą pozycją; brak odpowiedzi zapisany słowami
-  C  klienci_cp1250.csv      Windows-1250, ';', N = 150, ładunki krzyżowe - porównanie podejść (SAM, ESEM)
+  A  pracownicy_2026.csv     UTF-8, ';', decimal comma, scale 1–7; SEM with mediation and moderation,
+                             reverse-worded item, missing values coded as -9 (recognized by default) and 99 (trap:
+                             not on the default list - must be added in the "Missing codes" field on import),
+                             personal data, inattentive respondents
+  B  studenci_ankieta.xlsx   Excel, responses recorded as words (scale 1–5), EFA with cross-loading
+                             and a weak item; missing response recorded as a word
+  C  klienci_cp1250.csv      Windows-1250, ';', N = 150, cross-loadings - comparison of approaches (SAM, ESEM)
 
-Wartości „prawdziwe” liczy ten sam skrypt na populacji N = 400 000 (zmienne latentne bez błędu pomiaru)
-i zapisuje do klucz_wartosci.json. Uruchom:  python tools/make_test_data.py  → folder dane-testowe/
+"True" values are computed by the same script on a population of N = 400 000 (latent variables without measurement error)
+and saved to klucz_wartosci.json. Run:  python tools/make_test_data.py  → dane-testowe/ folder
 """
 import json
 import os
@@ -27,7 +27,7 @@ def z(x):
 
 
 def items(F, loads, k, rng, shift=0.0, cross=None):
-    """Pozycje porządkowe 1..k z ładunków standaryzowanych; cross = {nazwa: (F2, λ2)}."""
+    """Ordinal items 1..k from standardized loadings; cross = {name: (F2, λ2)}."""
     cuts = np.linspace(-1.8, 1.8, k - 1) * (1.0 if k == 5 else 0.85)
     out = {}
     for name, lam in loads.items():
@@ -72,7 +72,7 @@ KEY["A"] = {
     "med4_ZAA_WYP_ROT": {"a": a, "b": bc[0], "c_direct": bc[1], "ind": a * bc[0], "total": a * bc[0] + bc[1]},
     "phi": {f"{x}-{y}": float(np.corrcoef(P[x], P[y])[0, 1]) for x, y in [("AUT", "ZAA"), ("AUT", "WSP"), ("ZAA", "WYP"), ("WYP", "ROT"), ("ZAA", "ROT")]},
 }
-# moderacja AUT × WSP → ZAA na wartościach standaryzowanych
+# moderation AUT × WSP → ZAA on standardized values
 Xs, Ws = z(P["AUT"]), z(P["WSP"])
 b, *_ = np.linalg.lstsq(np.column_stack([np.ones(len(Xs)), Xs, Ws, Xs * Ws]), z(P["ZAA"]), rcond=None)
 KEY["A"]["mod_AUTxWSP_ZAA"] = {"b_X": b[1], "b_W": b[2], "b_XW": b[3], "slope_W_-1SD": b[1] - b[3], "slope_W_+1SD": b[1] + b[3]}
@@ -94,10 +94,10 @@ for r in careless:
 czas = np.clip(rng.normal(420, 110, N), 160, 1200).round().astype(int)
 czas[careless] = rng.integers(55, 95, len(careless))
 dfA = dfA.astype(object)
-# braki rzadkie (ok. 1,2% na pozycję), bo silnik liczy na przypadkach kompletnych: przy 18 pozycjach
+# missingness rare (about 1,2% per item), because the engine computes on complete cases: with 18 items
 # zostaje ok. 80% wierszy
 m9 = rng.random(dfA.shape) < 0.008
-m99 = rng.random(dfA.shape) < 0.004  # kod 99 - NIE jest domyślnym kodem braku
+m99 = rng.random(dfA.shape) < 0.004  # code 99 - is NOT the default missing-value code
 dfA = dfA.mask(m9, -9).mask(m99 & ~m9, 99)
 imiona = ["Anna", "Piotr", "Katarzyna", "Tomasz", "Magdalena", "Krzysztof", "Agnieszka", "Michał", "Joanna", "Paweł"]
 nazw = ["Nowak", "Kowalska", "Wiśniewski", "Wójcik", "Kamińska", "Lewandowski", "Zielińska", "Szymański", "Woźniak", "Dąbrowska"]

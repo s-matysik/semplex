@@ -1,124 +1,128 @@
-# SEMplex - analiza ankiet w przeglądarce
+**English** | [Polski](README.pl.md)
 
-SEMplex prowadzi badacza od surowego pliku z ankiety przez rzetelność, EFA i CFA do modelu strukturalnego i gotowej sekcji Wyniki. Wszystko liczy się **w przeglądarce**: silnik w Pythonie (numpy, scipy, pandas) działa w WebAssembly dzięki Pyodide, a dane nie są wysyłane na żaden serwer. Interfejs jest zbudowany z biblioteki `semplex-ui` (system projektowy SEMplex, wersja 18).
+# SEMplex - survey analysis in the browser
 
-Aplikacja jest w pełni statyczna, więc działa na **GitHub Pages** albo na dowolnym hostingu plików (Netlify, Cloudflare Pages, serwer uczelniany).
+SEMplex guides the researcher from a raw survey file through reliability, EFA, and CFA to a structural model and a ready-made Results section. Everything is computed **in the browser**: the Python engine (numpy, scipy, pandas) runs in WebAssembly via Pyodide, and no data is sent to any server. The interface is built on the `semplex-ui` library (the SEMplex design system, version 18).
 
-## Moduły
+The interface is available in Polish and English: a **PL / EN** switch in the top bar (also available in the Ctrl K command palette). The default language follows the browser settings, and the choice is remembered. The report has a separate language selector (Polish or English in APA 7 style).
 
-| Moduł | Co robi |
+The application is fully static, so it runs on **GitHub Pages** or any file hosting (Netlify, Cloudflare Pages, university server).
+
+## Modules
+
+| Module | What it does |
 |---|---|
-| Dane i czyszczenie | import CSV/TXT/TSV/XLSX z wykrywaniem kodowania (UTF-8, Windows-1250), separatora i znaku dziesiętnego; kody braków; pomijanie danych osobowych (e-mail, telefon, PESEL, imię i nazwisko); skale Likerta zapisane słowami; propozycje odwrócenia pozycji; nieuważni respondenci (longstring, czas, Mahalanobis); wzorce braków i test MCAR Little’a; definicje skal |
-| Opisowe i testy | M, SD, skośność, kurtoza, mini-rozkłady; macierz korelacji Pearsona/Spearmana; test Mardii z wyborem estymatora; test t Welcha z g Hedgesa, ANOVA |
-| Rzetelność i trafność | ω McDonalda (z jednoczynnikowej CFA) i α Cronbacha z CI Feldta lub bootstrap; analiza pozycji „bez tej pozycji”; CR, AVE, MSV, Fornell–Larcker, HTMT |
-| EFA | korelacje polichoryczne lub Pearsona; KMO, Bartlett; minres, ML, PAF; rotacje oblimin, geomin, promax, varimax, quartimax; konsensus 9 kryteriów liczby czynników (m.in. analiza równoległa, MAP, Hull, BIC); stabilność ładunków z bootstrapu; podział próby EFA/CFA z ziarnem i warstwowaniem; model CFA z rozwiązania jednym przyciskiem |
-| CFA | składnia lavaan z kontrolą identyfikowalności; estymatory ML i MLM (Satorra–Bentler); χ², CFI, TLI, RMSEA z 90% CI, SRMR z progami i źródłami; ładunki z CI (delta lub bootstrap); przypadki Heywooda; indeksy modyfikacji z propozycją „Dodaj”; porównanie modeli (skalowane Δχ² tylko przy potwierdzonym zagnieżdżeniu, te same zmienne i wiersze; ΔCFI, AIC, BIC); diagram ścieżek (SVG); kod Python i lavaan |
-| SEM - edytor modelu | płótno modelu zsynchronizowane ze składnią w obie strony, przeciąganie zmiennych z danych, cofanie/ponawianie; ścieżki, R², efekty zdefiniowane (`:=`) z bootstrapem |
-| Mediacja i moderacja | szablony PROCESS 4 (na zmiennych latentnych albo średnich), 7 i 14 (moderowana mediacja, ścieżka a albo b) oraz 1 (moderacja z obszarem Johnsona–Neymana); szablon 58 w wydaniu v1 |
-| Porównanie podejść | ten sam efekt w 7 podejściach: średnie pozycji, wyniki czynnikowe, korekta Croona, pojedynczy wskaźnik z korektą α, SAM lokalny, przybliżenie ESEM (rotacja target), SEM łączny; przedziały bootstrap z liczbą odrzuconych losowań; wykres leśny, kolejne różnice (opisowo), sugestia heurystyczna i akapit do Metod (PL/EN) |
-| Raport | sekcja Wyniki po polsku albo w APA 7 po angielsku z tabelami; eksport HTML, Word (.doc), druk/PDF |
-| Dziennik decyzji | obsługiwane zmiany danych i modelu (odwrócenia, wykluczenia, skale, propozycje EFA, modyfikacje z MI, tryb braków w CFA, uruchomienia EFA z ziarnem) z uzasadnieniem i skutkiem; notatki badacza; cofanie z listą modułów do przeliczenia; eksport CSV i JSON |
+| Data and cleaning | CSV/TXT/TSV/XLSX import with encoding detection (UTF-8, Windows-1250), separator and decimal mark detection; missing-value codes; skipping personal data (email, phone number, national ID, first and last name); Likert scales recorded as words; item-reversal suggestions; careless respondents (longstring, response time, Mahalanobis distance); missing-data patterns and Little's MCAR test; scale definitions |
+| Descriptives and tests | M, SD, skewness, kurtosis, mini-distributions; Pearson/Spearman correlation matrix; Mardia's test with choice of estimator; Welch's t-test with Hedges' g, ANOVA |
+| Reliability and validity | McDonald's ω (from a one-factor CFA) and Cronbach's α with Feldt or bootstrap CI; "item deleted" analysis; CR, AVE, MSV, Fornell-Larcker, HTMT |
+| EFA | polychoric or Pearson correlations; KMO, Bartlett's test; minres, ML, PAF; oblimin, geomin, promax, varimax, quartimax rotations; 9-criterion consensus for number of factors (including parallel analysis, MAP, Hull, BIC); loading stability via bootstrap; EFA/CFA sample split with seed and stratification; one-click CFA model from the solution |
+| CFA | lavaan syntax with identifiability checking; ML and MLM (Satorra-Bentler) estimators; χ², CFI, TLI, RMSEA with 90% CI, SRMR with thresholds and sources; loadings with CI (delta method or bootstrap); Heywood cases; modification indices with an "Add" suggestion; model comparison (scaled Δχ² only with confirmed nesting, same variables and rows; ΔCFI, AIC, BIC); path diagram (SVG); Python and lavaan code |
+| SEM - model editor | model canvas synchronized bidirectionally with the syntax, drag-and-drop of variables from the data, undo/redo; paths, R², defined effects (`:=`) with bootstrap |
+| Mediation and moderation | PROCESS templates 4 (on latent variables or on means), 7 and 14 (moderated mediation, path a or b) and 1 (moderation with Johnson-Neyman region); template 58 in release v1 |
+| Approach comparison | the same effect across 7 approaches: item means, factor scores, Croon's correction, single indicator with α correction, local SAM, ESEM approximation (target rotation), joint SEM; bootstrap intervals with the number of rejected draws; forest plot, pairwise differences (descriptive), heuristic suggestion and a paragraph for the Methods section (PL/EN) |
+| Report | Results section in Polish or in APA 7 in English with tables; export to HTML, Word (.doc), print/PDF |
+| Decision log | tracked changes to data and model (reversals, exclusions, scales, EFA suggestions, modifications from MI, missing-data handling mode in CFA, EFA runs with seed) with rationale and effect; researcher notes; undo with a list of modules to recompute; CSV and JSON export |
 
-Moduły Porównanie grup, Moc i wielkość próby, PLS-SEM/IPMA/NCA (v1) i Modele wielopoziomowe (v2) mają w interfejsie ekran zapowiedzi, zgodnie ze specyfikacją wydań.
+The Group comparison, Power and sample size, PLS-SEM/IPMA/NCA (v1), and Multilevel models (v2) modules show a preview screen in the interface, in line with the release specification.
 
-Wspólne dla wszystkich ekranów: przełącznik Prosty / Zaawansowany / Kod, paleta poleceń (Ctrl K), motyw jasny i ciemny, zadania w tle z postępem i anulowaniem, zapis i odczyt projektu `.sxp` (Ctrl S), inspektor przechodzący w szufladę poniżej 1280 px.
+Common to all screens: Simple / Advanced / Code switch, command palette (Ctrl K), light and dark theme, background tasks with progress and cancellation, saving and loading `.sxp` project files (Ctrl S), inspector that collapses into a drawer below 1280 px.
 
-## Uruchomienie lokalne
+## Running locally
 
-Testowane z Node.js 20 (tak jak w CI). Testy interfejsu (`tools/ui-test.mjs`) nie działają w Node.js 24 z powodu przypisania `globalThis.navigator` w środowisku testowym.
+Tested with Node.js 20 (same as in CI). The UI tests (`tools/ui-test.mjs`) do not work in Node.js 24 due to the assignment of `globalThis.navigator` in the test environment.
 
 ```bash
 npm install
-npm run build          # → folder dist/
-npx serve dist         # albo: python -m http.server 8080 -d dist
+npm run build          # → dist/ folder
+npx serve dist         # or: python -m http.server 8080 -d dist
 ```
 
-Otwórz wskazany adres (np. http://localhost:3000). Plik `dist/index.html` otwarty bezpośrednio z dysku (`file://`) nie zadziała, bo przeglądarki blokują wtedy wątki obliczeń - potrzebny jest dowolny serwer plików.
+Open the indicated address (e.g. http://localhost:3000). The `dist/index.html` file opened directly from disk (`file://`) will not work, because browsers block computation threads in that case - any file server is needed.
 
-Tryb deweloperski z odświeżaniem: `npm run dev` (Vite).
+Development mode with hot reload: `npm run dev` (Vite).
 
-## Publikacja na GitHub Pages
+## Publishing to GitHub Pages
 
-1. Utwórz repozytorium na GitHubie i wypchnij zawartość tego folderu (gałąź `main`).
-2. W repozytorium: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Każdy `push` do `main` uruchamia `.github/workflows/deploy.yml`: testy silnika (pytest), budowanie, test interfejsu i publikację. Aplikacja będzie pod adresem `https://<użytkownik>.github.io/<repozytorium>/`.
+1. Create a repository on GitHub and push the contents of this folder (`main` branch).
+2. In the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+3. Every `push` to `main` triggers `.github/workflows/deploy.yml`: engine tests (pytest), build, interface test, and publish. The application will be available at `https://<username>.github.io/<repository>/`.
 
-Aplikacja używa ścieżek względnych, więc działa w podfolderze repozytorium bez dodatkowej konfiguracji.
+The application uses relative paths, so it works in a repository subfolder without additional configuration.
 
-### Inny hosting
+### Alternative hosting
 
-Netlify, Cloudflare Pages, Vercel: polecenie budowania `npm run build`, folder publikacji `dist`. Serwer uczelniany: skopiuj zawartość `dist/` do katalogu WWW. Serwer nie wykonuje żadnych obliczeń.
+Netlify, Cloudflare Pages, Vercel: build command `npm run build`, publish folder `dist`. University server: copy the contents of `dist/` to the WWW directory. The server performs no computations.
 
-## Architektura
+## Architecture
 
 ```
-przeglądarka
-├── interfejs React 18 + semplex-ui        src/ (ekrany w src/screens/)
-│     └── klient silnika                   src/engine/client.js - kolejka wywołań, zadania liczone porcjami
-└── wątek obliczeń (Web Worker)            public/engine/worker.js
-      └── Pyodide 0.29.5 (CPython 3.13 w WebAssembly, z cdn.jsdelivr.net)
-            └── silnik SEMplex (Python)    public/engine/semplex/
-                  syntax.py    parser składni lavaan (=~, ~, ~~, :=, etykiety, wartości stałe)
-                  sem.py       model RAM, ML z gradientem analitycznym, MLM (Satorra–Bentler), dopasowanie, MI, bootstrap
-                  efa.py       korelacje polichoryczne, ekstrakcja, rotacje GPA, kryteria liczby czynników
-                  data.py      import, typy, braki, dane osobowe, nieuważni, MCAR, EM
-                  measure.py   opisowe, Mardia, testy grup, ω, α, CR, AVE, HTMT
-                  bridge.py    porównanie 7 podejść
-                  mediation.py szablony PROCESS 4, 7, 14 i 1
-                  api.py       polecenia JSON wywoływane z interfejsu
+browser
+├── React 18 + semplex-ui interface        src/ (screens in src/screens/)
+│     └── engine client                    src/engine/client.js - call queue, tasks computed in chunks
+└── computation thread (Web Worker)        public/engine/worker.js
+      └── Pyodide 0.29.5 (CPython 3.13 in WebAssembly, from cdn.jsdelivr.net)
+            └── SEMplex engine (Python)    public/engine/semplex/
+                  syntax.py    lavaan syntax parser (=~, ~, ~~, :=, labels, fixed values)
+                  sem.py       RAM model, ML with analytic gradient, MLM (Satorra-Bentler), fit, MI, bootstrap
+                  efa.py       polychoric correlations, extraction, GPA rotations, criteria for number of factors
+                  data.py      import, types, missing values, personal data, careless respondents, MCAR, EM
+                  measure.py   descriptives, Mardia's test, group tests, ω, α, CR, AVE, HTMT
+                  bridge.py    comparison of 7 approaches
+                  mediation.py PROCESS templates 4, 7, 14, and 1
+                  api.py       JSON commands invoked from the interface
 ```
 
-Silnik jest zwykłym pakietem Pythona - ten sam kod można uruchomić poza przeglądarką (`sys.path.insert(0, "public/engine")`, potem `from semplex.sem import fit_model`); tak działa eksport kodu w aplikacji.
+The engine is a regular Python package - the same code can be run outside the browser (`sys.path.insert(0, "public/engine")`, then `from semplex.sem import fit_model`); this is how code export works in the application.
 
-Budowanie (`tools/build.mjs`) używa esbuild-wasm w jednym procesie Node, bez binariów zależnych od systemu, więc wynik jest taki sam lokalnie i w GitHub Actions.
+The build (`tools/build.mjs`) uses esbuild-wasm in a single Node process, with no system-dependent binaries, so the result is identical locally and in GitHub Actions.
 
-## Testy
+## Tests
 
-| Polecenie | Co sprawdza |
+| Command | What it checks |
 |---|---|
-| `npm run test:engine` | test różnicy χ² Satorry–Bentlera i diagnostyka współliniowości; zgodność z lavaan na zbiorach Holzinger–Swineford (CFA: χ² = 85,306, df = 24, CFI = 0,931, RMSEA = 0,092 [0,071; 0,114], SRMR = 0,065, ładunki i SE) i Political Democracy (SEM z kowariancjami reszt: χ² = 38,125, df = 35, ścieżki i SE); parser składni; EFA; ścieżkę API na danych przykładowych |
-| `npm run test:ui` | zbudowaną aplikację w happy-dom: import przykładu, wszystkie moduły i główne przyciski, szablony mediacji, raport PL/EN, decyzja i jej cofnięcie - na nagranych odpowiedziach silnika (`tests/fixtures/engine.json`) |
-| `npm run test:wasm <folder_pyodide>` | prawdziwy `worker.js` z Pyodide w Node: wyniki w WebAssembly porównane z CPython (wymaga lokalnej kopii Pyodide 0.29.5 z kołami numpy, scipy, pandas) |
+| `npm run test:engine` | Satorra-Bentler χ² difference test and collinearity diagnostics; agreement with lavaan on the Holzinger-Swineford (CFA: χ² = 85.306, df = 24, CFI = 0.931, RMSEA = 0.092 [0.071; 0.114], SRMR = 0.065, loadings and SE) and Political Democracy (SEM with residual covariances: χ² = 38.125, df = 35, paths and SE) datasets; syntax parser; EFA; the API path on sample data |
+| `npm run test:ui` (and `SX_LANG=en`) | the built application in happy-dom, in the Polish or English version: importing the sample, all modules and main buttons, mediation templates, PL/EN report, decision and its reversal - on recorded engine responses (`tests/fixtures/engine.json`) |
+| `npm run test:wasm <pyodide_folder>` | the actual `worker.js` with Pyodide in Node: WebAssembly results compared against CPython (requires a local copy of Pyodide 0.29.5 with numpy, scipy, pandas wheels) |
 
-Czasy w WebAssembly (Node 20, Pyodide 0.29.5 z plików lokalnych, dane przykładowe N = 512): start silnika ok. 25 s (w przeglądarce dochodzi pierwsze pobranie ok. 25 MB, kolejne uruchomienia korzystają z pamięci podręcznej), CFA 0,1 s, EFA z konsensusem 2,3 s, bootstrap CFA ok. 0,06 s na próbę, porównanie podejść ok. 0,2 s na próbę bootstrap.
+WebAssembly timings (Node 20, Pyodide 0.29.5 from local files, sample data N = 512): engine startup approx. 25 s (in the browser there is also the initial download of approx. 25 MB, subsequent runs use the cache), CFA 0.1 s, EFA with consensus 2.3 s, CFA bootstrap approx. 0.06 s per sample, approach comparison approx. 0.2 s per bootstrap sample.
 
-## Walidacja (validation)
+## Validation
 
-Folder `validation/` odtwarza wyniki walidacji opisane w artykule o SEMplex.
+The `validation/` folder reproduces the validation results described in the SEMplex paper.
 
-| Skrypt | Co robi |
+| Script | What it does |
 |---|---|
-| `Rscript validation/lavaan_reference.R` | pobiera dane ECSI (`satisfaction`, N = 250 klientów banku, 27 wskaźników; pakiet cSEM 0.7.1 z CRAN, GPL-3 - dane nie są przechowywane w repozytorium) i liczy wartości referencyjne w lavaan 0.7-2, semTools 0.5-9 i psych 2.6.9 |
-| `Rscript validation/lavaan_definitions.R` | wartości referencyjne dla definicji stosowanych w SEMplex (ω z jednoczynnikowej CFA, AVE Fornella–Larckera, HTMT w wersji oryginalnej, analiza równoległa na składowych) oraz test różnicy χ² Satorry–Bentlera (2001) |
-| `python validation/semplex_vs_lavaan.py` | porównuje 1988 wielkości (dopasowanie, oszacowania, błędy standardowe, standaryzowane SE i granice 95% CI, MI, R², ładunki EFA, rzetelność, podejścia porównawcze); kończy się błędem, gdy któremuś parametrowi referencyjnemu brak odpowiednika, wartość nie jest skończona albo różnica (dla wartości p - bezwzględna) przekracza 10⁻⁴ → `validation/results/agreement.csv` |
-| `python validation/monte_carlo.py 500` | badanie symulacyjne modelu z zarządzania zasobami ludzkimi (autonomia → zaangażowanie → wypalenie → intencja odejścia; pozycje Likerta 1–7; N = 150, 300, 600; 500 replikacji) → `validation/results/monte_carlo_summary.csv` |
-| `python validation/ecsi_case_study.py` (oraz `--zero-missing`) | odtwarza wszystkie liczby studium przypadku ECSI z artykułu (z sumą SHA-256 pliku danych i wersjami środowiska w wyniku) oraz analizę wrażliwości z dodatkową kowariancją val2 ~~ val3; wariant `--zero-missing` to analiza wrażliwości, w której odpowiedź 0 traktowana jest jako brak (znaczenie 0 nie jest udokumentowane w cSEM ani plspm) |
+| `Rscript validation/lavaan_reference.R` | downloads the ECSI data (`satisfaction`, N = 250 bank customers, 27 indicators; cSEM 0.7.1 package from CRAN, GPL-3 - data are not stored in the repository) and computes reference values in lavaan 0.7-2, semTools 0.5-9, and psych 2.6.9 |
+| `Rscript validation/lavaan_definitions.R` | reference values for the definitions used in SEMplex (ω from a one-factor CFA, Fornell-Larcker AVE, HTMT in the original version, parallel analysis on components) and the Satorra-Bentler (2001) χ² difference test |
+| `python validation/semplex_vs_lavaan.py` | compares 1988 quantities (fit, estimates, standard errors, standardized SEs and 95% CI bounds, MI, R², EFA loadings, reliability, comparative approaches); exits with an error if any reference parameter lacks a counterpart, a value is not finite, or the difference (absolute, for p-values) exceeds 10⁻⁴ → `validation/results/agreement.csv` |
+| `python validation/monte_carlo.py 500` | simulation study of a human-resource-management model (autonomy → engagement → burnout → turnover intention; Likert items 1-7; N = 150, 300, 600; 500 replications) → `validation/results/monte_carlo_summary.csv` |
+| `python validation/ecsi_case_study.py` (and `--zero-missing`) | reproduces all the numbers from the ECSI case study in the paper (with the data file's SHA-256 checksum and environment versions in the output) plus a sensitivity analysis with an added val2 ~~ val3 covariance; the `--zero-missing` variant is a sensitivity analysis in which a response of 0 is treated as missing (the meaning of 0 is not documented in either cSEM or plspm) |
 
-Wynik: największa znormalizowana różnica, liczona jako |SEMplex − referencja| / max(1, |referencja|), wynosi 3,3·10⁻⁵; w symulacji obciążenie standaryzowanych ścieżek SEM nie przekracza 6,0% (N = 150), a pokrycie 95% przedziałów Walda mieści się w zakresie 91,8–96,2%.
+Result: the largest normalized difference, computed as |SEMplex - reference| / max(1, |reference|), is 3.3·10⁻⁵; in the simulation, the bias of standardized SEM path coefficients does not exceed 6.0% (N = 150), and the coverage of 95% Wald intervals falls within the range 91.8-96.2%.
 
 *English:* `validation/` reproduces the agreement study against lavaan, semTools and psych on the ECSI customer-satisfaction data and the Monte Carlo recovery study reported in the SEMplex software paper.
 
-## Dane przykładowe
+## Sample Data
 
-`public/samples/lojalnosc_2026.csv` - syntetyczny zbiór „Lojalność klientów 2026” (N = 524, 18 pozycji Likerta, skale SAT, LOY, TRU, VAL, pozycja odwrócona Q6, pozycja z ładunkiem krzyżowym Q16, 12 nieuważnych respondentów, kolumna e-mail do pokazania ochrony danych osobowych). Generator: `python tools/make_sample.py` (ziarno 2026).
+`public/samples/lojalnosc_2026.csv` - synthetic "Customer Loyalty 2026" dataset (N = 524, 18 Likert items, SAT, LOY, TRU, VAL scales, reverse-coded item Q6, cross-loading item Q16, 12 careless respondents, an email column to demonstrate personal data protection). Generator: `python tools/make_sample.py` (seed 2026).
 
-## Ograniczenia tego wydania
+## Limitations of this release
 
-Względem specyfikacji (`specyfikacja-semplex.md`) świadomie odłożono:
+Relative to the specification (`specyfikacja-semplex.md`), the following have been deliberately deferred:
 
-- **Estymatory:** dostępne ML i MLM (Satorra–Bentler). MLR i WLSMV dla danych porządkowych nie są jeszcze zaimplementowane; dla pozycji Likerta zalecany jest MLM.
-- **Braki danych:** domyślnie przypadki kompletne (listwise). W CFA dostępny jest też tryb „EM (kowariancja)”: macierz kowariancji z algorytmu EM i estymacja ML z N obejmującym wszystkie częściowo obserwowane osoby. To nie jest FIML; błędy standardowe i testy w tym trybie nie zostały zwalidowane, więc traktuj je ostrożnie.
-- **Struktura średnich i ograniczenia:** model nie ma wyrazów wolnych (`~ 1`); ograniczenia równości i nierówności (`==`, `<`, `>`) są pomijane z ostrzeżeniem.
-- **ESEM** w porównaniu podejść to rotacja target rozwiązania EFA z efektem z macierzy Φ (bez pełnej estymacji błędów ESEM); przedziały daje bootstrap.
-- **Pliki SPSS, Stata, SAS** - wydanie v1; zapisz dane jako CSV albo XLSX.
-- **Pierwsze uruchomienie** wymaga internetu: przeglądarka pobiera Pyodide i pakiety (ok. 25 MB) z cdn.jsdelivr.net, potem korzysta z pamięci podręcznej. Obsługa XLSX doinstalowuje openpyxl z PyPI przy pierwszym pliku Excel.
+- **Estimators:** ML and MLM (Satorra-Bentler) are available. MLR and WLSMV for ordinal data are not yet implemented; for Likert items, MLM is recommended.
+- **Missing data:** complete cases (listwise) by default. In CFA there is also an "EM (covariance)" mode: a covariance matrix from the EM algorithm with ML estimation using N covering all partially observed cases. This is not FIML; standard errors and tests in this mode have not been validated, so treat them with caution.
+- **Mean structure and constraints:** the model has no intercepts (`~ 1`); equality and inequality constraints (`==`, `<`, `>`) are skipped with a warning.
+- **ESEM** in the approach comparison is a target rotation of the EFA solution with the effect from the Φ matrix (without full ESEM error estimation); intervals are provided by bootstrap.
+- **SPSS, Stata, SAS files** - v1 release; save your data as CSV or XLSX instead.
+- **First run** requires internet access: the browser downloads Pyodide and packages (about 25 MB) from cdn.jsdelivr.net, then uses the cache. XLSX support installs openpyxl from PyPI on first use with an Excel file.
 
-## Prywatność
+## Privacy
 
-Plik czyta przeglądarka, a silnik liczy w wątku tej samej karty. Sieć służy tylko do pobrania środowiska Python. Kolumny z danymi osobowymi są domyślnie pomijane przy imporcie. Plik projektu `.sxp` domyślnie nie zawiera kolumn pominiętych przy imporcie, ale zawiera pozostałe odpowiedzi - przechowuj go jak same dane.
+The file is read by the browser, and the engine computes in a thread of the same tab. The network is used only to download the Python environment. Columns containing personal data are skipped by default during import. The `.sxp` project file does not contain columns skipped during import by default, but it does contain the remaining responses - store it as you would the data itself.
 
-## Licencja i autor
+## License and Author
 
-MIT (implementacja od zera, bez kodu lavaan). Sebastian Matysik, Uniwersytet Szczeciński, Instytut Zarządzania, Szkoła Doktorska · ORCID [0009-0002-7264-0501](https://orcid.org/0009-0002-7264-0501).
+MIT (implementation from scratch, no lavaan code). Sebastian Matysik, University of Szczecin, Institute of Management, Doctoral School · ORCID [0009-0002-7264-0501](https://orcid.org/0009-0002-7264-0501).
 
-React i React DOM - MIT, © Meta Platforms, Inc. Pyodide - MPL 2.0.
+React and React DOM - MIT, © Meta Platforms, Inc. Pyodide - MPL 2.0.
