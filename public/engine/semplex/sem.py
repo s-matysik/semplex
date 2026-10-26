@@ -496,8 +496,13 @@ def standardized(spec, theta):
         v = theta[prm["k"]] if prm["k"] is not None else prm["value"]
         if prm["mat"] == "A":
             out.append(v * sd[j] / sd[i])
-        else:
+        elif i == j:
             out.append(v / (sd[i] * sd[j]))
+        else:
+            # covariance between residuals (or exogenous variables): divide by the residual (variance-parameter)
+            # standard deviations, as lavaan std.all does; for exogenous variables these equal the total SDs
+            d = S[i, i] * S[j, j]
+            out.append(v / np.sqrt(d) if d > 0 else float("nan"))
     return np.array(out)
 
 

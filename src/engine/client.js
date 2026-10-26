@@ -7,7 +7,7 @@ function statusText(s) {
   return m ? t(m[1] + '(Pyodide {0})', { 0: m[2] }) : t(s);
 }
 import { t } from '../i18n/index.js';
-export const ENGINE_VERSION = '1.3.0';
+export const ENGINE_VERSION = '1.4.0';
 
 export class EngineError extends Error {
   constructor(res) {

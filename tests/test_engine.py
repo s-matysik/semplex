@@ -200,3 +200,70 @@ def test_compare_models_skips_unverified_nesting(hs, monkeypatch):
     monkeypatch.setattr(api, "fit", lambda syntax, *a, **k: base["m2" if "speed =~ x2" in syntax else "m1"])
     res = api.compare_models([{"id": k, "syntax": v} for k, v in syn.items()], estimator="MLM")
     assert not res["tests"] and res["skipped"] and any("zagnieżdżenia" in r for r in res["skipped"][0]["reasons"])
+
+
+def _bridge_data(n=200, seed=3):
+    rng = np.random.default_rng(seed)
+    X = rng.standard_normal(n); Z = 0.5 * X + np.sqrt(0.75) * rng.standard_normal(n)
+    Y = 0.3 * X + 0.4 * Z + 0.7 * rng.standard_normal(n)
+    cols = {}
+    for name, f in (("x", X), ("z", Z), ("y", Y)):
+        for k in range(4):
+            cols[f"{name}{k}"] = 0.75 * f / f.std() + 0.65 * rng.standard_normal(n)
+    return pd.DataFrame(cols), {"X": [f"x{k}" for k in range(4)], "Z": [f"z{k}" for k in range(4)], "Y": [f"y{k}" for k in range(4)]}
+
+
+def test_comparison_failure_in_one_approach_is_isolated(monkeypatch):
+    """A failure in one approach marks only that approach invalid (v1.3.0 aborted or discarded the draw for all)."""
+    from semplex import bridge
+    D, sc = _bridge_data()
+    ref, ex0, _ = bridge.estimate_all(D, sc, "Y", ["X", "Z"])
+
+    def boom(*a, **k):
+        raise np.linalg.LinAlgError("injected")
+
+    monkeypatch.setattr(bridge, "_target_rotate", boom)
+    b, ex, _ = bridge.estimate_all(D, sc, "Y", ["X", "Z"])
+    assert ex["valid"]["esem"] is False and ex["why"]["esem"] == "error" and "esem" in ex["errors"]
+    for k in ("sum", "fscore", "croon", "single", "sam", "sem"):
+        assert ex["valid"][k] == ex0["valid"][k]
+        assert np.allclose(b[k], ref[k])
+    job = bridge.CompareJob(D, sc, "Y", ["X", "Z"], R=12, seed=2)
+    while not job.step(6):
+        pass
+    rows = {r["id"]: r for r in job.result(0)["rows"]}
+    assert rows["esem"]["n_valid"] == 0 and rows["esem"]["rejected"].get("error") == 12
+    assert rows["sum"]["n_valid"] == 12 and not rows["sum"]["rejected"]
+
+
+def test_comparison_thurstone_failure_affects_only_score_based_approaches(monkeypatch):
+    from semplex import bridge
+    D, sc = _bridge_data(seed=5)
+
+    def boom(*a, **k):
+        raise np.linalg.LinAlgError("injected")
+
+    monkeypatch.setattr(bridge, "_thurstone", boom)
+    b, ex, _ = bridge.estimate_all(D, sc, "Y", ["X", "Z"])
+    assert ex["why"]["fscore"] == "error" and ex["why"]["croon"] == "error"
+    assert all(ex["valid"][k] for k in ("sum", "sam", "esem")) and np.all(np.isfinite(b["sem"]))
+
+
+def test_standardized_residual_covariances_match_lavaan_std_all(pdem):
+    """Residual covariances are standardized by residual SDs (lavaan std.all; found in the export round-trip test)."""
+    m = """ind60 =~ x1 + x2 + x3
+dem60 =~ y1 + y2 + y3 + y4
+dem65 =~ y5 + y6 + y7 + y8
+dem60 ~ ind60
+dem65 ~ ind60 + dem60
+y1 ~~ y5
+y2 ~~ y4 + y6
+y3 ~~ y7
+y4 ~~ y8
+y6 ~~ y8"""
+    ref = {("y1", "y5"): 0.295760952931382, ("y2", "y4"): 0.272566778371843, ("y2", "y6"): 0.356222388545155,
+           ("y3", "y7"): 0.190640930938033, ("y4", "y8"): 0.108801780072636, ("y6", "y8"): 0.337770857202812}  # lavaan 0.7.2
+    f = S.fit_model(m, data=pdem)
+    got = {(r["lhs"], r["rhs"]): r["std"] for r in S.param_table(f) if r["op"] == "~~" and r["lhs"] != r["rhs"]}
+    for k, v in ref.items():
+        assert abs(got[k] - v) < 1e-4, (k, got[k], v)

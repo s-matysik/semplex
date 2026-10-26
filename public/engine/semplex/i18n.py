@@ -5,6 +5,11 @@ LANG = "pl"
 
 # Polish source text -> English. Filled by the translation step; keep the {placeholders} identical.
 EN = {
+    "Diagnostyka: N = {p0} < 300. Przy małych próbach rozwiązania SEM łącznego częściej bywają niezbieżne lub niedopuszczalne; sprawdź liczbę dopuszczalnych losowań i porównaj wynik z SAM.": "Diagnostic: N = {p0} < 300. In small samples, joint SEM solutions are more often non-convergent or inadmissible; check the number of admissible draws and compare the result with SAM.",
+    "Diagnostyka: model pomiarowy słabo pasuje (CFI = {p0} < 0,90). W SEM łącznym błąd specyfikacji jednej skali może przenosić się na ścieżki strukturalne, a SAM szacuje bloki pomiarowe osobno (Rosseel i Loh, 2024). Popraw lub uzasadnij model pomiarowy przed interpretacją.": "Diagnostic: the measurement model fits poorly (CFI = {p0} < 0.90). In joint SEM, misspecification of one scale can propagate to the structural paths, whereas SAM estimates measurement blocks separately (Rosseel and Loh, 2024). Revise or justify the measurement model before interpretation.",
+    "Diagnostyka: przybliżenie ESEM różni się od SEM łącznego o {p0}, a największy ładunek krzyżowy wynosi {p1} - sprawdź, czy ładunki krzyżowe mają uzasadnienie merytoryczne.": "Diagnostic: the ESEM approximation differs from joint SEM by {p0}, and the largest cross-loading is {p1} - check whether the cross-loadings are substantively justified.",
+    "Diagnostyka nie wskazuje problemu (N = {p0} ≥ 300, CFI = {p1} ≥ 0,90, ładunki krzyżowe nie zmieniają wyniku).": "The diagnostics flag no problem (N = {p0} ≥ 300, CFI = {p1} ≥ 0.90, cross-loadings do not change the result).",
+    "SEMplex nie wskazuje najlepszego podejścia: SEM łączny jest punktem odniesienia na wykresie, a różnice opisują wrażliwość wyniku na reprezentację konstruktów.": "SEMplex does not select a best approach: joint SEM is the reference line in the plot, and the differences describe how sensitive the result is to construct representation.",
     "16. percentyl": "16th percentile",
     "84. percentyl": "84th percentile",
     "Analiza równoległa": "Parallel analysis",

@@ -1,0 +1,425 @@
+{
+ "design": "ECSI, SAT on QUAL and VAL, R = 200 bootstrap draws, seed 1; failures injected with probability 0.20 per draw (seed 11) into the ESEM target rotation (_target_rotate) or the factor-score weights (_thurstone); plus probability 1.0 on the original sample",
+ "results": {
+  "new_point_fail_esem": {
+   "sum": [
+    60,
+    0.197,
+    0.03,
+    0.378,
+    {}
+   ],
+   "fscore": [
+    60,
+    -0.455,
+    -0.95,
+    0.006,
+    {}
+   ],
+   "croon": [
+    60,
+    -0.27,
+    -1.147,
+    0.134,
+    {}
+   ],
+   "single": [
+    56,
+    -0.199,
+    -0.609,
+    0.179,
+    {
+     "inadmissible": 4
+    }
+   ],
+   "sam": [
+    60,
+    -0.108,
+    -0.534,
+    0.431,
+    {}
+   ],
+   "esem": [
+    0,
+    NaN,
+    NaN,
+    NaN,
+    {
+     "error": 60
+    }
+   ],
+   "sem": [
+    49,
+    -0.27,
+    NaN,
+    NaN,
+    {
+     "inadmissible": 11
+    }
+   ]
+  },
+  "old_point_fail_esem": {
+   "aborted": "LinAlgError: injected failure"
+  },
+  "old_baseline": {
+   "sum": [
+    200,
+    0.197,
+    0.037,
+    0.382,
+    {}
+   ],
+   "fscore": [
+    200,
+    -0.455,
+    -1.011,
+    0.04,
+    {}
+   ],
+   "croon": [
+    200,
+    -0.27,
+    -0.961,
+    0.165,
+    {}
+   ],
+   "single": [
+    188,
+    -0.199,
+    -0.807,
+    0.202,
+    {
+     "inadmissible": 12
+    }
+   ],
+   "sam": [
+    200,
+    -0.108,
+    -0.566,
+    0.424,
+    {}
+   ],
+   "esem": [
+    200,
+    0.625,
+    0.403,
+    0.793,
+    {}
+   ],
+   "sem": [
+    170,
+    -0.27,
+    -0.58,
+    0.166,
+    {
+     "inadmissible": 30
+    }
+   ]
+  },
+  "old_target_rotate_p20": {
+   "sum": [
+    151,
+    0.197,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "fscore": [
+    151,
+    -0.455,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "croon": [
+    151,
+    -0.27,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "single": [
+    142,
+    -0.199,
+    NaN,
+    NaN,
+    {
+     "error": 49,
+     "inadmissible": 9
+    }
+   ],
+   "sam": [
+    151,
+    -0.108,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "esem": [
+    151,
+    0.625,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "sem": [
+    127,
+    -0.27,
+    NaN,
+    NaN,
+    {
+     "error": 49,
+     "inadmissible": 24
+    }
+   ]
+  },
+  "old_thurstone_p20": {
+   "sum": [
+    151,
+    0.197,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "fscore": [
+    151,
+    -0.455,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "croon": [
+    151,
+    -0.27,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "single": [
+    142,
+    -0.199,
+    NaN,
+    NaN,
+    {
+     "error": 49,
+     "inadmissible": 9
+    }
+   ],
+   "sam": [
+    151,
+    -0.108,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "esem": [
+    151,
+    0.625,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "sem": [
+    127,
+    -0.27,
+    NaN,
+    NaN,
+    {
+     "error": 49,
+     "inadmissible": 24
+    }
+   ]
+  },
+  "new_baseline": {
+   "sum": [
+    200,
+    0.197,
+    0.037,
+    0.382,
+    {}
+   ],
+   "fscore": [
+    200,
+    -0.455,
+    -1.011,
+    0.04,
+    {}
+   ],
+   "croon": [
+    200,
+    -0.27,
+    -0.961,
+    0.165,
+    {}
+   ],
+   "single": [
+    188,
+    -0.199,
+    -0.807,
+    0.202,
+    {
+     "inadmissible": 12
+    }
+   ],
+   "sam": [
+    200,
+    -0.108,
+    -0.566,
+    0.424,
+    {}
+   ],
+   "esem": [
+    200,
+    0.625,
+    0.403,
+    0.793,
+    {}
+   ],
+   "sem": [
+    170,
+    -0.27,
+    -0.58,
+    0.166,
+    {
+     "inadmissible": 30
+    }
+   ]
+  },
+  "new_target_rotate_p20": {
+   "sum": [
+    200,
+    0.197,
+    0.037,
+    0.382,
+    {}
+   ],
+   "fscore": [
+    200,
+    -0.455,
+    -1.011,
+    0.04,
+    {}
+   ],
+   "croon": [
+    200,
+    -0.27,
+    -0.961,
+    0.165,
+    {}
+   ],
+   "single": [
+    188,
+    -0.199,
+    -0.807,
+    0.202,
+    {
+     "inadmissible": 12
+    }
+   ],
+   "sam": [
+    200,
+    -0.108,
+    -0.566,
+    0.424,
+    {}
+   ],
+   "esem": [
+    151,
+    0.625,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "sem": [
+    170,
+    -0.27,
+    -0.58,
+    0.166,
+    {
+     "inadmissible": 30
+    }
+   ]
+  },
+  "new_thurstone_p20": {
+   "sum": [
+    200,
+    0.197,
+    0.037,
+    0.382,
+    {}
+   ],
+   "fscore": [
+    151,
+    -0.455,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "croon": [
+    151,
+    -0.27,
+    NaN,
+    NaN,
+    {
+     "error": 49
+    }
+   ],
+   "single": [
+    188,
+    -0.199,
+    -0.807,
+    0.202,
+    {
+     "inadmissible": 12
+    }
+   ],
+   "sam": [
+    200,
+    -0.108,
+    -0.566,
+    0.424,
+    {}
+   ],
+   "esem": [
+    200,
+    0.625,
+    0.403,
+    0.793,
+    {}
+   ],
+   "sem": [
+    170,
+    -0.27,
+    -0.58,
+    0.166,
+    {
+     "inadmissible": 30
+    }
+   ]
+  }
+ }
+}

@@ -142,7 +142,7 @@
   "spread": 1.0796822392931926,
   "underestimate": -1.7299738804041265,
   "share_measurement": 0.8482285713992265,
-  "rule": "heuristic",
+  "rule": "diagnostic",
   "errors": 0,
   "reduced_model": true,
   "agree": 5,
@@ -178,11 +178,12 @@
     "kind": "aside"
    }
   ],
-  "recommended": "sam",
+  "recommended": null,
   "reasons": [
    "Predyktory s\u0105 bardzo silnie skorelowane na poziomie latentnym (r = 0,89). Efekty cz\u0105stkowe s\u0105 niestabilne i zale\u017c\u0105 od podej\u015bcia - ostro\u017cnie interpretuj ich oddzielne wk\u0142ady. \u0141\u0105czenie konstrukt\u00f3w wymaga uzasadnienia teoretycznego, a nie tylko wysokiej korelacji.",
-   "Regu\u0142a heurystyczna (N < 300 lub CFI < 0,90): sugerujemy obejrze\u0107 wynik SAM, kt\u00f3ry w lokalnej estymacji ogranicza przenoszenie b\u0142\u0119dnej specyfikacji jednej skali na \u015bcie\u017cki strukturalne. Tu N = 250, CFI = 0,967.",
-   "Sugestia nie zast\u0119puje oceny modelu pomiarowego ani nie wskazuje wyniku \u201eprawdziwego\u201d."
+   "Diagnostyka: N = 250 < 300. Przy ma\u0142ych pr\u00f3bach rozwi\u0105zania SEM \u0142\u0105cznego cz\u0119\u015bciej bywaj\u0105 niezbie\u017cne lub niedopuszczalne; sprawd\u017a liczb\u0119 dopuszczalnych losowa\u0144 i por\u00f3wnaj wynik z SAM.",
+   "Diagnostyka: przybli\u017cenie ESEM r\u00f3\u017cni si\u0119 od SEM \u0142\u0105cznego o +0,89, a najwi\u0119kszy \u0142adunek krzy\u017cowy wynosi 0,47 - sprawd\u017a, czy \u0142adunki krzy\u017cowe maj\u0105 uzasadnienie merytoryczne.",
+   "SEMplex nie wskazuje najlepszego podej\u015bcia: SEM \u0142\u0105czny jest punktem odniesienia na wykresie, a r\u00f3\u017cnice opisuj\u0105 wra\u017cliwo\u015b\u0107 wyniku na reprezentacj\u0119 konstrukt\u00f3w."
   ],
   "n": 250,
   "alpha": {
@@ -389,7 +390,7 @@
   "spread": 1.1966519060905512,
   "underestimate": -0.4503766464928934,
   "share_measurement": 0.8414643828418743,
-  "rule": "heuristic",
+  "rule": "diagnostic",
   "errors": 0,
   "reduced_model": true,
   "agree": 5,
@@ -425,11 +426,12 @@
     "kind": "aside"
    }
   ],
-  "recommended": "sam",
+  "recommended": null,
   "reasons": [
    "Predyktory s\u0105 bardzo silnie skorelowane na poziomie latentnym (r = 0,89). Efekty cz\u0105stkowe s\u0105 niestabilne i zale\u017c\u0105 od podej\u015bcia - ostro\u017cnie interpretuj ich oddzielne wk\u0142ady. \u0141\u0105czenie konstrukt\u00f3w wymaga uzasadnienia teoretycznego, a nie tylko wysokiej korelacji.",
-   "Regu\u0142a heurystyczna (N < 300 lub CFI < 0,90): sugerujemy obejrze\u0107 wynik SAM, kt\u00f3ry w lokalnej estymacji ogranicza przenoszenie b\u0142\u0119dnej specyfikacji jednej skali na \u015bcie\u017cki strukturalne. Tu N = 250, CFI = 0,967.",
-   "Sugestia nie zast\u0119puje oceny modelu pomiarowego ani nie wskazuje wyniku \u201eprawdziwego\u201d."
+   "Diagnostyka: N = 250 < 300. Przy ma\u0142ych pr\u00f3bach rozwi\u0105zania SEM \u0142\u0105cznego cz\u0119\u015bciej bywaj\u0105 niezbie\u017cne lub niedopuszczalne; sprawd\u017a liczb\u0119 dopuszczalnych losowa\u0144 i por\u00f3wnaj wynik z SAM.",
+   "Diagnostyka: przybli\u017cenie ESEM r\u00f3\u017cni si\u0119 od SEM \u0142\u0105cznego o -0,99, a najwi\u0119kszy \u0142adunek krzy\u017cowy wynosi 0,47 - sprawd\u017a, czy \u0142adunki krzy\u017cowe maj\u0105 uzasadnienie merytoryczne.",
+   "SEMplex nie wskazuje najlepszego podej\u015bcia: SEM \u0142\u0105czny jest punktem odniesienia na wykresie, a r\u00f3\u017cnice opisuj\u0105 wra\u017cliwo\u015b\u0107 wyniku na reprezentacj\u0119 konstrukt\u00f3w."
   ],
   "n": 250,
   "alpha": {
@@ -632,7 +634,7 @@
   "spread": 0.19218290586686648,
   "underestimate": -0.16692894937720845,
   "share_measurement": 0.8349376558584805,
-  "rule": "heuristic",
+  "rule": "diagnostic",
   "errors": 0,
   "reduced_model": true,
   "agree": 6,
@@ -668,10 +670,11 @@
     "kind": "aside"
    }
   ],
-  "recommended": "sam",
+  "recommended": null,
   "reasons": [
-   "Regu\u0142a heurystyczna (N < 300 lub CFI < 0,90): sugerujemy obejrze\u0107 wynik SAM, kt\u00f3ry w lokalnej estymacji ogranicza przenoszenie b\u0142\u0119dnej specyfikacji jednej skali na \u015bcie\u017cki strukturalne. Tu N = 250, CFI = 0,977.",
-   "Sugestia nie zast\u0119puje oceny modelu pomiarowego ani nie wskazuje wyniku \u201eprawdziwego\u201d."
+   "Diagnostyka: N = 250 < 300. Przy ma\u0142ych pr\u00f3bach rozwi\u0105zania SEM \u0142\u0105cznego cz\u0119\u015bciej bywaj\u0105 niezbie\u017cne lub niedopuszczalne; sprawd\u017a liczb\u0119 dopuszczalnych losowa\u0144 i por\u00f3wnaj wynik z SAM.",
+   "Diagnostyka: przybli\u017cenie ESEM r\u00f3\u017cni si\u0119 od SEM \u0142\u0105cznego o -0,09, a najwi\u0119kszy \u0142adunek krzy\u017cowy wynosi 0,23 - sprawd\u017a, czy \u0142adunki krzy\u017cowe maj\u0105 uzasadnienie merytoryczne.",
+   "SEMplex nie wskazuje najlepszego podej\u015bcia: SEM \u0142\u0105czny jest punktem odniesienia na wykresie, a r\u00f3\u017cnice opisuj\u0105 wra\u017cliwo\u015b\u0107 wyniku na reprezentacj\u0119 konstrukt\u00f3w."
   ],
   "n": 250,
   "alpha": {

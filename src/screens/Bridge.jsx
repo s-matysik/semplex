@@ -82,7 +82,7 @@ export default function BridgeScreen() {
       if (!out.cancelled) {
         setXi(0);
         setResult('bridge', Object.assign({}, out.result[0], { byX: out.result }));
-        logDecision({ module: 'Porównanie podejść', moduleIcon: 'bridge', kind: 'run', origin: 'manual', action: t("Porównano 7 podejść dla {0} → {1}", { 0: xs.join(', '), 1: y }), reason: t("Bootstrap {0} prób, ziarno {1}. Rekomendacja: {2}.", { 0: R, 1: settings.seed, 2: out.result[0].rows.find((x) => x.id === out.result[0].recommended).label }) });
+        logDecision({ module: 'Porównanie podejść', moduleIcon: 'bridge', kind: 'run', origin: 'manual', action: t("Porównano 7 podejść dla {0} → {1}", { 0: xs.join(', '), 1: y }), reason: t("Bootstrap {0} prób, ziarno {1}.", { 0: R, 1: settings.seed }) });
       }
     });
   }
@@ -92,7 +92,19 @@ export default function BridgeScreen() {
   const partial = !res || !res.value || (preview && running);
   const rows = r ? r.rows : [];
   const ref = rows.find((x) => x.id === 'sem');
-  const recRow = r ? rows.find((x) => x.id === r.recommended) : null;
+  /* Short axis labels (full description in the step note) and an axis range that also covers the aside bar. */
+  const wf = (() => {
+    if (!r || !r.waterfall) return { steps: [] };
+    const SHORT = [t("Średnie"), t("→ poj. wskaźnik"), t("→ SAM"), t("→ SEM"), t("SEM łączny"), t("ESEM − SEM")];
+    let level = 0; const vals = [0];
+    const steps = r.waterfall.map((s, i) => {
+      if (s.kind === 'start' || s.kind === 'end') level = s.value; else if (s.kind === 'step') level += s.value;
+      vals.push(level); if (s.kind === 'aside') vals.push(level + s.value);
+      return { label: SHORT[i] || s.label, note: s.label, value: s.value, kind: s.kind };
+    });
+    const lo = Math.min(...vals), hi = Math.max(...vals), pad = Math.max(0.05, (hi - lo) * 0.08);
+    return { steps, min: Math.floor((lo - pad) * 10) / 10, max: Math.ceil((hi + pad) * 10) / 10 };
+  })();
 
   return (
     <Screen>
@@ -124,18 +136,18 @@ export default function BridgeScreen() {
             <StatTile label={t("Dopuszczalne losowania")} value={`${r.R_ok} z ${r.R}`} icon="reliability" tone={r.R_ok < 0.95 * r.R ? 'ok' : 'good'} note={t("minimum po podejściach (bootstrap)")} />
             <StatTile label={t("W 95% CI SEM łącznego")} value={`${r.agree} z 7`} icon="check" note={t("opis zgodności, nie test")} />
           </div>
-          <Interpretation tone="brand" title={t("Sugestia do dalszej inspekcji (reguła heurystyczna): {0}", { 0: recRow.label })} icon="info" source={t("SAM: Rosseel i Loh (2024); ESEM: Asparouhov i Muthén (2009); korekta Croona: Croon (2002). Progi reguły (N = 300, CFI = 0,90, różnica 0,05, ładunek krzyżowy 0,20) są umowne.")}
+          <Interpretation tone="info" title={t("Diagnostyka porównania")} icon="info" source={t("SAM: Rosseel i Loh (2024); ESEM: Asparouhov i Muthén (2009); korekta Croona: Croon (2002). Progi diagnostyczne (N = 300, CFI = 0,90, różnica 0,05, ładunek krzyżowy 0,20) są umowne i nie służą do wyboru metody.")}
             actions={<><Button size="sm" variant="ghost" icon="copy" onClick={() => copyText(methodsParagraph(r, lang)).then(() => toast(t("Skopiowano akapit do Metod.")))}>{t("Kopiuj akapit")}</Button><Segmented size="sm" label={t("Język akapitu")} value={lang} onChange={setLang} options={[{ value: 'pl', label: 'PL' }, { value: 'en', label: 'EN' }]} /></>}>
-            {r.reasons.join(' ')} β = <b>{n2(recRow.est)}</b>{Number.isFinite(recRow.lo) ? ` [${n2(recRow.lo)}; ${n2(recRow.hi)}]` : ''}.
+            {r.reasons.join(' ')}
           </Interpretation>
           <div className="cols">
             <Panel title={t("Efekt {0} → {1} w siedmiu podejściach", { 0: r.x, 1: r.y })} subtitle={t("Standaryzowane β z 95% CI bootstrap; pasmo = CI SEM łącznego")}>
-              <ForestPlot rows={rows.map((x) => ({ label: x.label, sub: x.sub, est: x.est, lo: Number.isFinite(x.lo) ? x.lo : x.est, hi: Number.isFinite(x.hi) ? x.hi : x.est, highlight: x.id === r.recommended, muted: x.id === 'fscore' }))}
+              <ForestPlot rows={rows.map((x) => ({ label: x.label, sub: x.sub, est: x.est, lo: Number.isFinite(x.lo) ? x.lo : x.est, hi: Number.isFinite(x.hi) ? x.hi : x.est, muted: x.id === 'fscore' }))}
                 reference={ref.est} referenceLabel={t("SEM łączny")} referenceShort="SEM" band={Number.isFinite(ref.lo) ? [ref.lo, ref.hi] : undefined} bandLabel={t("95% CI SEM łącznego")}
-                highlightLabel="sugerowane" otherLabel={t("pozostałe")} selected={sel} onSelect={setSel} tooltip legend fluid axisLabel={t("β standaryzowane")} label={t("Wykres leśny efektu w siedmiu podejściach")} />
+                otherLabel={t("pozostałe")} selected={sel} onSelect={setSel} tooltip legend fluid axisLabel={t("β standaryzowane")} label={t("Wykres leśny efektu w siedmiu podejściach")} />
             </Panel>
             <Panel title={t("Kolejne różnice między podejściami")} subtitle={t("Różnice arytmetyczne oszacowań - opis, nie rozkład obciążenia na przyczyny")}>
-              <WaterfallChart steps={r.waterfall.map((s) => ({ label: s.label, value: s.value, kind: s.kind }))} fluid height={300} axisLabel="β" startLabel="start" endLabel={t("wynik")} asideLabel="osobno" legend label={t("Kolejne różnice oszacowań między podejściami")} />
+              <WaterfallChart steps={wf.steps} min={wf.min} max={wf.max} fluid height={300} axisLabel="β" startLabel={t("start")} endLabel={t("wynik")} asideLabel={t("osobno")} legend label={t("Kolejne różnice oszacowań między podejściami")} />
             </Panel>
           </div>
           <Panel flush title={t("Wszystkie podejścia")}>
