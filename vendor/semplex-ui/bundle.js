@@ -469,7 +469,7 @@
             return h('td', { key: c.key, className: cx('is-' + (c.align || (isNum ? 'num' : 'text')), weak && 'is-weak') }, cell(c, r, opts));
           }));
         })))),
-      props.note ? h('div', { className: 'sx-rtable-note' }, h('i', null, 'Uwaga. '), props.note) : null);
+      props.note ? h('div', { className: 'sx-rtable-note' }, h('i', null, __sxT('Uwaga. ')), props.note) : null);
   }
 
   function LoadingHeatmap(props) {
@@ -535,8 +535,8 @@
     var nRec = crit.filter(function (c) { return c.recommended; }).length;
     var row = hr[0] !== null ? crit[hr[0]] : null;
     var read = row ? h('span', null, h('b', null, row.name + ': ' + row.k + plFactors(row.k)), row.note ? ' - ' + row.note : '')
-      : hk ? h('span', null, h('b', null, hk + plFactors(hk) + ': '), votes[hk - 1] + ' z ' + crit.length + __sxT(' kryteriów') + (recVotes[hk - 1] ? __sxT(', w tym ') + recVotes[hk - 1] + ' z ' + nRec + ' zalecanych' : ''))
-      : h('span', null, h('b', null, 'Konsensus: ' + top + plFactors(top)), ' - ' + votes[top - 1] + ' z ' + crit.length + __sxT(' kryteriów') + (nRec ? __sxT(', w tym ') + recVotes[top - 1] + ' z ' + nRec + ' zalecanych' : ''));
+      : hk ? h('span', null, h('b', null, hk + plFactors(hk) + ': '), votes[hk - 1] + __sxT(' z ') + crit.length + __sxT(' kryteriów') + (recVotes[hk - 1] ? __sxT(', w tym ') + recVotes[hk - 1] + __sxT(' z ') + nRec + __sxT(' zalecanych') : ''))
+      : h('span', null, h('b', null, __sxT('Konsensus: ') + top + plFactors(top)), ' - ' + votes[top - 1] + __sxT(' z ') + crit.length + __sxT(' kryteriów') + (nRec ? __sxT(', w tym ') + recVotes[top - 1] + __sxT(' z ') + nRec + __sxT(' zalecanych') : ''));
     return h('div', { className: cx('sx-cons', props.className) },
       h('table', { className: 'sx-cons-table' },
         h('caption', { className: 'sx-cons-cap' }, props.caption || __sxT('Liczba czynników wskazana przez każde kryterium')),
@@ -598,7 +598,7 @@
   }
 
   /* ---------- Charts (SVG, token colors) ---------- */
-  function plFactors(k) { return k === 1 ? ' czynnik' : (k % 10 >= 2 && k % 10 <= 4 && (k % 100 < 12 || k % 100 > 14)) ? ' czynniki' : __sxT(' czynników'); }
+  function plFactors(k) { return k === 1 ? __sxT(' czynnik') : (k % 10 >= 2 && k % 10 <= 4 && (k % 100 < 12 || k % 100 > 14)) ? __sxT(' czynniki') : __sxT(' czynników'); }
   function ScreePlot(props) {
     var eig = props.eigenvalues || [], par = props.parallel || [];
     var W = props.width || 520, H = props.height || 280, m = { l: 40, r: 16, t: 16, b: 40 };
@@ -640,7 +640,7 @@
     }
     return h('figure', { className: cx('sx-chart', 'sx-scree', props.onSelect && 'is-interactive', props.className), style: { position: 'relative' } },
       h('svg', { ref: svg, viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: props.fluid ? undefined : W }, role: 'img', tabIndex: interactive ? 0 : undefined,
-        'aria-label': 'Wykres osypiska z analizą równoległą; sugerowana liczba czynników: ' + k + (sel !== k ? ', wybrana: ' + sel : ''),
+        'aria-label': __sxT('Wykres osypiska z analizą równoległą; sugerowana liczba czynników: ') + k + (sel !== k ? ', wybrana: ' + sel : ''),
         onMouseMove: interactive ? move : undefined, onMouseLeave: interactive ? function () { setHover(null); } : undefined, onKeyDown: interactive ? key : undefined, onBlur: interactive ? function () { setHover(null); } : undefined,
         onClick: props.onSelect ? function () { if (hv !== null) props.onSelect(hv + 1); } : undefined },
         ticks.map(function (t, i) { return h('g', { key: 't' + i }, h('line', { className: 'sx-grid', x1: m.l, x2: W - m.r, y1: y(t), y2: y(t) }), h('text', { className: 'sx-tick', x: m.l - 8, y: y(t) + 4, textAnchor: 'end' }, String(+t.toFixed(1)).replace('.', dec))); }),
@@ -799,8 +799,8 @@
       h(ChartTip, { tip: tip }),
       props.legend !== false ? h('figcaption', { className: 'sx-legend' },
         h('span', { className: 'sx-lg sx-lg-sq sx-lg-wf-start' }, props.startLabel || __sxT('Punkt wyjścia')),
-        h('span', { className: 'sx-lg sx-lg-sq sx-lg-wf-pos' }, 'Wzrost'),
-        bars.some(function (b) { return b.kind === 'step' && b.b < b.a; }) ? h('span', { className: 'sx-lg sx-lg-sq sx-lg-wf-neg' }, 'Spadek') : null,
+        h('span', { className: 'sx-lg sx-lg-sq sx-lg-wf-pos' }, __sxT('Wzrost')),
+        bars.some(function (b) { return b.kind === 'step' && b.b < b.a; }) ? h('span', { className: 'sx-lg sx-lg-sq sx-lg-wf-neg' }, __sxT('Spadek')) : null,
         h('span', { className: 'sx-lg sx-lg-sq sx-lg-wf-end' }, props.endLabel || __sxT('Wynik końcowy')),
         bars.some(function (b) { return b.kind === 'aside'; }) ? h('span', { className: 'sx-lg sx-lg-sq sx-lg-wf-aside' }, props.asideLabel || __sxT('Efekt poboczny')) : null) : null);
   }
@@ -1011,7 +1011,7 @@
     var seen = {};
     edges = edges.filter(function (e) {
       var k = e.kind === 'cov' ? [e.from, e.to].sort().join('~~') : e.from + '>' + e.to;
-      if (seen[k]) { errors.push({ line: e.line, level: 'warn', message: __sxT('Relacja ') + e.from + ' – ' + e.to + ' występuje dwa razy; liczy się pierwsza.' }); return false; }
+      if (seen[k]) { errors.push({ line: e.line, level: 'warn', message: __sxT('Relacja ') + e.from + ' – ' + e.to + __sxT(' występuje dwa razy; liczy się pierwsza.') }); return false; }
       seen[k] = true; return true;
     });
     var defNames = defined.map(function (d) { return d.name; });
@@ -1439,7 +1439,7 @@
               h('button', { type: 'button', className: 'sx-dgrid-hbtn', onClick: props.onSelectColumn ? function () { props.onSelectColumn(c.key); } : undefined, title: c.label },
                 h('span', { className: 'sx-dgrid-hname' }, h('code', null, c.key), c.reversed ? h('span', { className: 'sx-vchip-flag', title: __sxT('pozycja odwrócona') }, 'R') : null, c.flag ? h(Icon, { name: c.flag, size: 12, className: 'sx-tone-' + c.flag }) : null),
                 c.hist ? h(Distribution, { mini: true, counts: c.hist, width: 56, height: 18 }) : null,
-                h('span', { className: 'sx-dgrid-hmeta', title: (VTYPE()[c.type] || VTYPE().continuous)[1] }, (VTYPE()[c.type] || VTYPE().continuous)[0], c.missing !== undefined ? ' · braki ' + fmt(c.missing * 100, 1, opts) + '%' : '')));
+                h('span', { className: 'sx-dgrid-hmeta', title: (VTYPE()[c.type] || VTYPE().continuous)[1] }, (VTYPE()[c.type] || VTYPE().continuous)[0], c.missing !== undefined ? __sxT(' · braki ') + fmt(c.missing * 100, 1, opts) + '%' : '')));
           }))),
         h('tbody', null, rows.slice(0, limit).map(function (r, i) {
           var id = props.rowIds ? props.rowIds[i] : i + 1, f = flags[id];
@@ -1450,7 +1450,7 @@
               return h('td', { key: c.key, className: cx(c.key === sel && 'is-sel', t === null && __sxT('is-na'), c.type !== 'nominal' && 'is-num') }, t === null ? h('span', { 'aria-label': 'brak' }, '·') : t);
             }));
         }))),
-      rows.length > limit ? h('div', { className: 'sx-dgrid-more' }, __sxT('Pokazano ') + limit + ' z ' + rows.length + ' wierszy', props.onMore ? h(Button, { size: 'sm', variant: 'ghost', onClick: props.onMore }, __sxT('Pokaż wszystkie')) : null) : null);
+      rows.length > limit ? h('div', { className: 'sx-dgrid-more' }, __sxT('Pokazano ') + limit + __sxT(' z ') + rows.length + ' wierszy', props.onMore ? h(Button, { size: 'sm', variant: 'ghost', onClick: props.onMore }, __sxT('Pokaż wszystkie')) : null) : null);
   }
 
   /* ---------- MissingMap: missing-data patterns ---------- */
@@ -1870,7 +1870,7 @@
     });
     var read = hv ? (hv[0] === hv[1] ? '√AVE ' + f[hv[0]] + ' = ' + fmt(Math.sqrt(ave[hv[0]]), 2, opts) + __sxT(' - średnia wariancja wyjaśniona ') + fmt(ave[hv[0]], 2, opts) + (ave[hv[0]] >= 0.5 ? ' (≥ 0,50)' : ' (< 0,50)')
       : hv[0] > hv[1] ? 'HTMT ' + f[hv[1]] + '–' + f[hv[0]] + ' = ' + fmt(ht[hv[0]][hv[1]], 2, opts) + (ht[hv[0]][hv[1]] < cut ? __sxT(' - poniżej progu ') + fmt(cut, 2, opts) : __sxT(' - powyżej progu ') + fmt(cut, 2, opts))
-      : __sxT('Korelacja ') + f[hv[0]] + '–' + f[hv[1]] + ' = ' + fmt(phi[hv[0]][hv[1]], 2, opts) + ' wobec √AVE ' + fmt(Math.sqrt(ave[hv[0]]), 2, opts) + ' i ' + fmt(Math.sqrt(ave[hv[1]]), 2, opts)) : null;
+      : __sxT('Korelacja ') + f[hv[0]] + '–' + f[hv[1]] + ' = ' + fmt(phi[hv[0]][hv[1]], 2, opts) + ' wobec √AVE ' + fmt(Math.sqrt(ave[hv[0]]), 2, opts) + __sxT(' i ') + fmt(Math.sqrt(ave[hv[1]]), 2, opts)) : null;
     return h('div', { className: cx('sx-vm', props.className) },
       h('table', null,
         h('thead', null, h('tr', null, h('th', { className: 'sx-vm-corner' }), f.map(function (a) { return h('th', { key: a, scope: 'col' }, a); }))),
@@ -2221,7 +2221,7 @@
     function ceilAt(x) { var c = ce.length ? ce[0].y : y0; ce.forEach(function (q) { if (x >= q.x) c = q.y; }); return c; }
     var bott = props.bottleneck;
     return h('figure', { className: cx('sx-chart', 'sx-nca', props.className), style: { position: 'relative' } },
-      h('svg', { ref: svg, viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: props.fluid ? undefined : W }, role: 'img', 'aria-label': props.label || ('Analiza warunku koniecznego: ' + (props.xShort || 'X') + ' dla ' + (props.yShort || 'Y')), onMouseMove: move, onMouseLeave: function () { hs[1](null); } },
+      h('svg', { ref: svg, viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: props.fluid ? undefined : W }, role: 'img', 'aria-label': props.label || (__sxT('Analiza warunku koniecznego: ') + (props.xShort || 'X') + __sxT(' dla ') + (props.yShort || 'Y')), onMouseMove: move, onMouseLeave: function () { hs[1](null); } },
         h('path', { className: 'sx-nca-empty', d: empty }),
         ty.map(function (v, i) { return h('g', { key: 'y' + i }, h('line', { className: 'sx-grid', x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v) }), h('text', { className: 'sx-tick', x: m.l - 8, y: Y(v) + 4, textAnchor: 'end' }, fmt(v, 0, opts))); }),
         tx.map(function (v, i) { return h('text', { key: 'x' + i, className: 'sx-tick', x: X(v), y: H - m.b + 18, textAnchor: 'middle' }, fmt(v, 0, opts)); }),

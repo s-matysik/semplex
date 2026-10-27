@@ -582,11 +582,12 @@ class _BootJob:
 
 
 # --------------------------------------------------------------------------- model comparison
-def compare_models(models, part="cfa", estimator="ML"):
+def compare_models(models, part="cfa", estimator="ML", require_admissible=True):
     """Comparison of nested models: Δχ² (for MLM scaled using the Satorra-Bentler method, 2001), ΔCFI, AIC, BIC.
 
     The test is computed only for pairs with the same observed variables and the same data rows, with solutions
-    that are convergent and admissible. Nesting is checked via containment of the sets of free parameters; when it
+    that are convergent and admissible (require_admissible=False is used only by the validation script, which
+    reproduces lavaan::anova; the interface always requires admissible solutions). Nesting is checked via containment of the sets of free parameters; when it
     cannot be determined (e.g. equality constraints), the pair is skipped and only the fit indices are compared."""
     _require()
     from scipy import stats as st
@@ -612,7 +613,7 @@ def compare_models(models, part="cfa", estimator="ML"):
                 reasons.append(I18N.T("różne wiersze danych albo tryb EM"))
             if not (a["converged"] and b["converged"]):
                 reasons.append(I18N.T("rozwiązanie niezbieżne"))
-            if not (a["admissible"] and b["admissible"]):
+            if require_admissible and not (a["admissible"] and b["admissible"]):
                 reasons.append(I18N.T("rozwiązanie niedopuszczalne (przypadek Heywooda)"))
             if not reasons and not (a["free"] <= b["free"]):
                 # without confirmed nesting, Δχ² is not a test of nested models - we only compare indices

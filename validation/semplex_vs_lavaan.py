@@ -124,7 +124,9 @@ _csv = os.path.join(ROOT, "validation", "data", "ecsi.csv")
 _sn = API.sniff("ecsi.csv", path=_csv)
 API.import_data(_sn["columns"], _sn["missing_codes"])
 PAIRS = "\n".join(f"expe{k} ~~ qual{k}" for k in range(1, 6))
-cmpm = API.compare_models([{"id": "m1", "syntax": MEAS}, {"id": "m2", "syntax": MEAS + "\n" + PAIRS}], part="all", estimator="MLM")
+# m1 (six factors, no paired covariances) has a non-positive-definite latent covariance matrix on the full sample
+# (lavaan post.check also FALSE); lavaan::anova still computes the test, so admissibility is not required here
+cmpm = API.compare_models([{"id": "m1", "syntax": MEAS}, {"id": "m2", "syntax": MEAS + "\n" + PAIRS}], part="all", estimator="MLM", require_admissible=False)
 tst = cmpm["tests"][0]
 add("Model comparison", "SB2001 scaled delta chi2", tst["dchi2"], dref["sb2001"]["dchi2"], "fit")
 add("Model comparison", "SB2001 p-value", tst["p"], dref["sb2001"]["p"], "p-value")

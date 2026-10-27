@@ -1,0 +1,74 @@
+{
+ "scales": {
+  "IMAG": [
+   "imag1",
+   "imag2",
+   "imag3",
+   "imag4",
+   "imag5"
+  ],
+  "EXPE": [
+   "expe1",
+   "expe2",
+   "expe3",
+   "expe4",
+   "expe5"
+  ],
+  "QUAL": [
+   "qual1",
+   "qual2",
+   "qual3",
+   "qual4",
+   "qual5"
+  ],
+  "VAL": [
+   "val1",
+   "val2",
+   "val3",
+   "val4"
+  ],
+  "SAT": [
+   "sat1",
+   "sat2",
+   "sat3",
+   "sat4"
+  ],
+  "LOY": [
+   "loy1",
+   "loy2",
+   "loy3",
+   "loy4"
+  ]
+ },
+ "models": {
+  "M1_SAT_QUAL_VAL": {
+   "y": "SAT",
+   "xs": [
+    "QUAL",
+    "VAL"
+   ],
+   "R": 500
+  },
+  "M2_LOY_SAT": {
+   "y": "LOY",
+   "xs": [
+    "SAT"
+   ],
+   "R": 500
+  },
+  "M3_LOY_ALL": {
+   "y": "LOY",
+   "xs": [
+    "IMAG",
+    "EXPE",
+    "QUAL",
+    "VAL",
+    "SAT"
+   ],
+   "R": 100
+  }
+ },
+ "R": 500,
+ "seed": 1,
+ "engine": "1.4.0"
+}

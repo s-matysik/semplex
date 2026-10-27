@@ -60,10 +60,27 @@ def _measurement(fit, factors, items):
     return Lam, Phi, Theta
 
 
+ROTATION_STARTS = 10
+
+
 def _target_rotate(L, T):
+    """Oblique target rotation (GPA). Starts from the identity and from ROTATION_STARTS - 1 random orthonormal matrices
+    drawn with a fixed seed (reproducible), and keeps the solution with the lowest criterion: a single start can end
+    in a local minimum (found by the independent comparison with GPArotation)."""
     W = (T == 0).astype(float)
     vgq = lambda M: (np.sum((W * M) ** 2), 2 * W * W * M)
-    return efamod._gpf_oblq(L, vgq)
+    k = L.shape[1]
+    best = efamod._gpf_oblq(L, vgq, return_f=True)
+    rng = np.random.default_rng(20261027)
+    for _ in range(ROTATION_STARTS - 1):
+        Q, _r = np.linalg.qr(rng.standard_normal((k, k)))
+        try:
+            cand = efamod._gpf_oblq(L, vgq, T0=Q, return_f=True)
+        except np.linalg.LinAlgError:
+            continue
+        if cand[2] < best[2] - 1e-10:
+            best = cand
+    return best[0], best[1]
 
 
 def _pl(x, fmt):
@@ -139,8 +156,15 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
             lines.append(f"{f} =~ 1*_s_{f}")
             lines.append(f"_s_{f} ~~ {max((1 - alphas[f]) * v, 1e-6):.10f}*_s_{f}")
         lines.append(f"{y} ~ " + " + ".join(xs))
-        single = semmod.fit_model("\n".join(lines), data=Ds[[f"_s_{f}" for f in factors]], se=False, theta0=cache.get("single"))
-        cache["single"] = single.theta
+        dsi = Ds[[f"_s_{f}" for f in factors]]
+        single = semmod.fit_model("\n".join(lines), data=dsi, se=False)
+        if cache.get("single") is not None:
+            # also try the full-sample solution as a start and keep the lower discrepancy: in nearly singular models a
+            # single start can stop at a different stationary point (found in the comparison with lavaan)
+            warm = semmod.fit_model("\n".join(lines), data=dsi, se=False, theta0=cache.get("single"))
+            if warm.converged and (not single.converged or warm.fmin < single.fmin - 1e-10):
+                single = warm
+        cache.setdefault("single", single.theta)
         out["single"] = np.array([_std_path(single, y, x) for x in xs])
         valid["single"] = bool(single.converged and not single.heywood)
         why["single"] = None if valid["single"] else ("nonconverged" if not single.converged else "inadmissible")
@@ -179,7 +203,7 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
     try:
         k, p = len(factors), len(items)
         Rm = np.corrcoef(X, rowvar=False)
-        L0, _ = efamod.extract(Rm, k, "ml")
+        L0, einfo = efamod.extract(Rm, k, "ml")
         Tg = np.zeros((p, k))
         pos = 0
         for j, f in enumerate(factors):
@@ -193,8 +217,9 @@ def estimate_all(D, scales, y, xs, theta_cache=None):
         out["esem"] = _beta_from_cov(PhiM, ypos, xpos)
         cross = np.abs(Lr2) * (Tg == 0)
         extra["esem_max_cross"] = float(cross.max()) if cross.size else 0.0
-        valid["esem"] = bool(np.all(np.isfinite(out["esem"])) and np.all(np.diag(PhiM) > 0))
-        why["esem"] = None if valid["esem"] else "esem_invalid"
+        boundary = bool(einfo.get("boundary"))
+        valid["esem"] = bool(np.all(np.isfinite(out["esem"])) and np.all(np.diag(PhiM) > 0) and not boundary)
+        why["esem"] = None if valid["esem"] else ("efa_heywood" if boundary else "esem_invalid")
     except Exception as exc:  # noqa: BLE001
         fail(["esem"], exc)
         extra.setdefault("esem_max_cross", float("nan"))

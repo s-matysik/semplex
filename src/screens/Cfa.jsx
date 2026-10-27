@@ -199,7 +199,7 @@ export default function CfaScreen() {
       <StaleNote stale={res && res.stale} onRun={runNow} running={running} />
       {r && r.part === 'all' && split.use === false ? <Interpretation tone="warn" title={t("CFA na tej samej próbie co EFA")}>{t("Dopasowanie może być zawyżone. Włącz podział próby w module EFA.")}</Interpretation> : null}
       {r && r.heywood.length ? (
-        <Diagnosis level="poor" title={t("Rozwiązanie niedopuszczalne (przypadek Heywooda)")} what={r.heywood.map((h) => h.kind === 'negative_variance' ? t("Ujemna wariancja {0} = {1}", { 0: h.var, 1: n3(h.value) }) : t("Ładunek standaryzowany {0} = {1} > 1", { 0: h.var, 1: n2(h.value) })).join('; ')}
+        <Diagnosis level="poor" title={t("Rozwiązanie niedopuszczalne (przypadek Heywooda)")} what={r.heywood.map((h) => h.kind === 'negative_variance' ? t("Ujemna wariancja {0} = {1}", { 0: h.var, 1: n3(h.value) }) : h.kind === 'latent_cov_not_pd' ? t("Macierz kowariancji zmiennych latentnych nie jest dodatnio określona (najmniejsza wartość własna {0}); co najmniej jedna korelacja latentna jest bliska 1 lub ją przekracza", { 0: n3(h.value) }) : h.kind === 'residual_cov_not_pd' ? t("Macierz kowariancji reszt nie jest dodatnio określona (najmniejsza wartość własna {0})", { 0: n3(h.value) }) : t("Ładunek standaryzowany {0} = {1} > 1", { 0: h.var, 1: n2(h.value) })).join('; ')}
           effect={t("Oszacowania i dopasowanie nie nadają się do interpretacji.")} fixes={[{ title: t("Sprawdź czynnik z dwiema pozycjami albo bardzo silnie skorelowane czynniki"), recommended: true }, { title: t("Połącz czynniki albo dodaj pozycje") }]} source={t("Kolenikov i Bollen (2012)")} />
       ) : null}
       <CollinearityNote res={r} />

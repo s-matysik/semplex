@@ -459,7 +459,13 @@
    "bic": 12328.075164031914,
    "n": 125,
    "converged": true,
-   "heywood": []
+   "heywood": [
+    {
+     "var": null,
+     "value": -0.08168334487756891,
+     "kind": "latent_cov_not_pd"
+    }
+   ]
   },
   "sem": {
    "chi2": 689.9045392226881,
@@ -591,26 +597,30 @@
    {
     "id": "fscore",
     "est": -0.45503083106446673,
-    "lo": -0.9325953308859446,
-    "hi": -0.00816949949390592,
-    "n_valid": 500,
-    "rejected": {},
+    "lo": -0.8973164010846927,
+    "hi": 0.011147139273085917,
+    "n_valid": 440,
+    "rejected": {
+     "cfa_inadmissible": 60
+    },
     "ci_available": true
    },
    {
     "id": "croon",
     "est": -0.269789748889153,
-    "lo": -1.0012815547261193,
-    "hi": 0.12055151782662724,
-    "n_valid": 500,
-    "rejected": {},
+    "lo": -0.6114388803637557,
+    "hi": 0.1257181309095463,
+    "n_valid": 440,
+    "rejected": {
+     "cfa_inadmissible": 60
+    },
     "ci_available": true
    },
    {
     "id": "single",
     "est": -0.1989536256852249,
-    "lo": -0.7069505693585448,
-    "hi": 0.1900735985247518,
+    "lo": -0.7069505556752012,
+    "hi": 0.19007360207731466,
     "n_valid": 471,
     "rejected": {
      "inadmissible": 29
@@ -628,12 +638,14 @@
    },
    {
     "id": "esem",
-    "est": 0.6246514082287259,
-    "lo": 0.38337508037221457,
-    "hi": 0.7926405890456423,
-    "n_valid": 500,
-    "rejected": {},
-    "ci_available": true
+    "est": 0.6246518832276982,
+    "lo": null,
+    "hi": null,
+    "n_valid": 157,
+    "rejected": {
+     "efa_heywood": 343
+    },
+    "ci_available": false
    },
    {
     "id": "sem",
@@ -660,26 +672,30 @@
    {
     "id": "fscore",
     "est": 1.405054030336343,
-    "lo": 0.9734066811580894,
-    "hi": 1.8693940069354111,
-    "n_valid": 500,
-    "rejected": {},
+    "lo": 0.9707266272836937,
+    "hi": 1.8317639483571018,
+    "n_valid": 440,
+    "rejected": {
+     "cfa_inadmissible": 60
+    },
     "ci_available": true
    },
    {
     "id": "croon",
     "est": 1.1957373082413174,
-    "lo": 0.8358050007845502,
-    "hi": 1.9221098526027172,
-    "n_valid": 500,
-    "rejected": {},
+    "lo": 0.8238571181386788,
+    "hi": 1.5370190242786863,
+    "n_valid": 440,
+    "rejected": {
+     "cfa_inadmissible": 60
+    },
     "ci_available": true
    },
    {
     "id": "single",
     "est": 1.1103608200740693,
-    "lo": 0.7431943987823144,
-    "hi": 1.6177767789345456,
+    "lo": 0.7431944003005077,
+    "hi": 1.6177767609142168,
     "n_valid": 471,
     "rejected": {
      "inadmissible": 29
@@ -697,12 +713,14 @@
    },
    {
     "id": "esem",
-    "est": 0.20840212424579196,
-    "lo": -0.0906064517193037,
-    "hi": 0.44773593237981196,
-    "n_valid": 500,
-    "rejected": {},
-    "ci_available": true
+    "est": 0.2084013926955742,
+    "lo": null,
+    "hi": null,
+    "n_valid": 157,
+    "rejected": {
+     "efa_heywood": 343
+    },
+    "ci_available": false
    },
    {
     "id": "sem",
@@ -747,8 +765,8 @@
    {
     "id": "single",
     "est": 0.7586509430974321,
-    "lo": 0.6618169296387107,
-    "hi": 0.8564191614912046,
+    "lo": 0.6618169340777194,
+    "hi": 0.8564191615059181,
     "n_valid": 500,
     "rejected": {},
     "ci_available": true
@@ -792,6 +810,6 @@
   "processor": "AMD64",
   "bootstrap_R": 500,
   "seed": 1,
-  "seconds": 232.3
+  "seconds": 316.2
  }
 }

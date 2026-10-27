@@ -267,3 +267,18 @@ y6 ~~ y8"""
     got = {(r["lhs"], r["rhs"]): r["std"] for r in S.param_table(f) if r["op"] == "~~" and r["lhs"] != r["rhs"]}
     for k, v in ref.items():
         assert abs(got[k] - v) < 1e-4, (k, got[k], v)
+
+
+def test_latent_covariance_not_positive_definite_is_inadmissible():
+    """A CFA with positive variances but a latent correlation above 1 is flagged, as lavaan's post.check does
+    (lavaan 0.7.2 on the same data: post.check FALSE, smallest eigenvalue of cov.lv -0.02437)."""
+    rng = np.random.default_rng(0)
+    n = 80
+    f = rng.standard_normal(n)
+    d = pd.DataFrame({**{f"a{k}": 0.6 * f + 0.8 * rng.standard_normal(n) for k in range(3)},
+                      **{f"b{k}": 0.6 * f + 0.8 * rng.standard_normal(n) for k in range(3)}})
+    fit = S.fit_model("A =~ a0 + a1 + a2\nB =~ b0 + b1 + b2", data=d, se=False)
+    kinds = {h["kind"] for h in fit.heywood}
+    assert fit.converged and "latent_cov_not_pd" in kinds and "negative_variance" not in kinds
+    ev = [h["value"] for h in fit.heywood if h["kind"] == "latent_cov_not_pd"][0]
+    assert abs(ev - (-0.02436594)) < 1e-4

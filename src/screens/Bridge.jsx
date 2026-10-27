@@ -133,7 +133,7 @@ export default function BridgeScreen() {
           <div className="tiles">
             <StatTile label={t("Rozrzut między podejściami")} value={n2(r.spread)} icon="split" note={t("max − min β")} tone={r.spread > 0.15 ? 'ok' : 'good'} />
             <StatTile label={t("Średnie pozycji vs SEM łączny")} value={Number.isFinite(r.underestimate) ? pct(r.underestimate, 0) : '-'} icon="minus" tone={Math.abs(r.underestimate) > 0.15 ? 'ok' : 'good'} note={t("różnica względna oszacowań (opisowa)")} />
-            <StatTile label={t("Dopuszczalne losowania")} value={`${r.R_ok} z ${r.R}`} icon="reliability" tone={r.R_ok < 0.95 * r.R ? 'ok' : 'good'} note={t("minimum po podejściach (bootstrap)")} />
+            <StatTile label={t("Dopuszczalne losowania")} value={t("{0} z {1}", { 0: r.R_ok, 1: r.R })} icon="reliability" tone={r.R_ok < 0.95 * r.R ? 'ok' : 'good'} note={t("minimum po podejściach (bootstrap)")} />
             <StatTile label={t("W 95% CI SEM łącznego")} value={`${r.agree} z 7`} icon="check" note={t("opis zgodności, nie test")} />
           </div>
           <Interpretation tone="info" title={t("Diagnostyka porównania")} icon="info" source={t("SAM: Rosseel i Loh (2024); ESEM: Asparouhov i Muthén (2009); korekta Croona: Croon (2002). Progi diagnostyczne (N = 300, CFI = 0,90, różnica 0,05, ładunek krzyżowy 0,20) są umowne i nie służą do wyboru metody.")}

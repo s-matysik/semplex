@@ -198,14 +198,21 @@ def extract(R, k, method="minres", n=None):
             e = np.sort(np.linalg.eigvalsh(Ss))[::-1][k:]
             return -np.sum(np.log(e) - e) - k + p
 
-        res = optimize.minimize(obj, psi0, method="L-BFGS-B", bounds=[(0.005, 1.0)] * p)
+        # two starting points (SMC-based and the stats::factanal default) and the lower criterion is kept: the ML
+        # function can have several local optima, one of them on the boundary (Heywood case)
+        start2 = np.clip((1 - 0.5 * k / p) / np.diag(np.linalg.inv(R)), 0.005, 0.995)
+        res = None
+        for st in (psi0, start2):
+            r_ = optimize.minimize(obj, st, method="L-BFGS-B", bounds=[(0.005, 1.0)] * p)
+            if res is None or r_.fun < res.fun - 1e-10:
+                res = r_
         psi = res.x
         s = np.sqrt(psi)
         Ss = R / np.outer(s, s)
         w, V = np.linalg.eigh(Ss)
         idx = np.argsort(w)[::-1][:k]
         L = s[:, None] * V[:, idx] * np.sqrt(np.clip(w[idx] - 1, 0, None))
-        return L, {"converged": bool(res.success), "fmin": float(res.fun), "psi": psi}
+        return L, {"converged": bool(res.success), "fmin": float(res.fun), "psi": psi, "boundary": bool(np.any(psi <= 0.005 + 1e-6))}
 
     # minres / ULS
     def obj(psi):
@@ -273,9 +280,9 @@ def _gpf_orth(A, vgq, maxit=1000, eps=1e-6):
     return A @ T, T
 
 
-def _gpf_oblq(A, vgq, maxit=1000, eps=1e-6):
+def _gpf_oblq(A, vgq, maxit=1000, eps=1e-6, T0=None, return_f=False):
     k = A.shape[1]
-    T = np.eye(k)
+    T = np.eye(k) if T0 is None else np.array(T0, float)
     Ti = np.linalg.inv(T)
     L = A @ Ti.T
     f, Gq = vgq(L)
@@ -299,6 +306,8 @@ def _gpf_oblq(A, vgq, maxit=1000, eps=1e-6):
             al /= 2
         T, f = Tt, ft
         G = -(L.T @ Gq @ Ti).T
+    if return_f:
+        return A @ np.linalg.inv(T).T, T.T @ T, f
     return A @ np.linalg.inv(T).T, T.T @ T
 
 

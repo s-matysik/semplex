@@ -590,6 +590,15 @@ def _heywood(o):
     for n, prm in enumerate(spec.params):
         if prm["mat"] == "A" and prm["op"] == "=~" and abs(o.std[n]) > 1:
             issues.append({"var": prm["rhs"], "value": float(o.std[n]), "kind": "std_loading_gt1"})
+    # covariance matrices that are not positive definite (as lavaan's post-estimation check): the model-implied
+    # covariance matrix of the latent variables, and the residual covariance matrix of the observed variables
+    for kind, ids, M in (("latent_cov_not_pd", [spec.idx[v] for v in spec.lat], o.C), ("residual_cov_not_pd", [spec.idx[v] for v in spec.obs], S)):
+        if len(ids) > 1:
+            Mb = M[np.ix_(ids, ids)]
+            if np.count_nonzero(Mb - np.diag(np.diag(Mb))) or kind == "latent_cov_not_pd":
+                ev = float(np.linalg.eigvalsh((Mb + Mb.T) / 2).min())
+                if ev < -1e-8 * max(1.0, float(np.abs(np.diag(Mb)).max())):
+                    issues.append({"var": None, "value": ev, "kind": kind})
     return issues
 
 
