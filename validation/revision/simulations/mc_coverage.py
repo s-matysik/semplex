@@ -34,6 +34,23 @@ def generate(n, r, load, spec, cat, rng):
     return D
 
 
+def run_sharded(tasks, one, raw_name):
+    """Runs the tasks in independent worker processes (multiprocessing pipes are not available in every sandbox):
+    SIM_SHARD=i SIM_NSHARDS=k processes tasks[i::k] serially and writes <raw_name>_shard<i>.csv; without SIM_SHARD the
+    shard files are merged."""
+    sh, k = os.environ.get("SIM_SHARD"), int(os.environ.get("SIM_NSHARDS", 1))
+    if sh is None:
+        parts = [pd.read_csv(os.path.join(HERE, f"{raw_name}_shard{i}.csv")) for i in range(k)]
+        return pd.concat(parts, ignore_index=True)
+    sh = int(sh); rows = []; t0 = time.time(); mine = tasks[sh::k]
+    for j, t in enumerate(mine):
+        rows.append(one(t))
+        if (j + 1) % 25 == 0 or j + 1 == len(mine):
+            pd.DataFrame(rows).to_csv(os.path.join(HERE, f"{raw_name}_shard{sh}.csv"), index=False)
+            print(sh, j + 1, len(mine), round(time.time() - t0), flush=True)
+    sys.exit(0)
+
+
 def one(task):
     cond, rep, seed, R = task
     from semplex import bridge
@@ -62,19 +79,12 @@ if __name__ == "__main__":
     """Review item 2: coverage of the filtered 95% percentile bootstrap intervals of CompareJob (thresholds: >= 50
     admissible draws and >= 80% of attempted draws), with and without the thresholds. Correct model, loadings 0.7-0.8,
     5 symmetric categories; N in {150, 300} x predictor correlation in {0.3, 0.85}."""
-    from multiprocessing import Pool
     REPS, R, W = int(os.environ.get("COV_REPS", 200)), int(os.environ.get("COV_R", 200)), int(os.environ.get("MC_WORKERS", 4))
     conds = [dict(n=n, r=r) for n in (150, 300) for r in (0.3, 0.85)]
     seeds = np.random.SeedSequence(20261028).generate_state(len(conds) * REPS)
     tasks = [(c, rep, int(seeds[i * REPS + rep]), R) for i, c in enumerate(conds) for rep in range(REPS)]
-    t0 = time.time(); rows = []
-    with Pool(W) as pool:
-        for k, row in enumerate(pool.imap_unordered(one, tasks, chunksize=1)):
-            rows.append(row)
-            if (k + 1) % 20 == 0:
-                pd.DataFrame(rows).to_csv(os.path.join(HERE, "mc_coverage_raw.csv"), index=False)
-                print(k + 1, len(tasks), round(time.time() - t0), flush=True)
-    raw = pd.DataFrame(rows); raw.to_csv(os.path.join(HERE, "mc_coverage_raw.csv"), index=False)
+    t0 = time.time()
+    raw = run_sharded(tasks, one, "mc_coverage_raw"); raw.to_csv(os.path.join(HERE, "mc_coverage_raw.csv"), index=False)
     out = []
     for (n, r), g in raw.groupby(["n", "r"]):
         for a in APPS:

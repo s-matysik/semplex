@@ -34,6 +34,23 @@ def generate(n, r, load, spec, cat, rng):
     return D
 
 
+def run_sharded(tasks, one, raw_name):
+    """Runs the tasks in independent worker processes (multiprocessing pipes are not available in every sandbox):
+    SIM_SHARD=i SIM_NSHARDS=k processes tasks[i::k] serially and writes <raw_name>_shard<i>.csv; without SIM_SHARD the
+    shard files are merged."""
+    sh, k = os.environ.get("SIM_SHARD"), int(os.environ.get("SIM_NSHARDS", 1))
+    if sh is None:
+        parts = [pd.read_csv(os.path.join(HERE, f"{raw_name}_shard{i}.csv")) for i in range(k)]
+        return pd.concat(parts, ignore_index=True)
+    sh = int(sh); rows = []; t0 = time.time(); mine = tasks[sh::k]
+    for j, t in enumerate(mine):
+        rows.append(one(t))
+        if (j + 1) % 25 == 0 or j + 1 == len(mine):
+            pd.DataFrame(rows).to_csv(os.path.join(HERE, f"{raw_name}_shard{sh}.csv"), index=False)
+            print(sh, j + 1, len(mine), round(time.time() - t0), flush=True)
+    sys.exit(0)
+
+
 def one(task):
     cond, rep, seed = task
     from semplex import bridge
@@ -55,20 +72,13 @@ if __name__ == "__main__":
     """Review item 3: recovery of the population standardized betas (0.30, 0.40) by the seven SEMplex approaches.
     Full factorial: specification (correct / omitted cross-loading 0.3) x loadings (0.5-0.6 / 0.7-0.8) x predictor
     correlation (0.3 / 0.8) x response format (continuous, 4, 5, 7 categories, skewed 5) x N (150 / 400)."""
-    from multiprocessing import Pool
     REPS, W = int(os.environ.get("MC_REPS", 200)), int(os.environ.get("MC_WORKERS", 4))
     conds = [dict(spec=s, load=l, r=r, cat=c, n=n) for s, l, r, c, n in itertools.product(["correct", "cross"], ["low", "high"], [0.3, 0.8], ["cont", "4", "5", "7", "5skew"], [150, 400])]
     ss = np.random.SeedSequence(20261027)
     seeds = ss.generate_state(len(conds) * REPS)
     tasks = [(c, rep, int(seeds[i * REPS + rep])) for i, c in enumerate(conds) for rep in range(REPS)]
-    t0 = time.time(); rows = []
-    with Pool(W) as pool:
-        for k, row in enumerate(pool.imap_unordered(one, tasks, chunksize=4)):
-            rows.append(row)
-            if (k + 1) % 400 == 0:
-                pd.DataFrame(rows).to_csv(os.path.join(HERE, "mc_recovery_raw.csv"), index=False)
-                print(k + 1, len(tasks), round(time.time() - t0), flush=True)
-    raw = pd.DataFrame(rows); raw.to_csv(os.path.join(HERE, "mc_recovery_raw.csv"), index=False)
+    t0 = time.time()
+    raw = run_sharded(tasks, one, "mc_recovery_raw"); raw.to_csv(os.path.join(HERE, "mc_recovery_raw.csv"), index=False)
     keys = ["spec", "load", "r", "cat", "n"]; out = []
     for cond, g in raw.groupby(keys):
         for a in APPS:

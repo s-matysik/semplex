@@ -5,7 +5,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "public", "engine"))
 import semplex
 import semplex.api as API
-from semplex import sem as S, measure as M
+from semplex import sem as S, measure as M, efa as E
 DATA = os.path.join(ROOT, "validation", "data", "ecsi.csv")
 SC = {"IMAG": [f"imag{i}" for i in range(1, 6)], "EXPE": [f"expe{i}" for i in range(1, 6)], "QUAL": [f"qual{i}" for i in range(1, 6)],
       "VAL": [f"val{i}" for i in range(1, 5)], "SAT": [f"sat{i}" for i in range(1, 5)], "LOY": [f"loy{i}" for i in range(1, 5)]}
@@ -30,9 +30,9 @@ def setup(zero_missing=False):
 For each seed: factor numbers from the nine retention criteria and the weighted suggestion (efa_run on the EFA half,
 parallel-analysis seed fixed at 1), Tucker congruence of the six-factor EFA with the seed-1 solution (factors matched
 by the Hungarian algorithm), the MLM fit of the six-factor CFA on the CFA half and its six largest modification indices.
-Run from the repository root: python validation/revision/ecsi_robustness/split_stability.py   (SPLIT_SEEDS, default 200)"""
+Run from the repository root: python validation/revision/ecsi_robustness/split_stability.py   (SPLIT_SEEDS, default 50)"""
 from scipy.optimize import linear_sum_assignment
-N_SEEDS = int(os.environ.get("SPLIT_SEEDS", 200))
+N_SEEDS = int(os.environ.get("SPLIT_SEEDS", 50))  # one efa_run with the nine criteria takes about 2-3 min
 setup()
 out_path = os.path.join(HERE, "split_stability.csv")
 rows, ref = [], None
@@ -50,8 +50,9 @@ def congruence(A, B):
 for seed in range(1, N_SEEDS + 1):
     call("split", seed=seed)
     e = call("efa_run", items=ITEMS, part="efa", seed=1)
-    e6 = call("efa_run", items=ITEMS, part="efa", seed=1, k=6)
-    L6 = np.array(e6["loadings"], float)
+    Xe = API._part("efa")[ITEMS].dropna().to_numpy(float)
+    Re, _ = E.correlation(Xe, e["corr"])
+    L6 = np.array(E.efa(Re, 6, "minres", "oblimin")["loadings"], float)  # same defaults as efa_run
     if ref is None:
         ref = L6
     phi = congruence(ref, L6)

@@ -84,7 +84,7 @@ for name, (merge, struct) in MERGE.items():
     order = [k for k in ("IMAG", "EXPE", "QUAL", "EQ", "VAL", "SAT", "VS", "LOY") if k in sc]
     meas = "\n".join(f"{k} =~ " + " + ".join(sc[k]) for k in order)
     syntaxes[name] = {"cfa": meas + "\n" + PAIRS, "sem": meas + "\n" + PAIRS + "\n" + struct}
-    fc = S.fit_model(syntaxes[name]["cfa"], data=dat, estimator="MLM", se=False)
+    fc = S.fit_model(syntaxes[name]["cfa"], data=dat, estimator="MLM")  # se needed for scaled statistics
     fs = S.fit_model(syntaxes[name]["sem"], data=dat, estimator="MLM")
     paths = {f"{r['lhs']}~{r['rhs']}": {"std": r["std"], "lo": r.get("std_lo"), "hi": r.get("std_hi")} for r in S.param_table(fs) if r["op"] == "~"}
     mods.append({"model": name, **{f"cfa_{k}": fc.fit.get(k) for k in FITK}, "cfa_heywood": [h["kind"] for h in fc.heywood],
