@@ -1292,3 +1292,5 @@ button.sx-tl-action:focus-visible { outline: none; }
 .sx-jobs-empty { padding: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); }
 .sx-jobs-foot { padding: 8px 14px; border-top: 1px solid var(--line); background: var(--surface-sunken); font-size: 12px; color: var(--ink-subtle); }
 @media (prefers-reduced-motion: reduce) { .sx-jobs-ring { transition: none; } }
+.sx-forest-pt.is-open, .sx-forest-row.is-sel .sx-forest-pt.is-open { fill: var(--surface); stroke: var(--ink-muted); stroke-width: 2; }
+.sx-forest-row.is-sel .sx-forest-pt.is-open { stroke: var(--brand); }

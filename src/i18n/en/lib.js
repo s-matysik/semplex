@@ -42,6 +42,7 @@ export default {
  "# Efekty pośrednie i całkowite": "# Indirect and total effects",
  "% braków": "% missing",
  "% względem ": "% relative to ",
+ "(bez przedziału)": "(no interval)",
  ", w tym ": ", including ",
  ". Symbol trójkąta: ładunek krzyżowy, ośmiokąta: brak ładunku.": ". Triangle symbol: cross loading, octagon: no loading.",
  "95% CI pełnego SEM": "95% CI of joint SEM",

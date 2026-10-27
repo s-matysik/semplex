@@ -134,7 +134,7 @@ export default function BridgeScreen() {
             <StatTile label={t("Rozrzut między podejściami")} value={n2(r.spread)} icon="split" note={t("max − min β")} tone={r.spread > 0.15 ? 'ok' : 'good'} />
             <StatTile label={t("Średnie pozycji vs SEM łączny")} value={Number.isFinite(r.underestimate) ? pct(r.underestimate, 0) : '-'} icon="minus" tone={Math.abs(r.underestimate) > 0.15 ? 'ok' : 'good'} note={t("różnica względna oszacowań (opisowa)")} />
             <StatTile label={t("Dopuszczalne losowania")} value={t("{0} z {1}", { 0: r.R_ok, 1: r.R })} icon="reliability" tone={r.R_ok < 0.95 * r.R ? 'ok' : 'good'} note={t("minimum po podejściach (bootstrap)")} />
-            <StatTile label={t("W 95% CI SEM łącznego")} value={`${r.agree} z 7`} icon="check" note={t("opis zgodności, nie test")} />
+            <StatTile label={t("W 95% CI SEM łącznego")} value={t("{0} z {1}", [r.agree, 7])} icon="check" note={t("opis zgodności, nie test")} />
           </div>
           <Interpretation tone="info" title={t("Diagnostyka porównania")} icon="info" source={t("SAM: Rosseel i Loh (2024); ESEM: Asparouhov i Muthén (2009); korekta Croona: Croon (2002). Progi diagnostyczne (N = 300, CFI = 0,90, różnica 0,05, ładunek krzyżowy 0,20) są umowne i nie służą do wyboru metody.")}
             actions={<><Button size="sm" variant="ghost" icon="copy" onClick={() => copyText(methodsParagraph(r, lang)).then(() => toast(t("Skopiowano akapit do Metod.")))}>{t("Kopiuj akapit")}</Button><Segmented size="sm" label={t("Język akapitu")} value={lang} onChange={setLang} options={[{ value: 'pl', label: 'PL' }, { value: 'en', label: 'EN' }]} /></>}>
@@ -142,7 +142,7 @@ export default function BridgeScreen() {
           </Interpretation>
           <div className="cols">
             <Panel title={t("Efekt {0} → {1} w siedmiu podejściach", { 0: r.x, 1: r.y })} subtitle={t("Standaryzowane β z 95% CI bootstrap; pasmo = CI SEM łącznego")}>
-              <ForestPlot rows={rows.map((x) => ({ label: x.label, sub: x.sub, est: x.est, lo: Number.isFinite(x.lo) ? x.lo : x.est, hi: Number.isFinite(x.hi) ? x.hi : x.est, muted: x.id === 'fscore' }))}
+              <ForestPlot rows={rows.map((x) => ({ label: x.label, sub: x.sub, est: x.est, lo: Number.isFinite(x.lo) ? x.lo : x.est, hi: Number.isFinite(x.hi) ? x.hi : x.est, muted: x.id === 'fscore', noCi: !x.ci_available }))}
                 reference={ref.est} referenceLabel={t("SEM łączny")} referenceShort="SEM" band={Number.isFinite(ref.lo) ? [ref.lo, ref.hi] : undefined} bandLabel={t("95% CI SEM łącznego")}
                 otherLabel={t("pozostałe")} selected={sel} onSelect={setSel} tooltip legend fluid axisLabel={t("β standaryzowane")} label={t("Wykres leśny efektu w siedmiu podejściach")} />
             </Panel>

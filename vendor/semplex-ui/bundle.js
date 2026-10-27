@@ -701,7 +701,7 @@
       var r0 = rows[hover], sw = fig.current.getBoundingClientRect().width / W;
       var dlt = Math.round((r0.est - props.reference) / props.reference * 100);
       var refTxt = props.reference !== undefined ? (dlt > 0 ? '+' : dlt < 0 ? '\u2212' : '') + Math.abs(dlt) + __sxT('% względem ') + (props.referenceShort || __sxT('pełnego SEM')) : null;
-      tip = { x: Math.min(x(r0.hi) * sw + 12, (W - m.r) * sw - 180), y: (m.t + hover * rowH) * sw, value: fmt(r0.est, 2, opts) + ' [' + fmt(r0.lo, 2, opts) + '; ' + fmt(r0.hi, 2, opts) + ']', label: r0.label, note: refTxt };
+      tip = { x: Math.min(x(r0.hi) * sw + 12, (W - m.r) * sw - 180), y: (m.t + hover * rowH) * sw, value: fmt(r0.est, 2, opts) + (r0.noCi ? ' ' + __sxT('(bez przedziału)') : ' [' + fmt(r0.lo, 2, opts) + '; ' + fmt(r0.hi, 2, opts) + ']'), label: r0.label, note: refTxt };
     }
     return h('figure', { ref: fig, className: cx('sx-chart sx-forest', interactive && 'is-interactive', props.className), style: { position: 'relative' } },
       h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: props.fluid ? undefined : W }, role: 'img', 'aria-label': props.label || __sxT('Wykres leśny: ten sam efekt w różnych podejściach') },
@@ -718,7 +718,7 @@
           return h('g', {
             key: i, className: cx('sx-forest-row', r.highlight && 'is-hl', props.selected === i && 'is-sel', hv === i && 'is-hover', r.muted && 'is-muted'),
             tabIndex: props.onSelect ? 0 : undefined, role: props.onSelect ? 'button' : undefined, 'aria-pressed': props.onSelect ? props.selected === i : undefined,
-            'aria-label': props.onSelect ? r.label + ': ' + fmt(r.est, 2, opts) + ' [' + fmt(r.lo, 2, opts) + '; ' + fmt(r.hi, 2, opts) + ']' : undefined,
+            'aria-label': props.onSelect ? r.label + ': ' + fmt(r.est, 2, opts) + (r.noCi ? ' ' + __sxT('(bez przedziału)') : ' [' + fmt(r.lo, 2, opts) + '; ' + fmt(r.hi, 2, opts) + ']') : undefined,
             onMouseEnter: function (ev) { enter(i, ev); }, onMouseLeave: leave, onFocus: function (ev) { enter(i, ev); }, onBlur: leave,
             onClick: props.onSelect ? function () { props.onSelect(i); } : undefined,
             onKeyDown: props.onSelect ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); props.onSelect(i); } } : undefined
@@ -726,11 +726,11 @@
             h('rect', { className: 'sx-forest-hit', x: 0, y: cy - rowH / 2, width: W, height: rowH }),
             h('text', { className: 'sx-forest-label', x: 12, y: ly }, r.label),
             r.sub ? h('text', { className: 'sx-forest-sub', x: 12, y: cy + 13 }, r.sub) : null,
-            h('line', { className: 'sx-forest-ci', x1: x(r.lo), x2: x(r.hi), y1: cy, y2: cy }),
-            h('line', { className: 'sx-forest-ci', x1: x(r.lo), x2: x(r.lo), y1: cy - 5, y2: cy + 5 }),
-            h('line', { className: 'sx-forest-ci', x1: x(r.hi), x2: x(r.hi), y1: cy - 5, y2: cy + 5 }),
-            h('rect', { className: 'sx-forest-pt', x: x(r.est) - 6, y: cy - 6, width: 12, height: 12, rx: 2.5 }),
-            m.r ? h('text', { className: 'sx-forest-val', x: W - 12, y: cy + 4, textAnchor: 'end' }, fmt(r.est, 2, opts) + ' [' + fmt(r.lo, 2, opts) + '; ' + fmt(r.hi, 2, opts) + ']') : null);
+            r.noCi ? null : h('line', { className: 'sx-forest-ci', x1: x(r.lo), x2: x(r.hi), y1: cy, y2: cy }),
+            r.noCi ? null : h('line', { className: 'sx-forest-ci', x1: x(r.lo), x2: x(r.lo), y1: cy - 5, y2: cy + 5 }),
+            r.noCi ? null : h('line', { className: 'sx-forest-ci', x1: x(r.hi), x2: x(r.hi), y1: cy - 5, y2: cy + 5 }),
+            h('rect', { className: cx('sx-forest-pt', r.noCi && 'is-open'), x: x(r.est) - 6, y: cy - 6, width: 12, height: 12, rx: 2.5 }),
+            m.r ? h('text', { className: 'sx-forest-val', x: W - 12, y: cy + 4, textAnchor: 'end' }, fmt(r.est, 2, opts) + (r.noCi ? ' ' + __sxT('(bez przedziału)') : ' [' + fmt(r.lo, 2, opts) + '; ' + fmt(r.hi, 2, opts) + ']')) : null);
         }),
         h('text', { className: 'sx-axis-label', x: (m.l + W - m.r) / 2, y: H - 4, textAnchor: 'middle' }, props.axisLabel || __sxT('β (standaryzowany) z 95% CI'))),
       h(ChartTip, { tip: tip }),

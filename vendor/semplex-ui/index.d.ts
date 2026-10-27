@@ -103,7 +103,7 @@ export interface SamplePart { label: string; n: number; tone?: 'observed' | 'bra
 export interface SampleSplitProps { parts: SamplePart[]; n?: number; method?: string; seed?: number | string; className?: string }
 export declare function SampleSplit(props: SampleSplitProps): React.ReactElement;
 
-export interface ForestRow { label: string; est: number; lo: number; hi: number; sub?: string; highlight?: boolean; muted?: boolean }
+export interface ForestRow { label: string; est: number; lo: number; hi: number; sub?: string; highlight?: boolean; muted?: boolean; noCi?: boolean }
 export interface ForestPlotProps { rows: ForestRow[]; reference?: number; referenceLabel?: string; referenceShort?: string; band?: [number, number]; bandLabel?: string; highlightLabel?: string; otherLabel?: string; selected?: number | null; onSelect?: (index: number) => void; hovered?: number | null; onHover?: (index: number | null) => void; tooltip?: boolean; legend?: boolean; axisLabel?: string; min?: number; max?: number; tickStep?: number; width?: number; fluid?: boolean; labelWidth?: number; valueWidth?: number; rowHeight?: number; label?: string; decimal?: ',' | '.'; className?: string }
 export declare function ForestPlot(props: ForestPlotProps): React.ReactElement;
 
