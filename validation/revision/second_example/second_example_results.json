@@ -1,0 +1,231 @@
+{
+ "engine": "1.4.0",
+ "n": 305,
+ "R": 500,
+ "fit": {
+  "chi2": 578.0038709853967,
+  "df": 132.0,
+  "pvalue": 4.368836944904482e-57,
+  "cfi": 0.85287350001451,
+  "tli": 0.8294670113804548,
+  "rmsea": 0.10525250208364775,
+  "rmsea_lo": 0.09655139036972375,
+  "rmsea_hi": 0.1141126663201177,
+  "pclose": 0.0,
+  "srmr": 0.0546632138412242,
+  "aic": 10941.742919484685,
+  "bic": 11086.835078772374,
+  "abic": 10963.145882257015,
+  "loglik": -5431.871459742342,
+  "npar": 39.0,
+  "chi2_base": 3184.431258334718,
+  "df_base": 153.0,
+  "n": 305.0,
+  "chi2_scaled": 382.5344382877339,
+  "scaling": 1.5109851901768776,
+  "pvalue_scaled": 3.181491287986669e-26,
+  "cfi_scaled": 0.8630169104797125,
+  "tli_scaled": 0.8412241462378486,
+  "rmsea_scaled": 0.07888543610201326,
+  "rmsea_lo_scaled": 0.06973591964413291,
+  "rmsea_hi_scaled": 0.08816262707250402
+ },
+ "heywood": false,
+ "paths": {
+  "OrgIden~OrgPres": {
+   "std": 0.39455817697850754,
+   "lo": 0.27125638741733943,
+   "hi": 0.5178599665396756
+  },
+  "AffLove~OrgPres": {
+   "std": 0.18287998279872303,
+   "lo": 0.0585544474695006,
+   "hi": 0.30720551812794544
+  },
+  "AffLove~OrgIden": {
+   "std": 0.6707988382422942,
+   "lo": 0.5660534280964399,
+   "hi": 0.7755442483881486
+  }
+ },
+ "alpha": {
+  "OrgPres": 0.9186323794345096,
+  "OrgIden": 0.8548599900855439,
+  "AffLove": 0.7661613814425513
+ },
+ "htmt": [
+  [
+   1.0,
+   0.40775700117997593,
+   0.46658158410929573
+  ],
+  [
+   0.40775700117997593,
+   1.0,
+   0.7531834672043765
+  ],
+  [
+   0.46658158410929573,
+   0.7531834672043765,
+   1.0
+  ]
+ ],
+ "compare_seconds": 221.9,
+ "compare_OrgPres": [
+  {
+   "id": "sum",
+   "label": "Regresja na \u015brednich pozycji",
+   "est": 0.19560853673537199,
+   "lo": 0.09501169086318999,
+   "hi": 0.2871380608775586,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "fscore",
+   "label": "Wyniki czynnikowe (regresyjne)",
+   "est": 0.17717362622453203,
+   "lo": 0.02333473246739067,
+   "hi": 0.3136828608500578,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "croon",
+   "label": "Korekta Croona",
+   "est": 0.18287998913456896,
+   "lo": 0.05144728317774611,
+   "hi": 0.3020945796517551,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "single",
+   "label": "Pojedynczy wska\u017anik z korekt\u0105 \u03b1",
+   "est": 0.1895749181290772,
+   "lo": 0.06125671624785195,
+   "hi": 0.3098171430679321,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "sam",
+   "label": "SAM (lokalny)",
+   "est": 0.18153101026311283,
+   "lo": 0.05492981983854843,
+   "hi": 0.30417322930989127,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "esem",
+   "label": "Przybli\u017cenie ESEM",
+   "est": 0.10765726299534902,
+   "lo": null,
+   "hi": null,
+   "n_valid": 397,
+   "point_valid": true,
+   "ci_available": false
+  },
+  {
+   "id": "sem",
+   "label": "SEM \u0142\u0105czny",
+   "est": 0.18288000772196608,
+   "lo": 0.05144728732233752,
+   "hi": 0.3020945724934105,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  }
+ ],
+ "reasons_OrgPres": [
+  "Cz\u0119\u015b\u0107 podej\u015b\u0107 nie ma wiarygodnego przedzia\u0142u (za ma\u0142o dopuszczalnych losowa\u0144 bootstrap lub niedopuszczalne rozwi\u0105zanie w pr\u00f3bie): Przybli\u017cenie ESEM.",
+  "Diagnostyka: model pomiarowy s\u0142abo pasuje (CFI = 0,853 < 0,90). W SEM \u0142\u0105cznym b\u0142\u0105d specyfikacji jednej skali mo\u017ce przenosi\u0107 si\u0119 na \u015bcie\u017cki strukturalne, a SAM szacuje bloki pomiarowe osobno (Rosseel i Loh, 2024). Popraw lub uzasadnij model pomiarowy przed interpretacj\u0105.",
+  "Diagnostyka: przybli\u017cenie ESEM r\u00f3\u017cni si\u0119 od SEM \u0142\u0105cznego o -0,08, a najwi\u0119kszy \u0142adunek krzy\u017cowy wynosi 0,58 - sprawd\u017a, czy \u0142adunki krzy\u017cowe maj\u0105 uzasadnienie merytoryczne.",
+  "SEMplex nie wskazuje najlepszego podej\u015bcia: SEM \u0142\u0105czny jest punktem odniesienia na wykresie, a r\u00f3\u017cnice opisuj\u0105 wra\u017cliwo\u015b\u0107 wyniku na reprezentacj\u0119 konstrukt\u00f3w."
+ ],
+ "pred_r": 0.394558165814565,
+ "compare_OrgIden": [
+  {
+   "id": "sum",
+   "label": "Regresja na \u015brednich pozycji",
+   "est": 0.538638117258742,
+   "lo": 0.44514727104363616,
+   "hi": 0.6184424745320809,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "fscore",
+   "label": "Wyniki czynnikowe (regresyjne)",
+   "est": 0.7584901968428936,
+   "lo": 0.6275376913226995,
+   "hi": 0.8630572337011971,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "croon",
+   "label": "Korekta Croona",
+   "est": 0.6707988410705775,
+   "lo": 0.5444286535993218,
+   "hi": 0.7671117520878367,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "single",
+   "label": "Pojedynczy wska\u017anik z korekt\u0105 \u03b1",
+   "est": 0.6756223644121719,
+   "lo": 0.5638780079718283,
+   "hi": 0.7794283428802823,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "sam",
+   "label": "SAM (lokalny)",
+   "est": 0.6668824142625341,
+   "lo": 0.5280288705714967,
+   "hi": 0.7565419773208814,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  },
+  {
+   "id": "esem",
+   "label": "Przybli\u017cenie ESEM",
+   "est": 0.07281667155858894,
+   "lo": null,
+   "hi": null,
+   "n_valid": 397,
+   "point_valid": true,
+   "ci_available": false
+  },
+  {
+   "id": "sem",
+   "label": "SEM \u0142\u0105czny",
+   "est": 0.6707988070891643,
+   "lo": 0.5444286615192979,
+   "hi": 0.7671117469757993,
+   "n_valid": 500,
+   "point_valid": true,
+   "ci_available": true
+  }
+ ],
+ "reasons_OrgIden": [
+  "Cz\u0119\u015b\u0107 podej\u015b\u0107 nie ma wiarygodnego przedzia\u0142u (za ma\u0142o dopuszczalnych losowa\u0144 bootstrap lub niedopuszczalne rozwi\u0105zanie w pr\u00f3bie): Przybli\u017cenie ESEM.",
+  "Diagnostyka: model pomiarowy s\u0142abo pasuje (CFI = 0,853 < 0,90). W SEM \u0142\u0105cznym b\u0142\u0105d specyfikacji jednej skali mo\u017ce przenosi\u0107 si\u0119 na \u015bcie\u017cki strukturalne, a SAM szacuje bloki pomiarowe osobno (Rosseel i Loh, 2024). Popraw lub uzasadnij model pomiarowy przed interpretacj\u0105.",
+  "Diagnostyka: przybli\u017cenie ESEM r\u00f3\u017cni si\u0119 od SEM \u0142\u0105cznego o -0,60, a najwi\u0119kszy \u0142adunek krzy\u017cowy wynosi 0,58 - sprawd\u017a, czy \u0142adunki krzy\u017cowe maj\u0105 uzasadnienie merytoryczne.",
+  "SEMplex nie wskazuje najlepszego podej\u015bcia: SEM \u0142\u0105czny jest punktem odniesienia na wykresie, a r\u00f3\u017cnice opisuj\u0105 wra\u017cliwo\u015b\u0107 wyniku na reprezentacj\u0119 konstrukt\u00f3w."
+ ]
+}
