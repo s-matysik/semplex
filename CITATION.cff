@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "SEMplex: a browser-based tool for questionnaire-based structural equation modeling, sensitivity analysis, and decision logging"
+abstract: "Open-source browser application for questionnaire data: screening, reliability and validity, EFA, CFA, covariance-based SEM, mediation and moderation, a comparison of seven construct representations for one structural coefficient, and a reversible decision log. All computation runs client-side in Pyodide."
+type: software
+version: 1.4.0
+date-released: "2026-10-27"
+license: MIT
+repository-code: "https://github.com/s-matysik/semplex"
+url: "https://s-matysik.github.io/semplex/"
+keywords:
+  - structural equation modeling
+  - confirmatory factor analysis
+  - survey research
+  - sensitivity analysis
+  - reproducibility
+  - WebAssembly
+authors:
+  - family-names: Matysik
+    given-names: Sebastian
+    orcid: "https://orcid.org/0009-0002-7264-0501"
+    affiliation: "Doctoral School, Institute of Management, University of Szczecin, Szczecin, Poland"
+    email: sebastian.matysik@usz.edu.pl
+  - family-names: Weichbroth
+    given-names: Pawel
+    affiliation: "Department of Software Engineering, Faculty of Electronics, Telecommunications and Informatics, Gdansk University of Technology, Gdansk, Poland"
+    email: pawel.weichbroth@pg.edu.pl
+  - family-names: Frankowski
+    given-names: Pawel Karol
+    affiliation: "Faculty of Computer Science and Telecommunications, Maritime University of Szczecin, Szczecin, Poland"
+    email: p.frankowski@pm.szczecin.pl
