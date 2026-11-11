@@ -40,7 +40,7 @@ export default function LogScreen() {
     <>
       <div className="eyebrow">{cur.module} · {cur.time}</div>
       <h2 className="sub">{cur.action}</h2>
-      <div className="chips"><Badge tone={cur.origin === 'proposal' ? 'brand' : 'neutral'}>{cur.origin === 'proposal' ? t("propozycja SEMplex") : cur.origin === 'auto' ? 'automatycznie' : t("ręcznie")}</Badge>{cur.reverted ? <Badge tone="ok" icon="undo">{t("cofnięta")}</Badge> : null}{cur.stale ? <Badge tone="ok" icon="refresh">{t("liczby do przeliczenia")}</Badge> : null}</div>
+      <div className="chips"><Badge tone={cur.origin === 'proposal' ? 'brand' : 'neutral'}>{cur.origin === 'proposal' ? t("propozycja SEMplex") : cur.origin === 'auto' ? t("automatycznie") : t("ręcznie")}</Badge>{cur.reverted ? <Badge tone="ok" icon="undo">{t("cofnięta")}</Badge> : null}{cur.stale ? <Badge tone="ok" icon="refresh">{t("liczby do przeliczenia")}</Badge> : null}</div>
       {cur.reason ? <p className="muted">{cur.reason}</p> : null}
       {cur.effects && cur.effects.length ? <table className="tbl"><tbody>{cur.effects.map((e, i) => <tr key={i}><td>{e.label}</td><td className="num">{e.from} → <b>{e.to}</b></td></tr>)}</tbody></table> : null}
       {AFFECTS[cur.module] ? <Interpretation tone="info" title={t("Zależne moduły")}>{AFFECTS[cur.module].join(', ')}</Interpretation> : null}

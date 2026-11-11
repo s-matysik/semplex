@@ -80,13 +80,13 @@ function ImportStep() {
     <Screen>
       <Head eyebrow={t("Dane · import")} title={draft.filename} meta={[
         <Badge key="n">{int(draft.n_rows)} {t("wierszy ·")} {draft.n_cols} {t("kolumn")}</Badge>,
-        info.kind === 'text' ? <Badge key="e" tone={info.replacement_chars ? 'ok' : 'good'} icon={info.replacement_chars ? 'ok' : 'good'}>kodowanie {info.encoding}</Badge> : <Badge key="x">{t("arkusz Excel")}</Badge>,
+        info.kind === 'text' ? <Badge key="e" tone={info.replacement_chars ? 'ok' : 'good'} icon={info.replacement_chars ? 'ok' : 'good'}>{t("kodowanie {0}", { 0: info.encoding })}</Badge> : <Badge key="x">{t("arkusz Excel")}</Badge>,
         info.kind === 'text' ? <Badge key="s">{t("separator „")}{info.sep === '\t' ? t("tab") : info.sep}” · dziesiętny „{info.decimal}”</Badge> : null,
       ].filter(Boolean)}>
         <Button variant="ghost" icon="x" onClick={() => setState({ importDraft: null })}>{t("Anuluj")}</Button>
         <Button variant="primary" icon="check" loading={running} disabled={!kept.length || dup}
           onClick={() => run(async () => { await commitImport(cols, [''].concat(codes), pendingMeta); setState({ pendingSampleMeta: null }); })}>
-          {t("Importuj")} {kept.length} zmiennych
+          {t("Importuj {0} zmiennych", { 0: kept.length })}
         </Button>
       </Head>
       <EngineErrorView error={error} onClose={() => setError(null)} />
@@ -99,11 +99,11 @@ function ImportStep() {
         <Panel title={t("Odczyt pliku")} subtitle={t("Zmiana ustawień od razu odświeża podgląd")}>
           <div className="form">
             <Field label={t("Kodowanie")}><Select value={opts.encoding || 'auto'} onChange={(e) => reopen({ encoding: e.target.value })}
-              options={[{ value: 'auto', label: 'automatycznie' }, { value: 'utf-8', label: 'UTF-8' }, { value: 'cp1250', label: t("Windows-1250") }, { value: 'iso-8859-2', label: t("ISO 8859-2") }]} /></Field>
+              options={[{ value: 'auto', label: t("automatycznie") }, { value: 'utf-8', label: 'UTF-8' }, { value: 'cp1250', label: t("Windows-1250") }, { value: 'iso-8859-2', label: t("ISO 8859-2") }]} /></Field>
             <Field label={t("Separator")}><Select value={opts.sep || 'auto'} onChange={(e) => reopen({ sep: e.target.value })}
-              options={[{ value: 'auto', label: 'automatycznie' }, { value: ';', label: t("średnik ;") }, { value: ',', label: t("przecinek ,") }, { value: 'tab', label: 'tabulator' }, { value: '|', label: t("kreska |") }]} /></Field>
+              options={[{ value: 'auto', label: t("automatycznie") }, { value: ';', label: t("średnik ;") }, { value: ',', label: t("przecinek ,") }, { value: 'tab', label: 'tabulator' }, { value: '|', label: t("kreska |") }]} /></Field>
             <Field label={t("Znak dziesiętny")}><Select value={opts.decimal || 'auto'} onChange={(e) => reopen({ decimal: e.target.value })}
-              options={[{ value: 'auto', label: 'automatycznie' }, { value: ',', label: 'przecinek' }, { value: '.', label: 'kropka' }]} /></Field>
+              options={[{ value: 'auto', label: t("automatycznie") }, { value: ',', label: 'przecinek' }, { value: '.', label: 'kropka' }]} /></Field>
             <Field label={t("Kody braków danych")} hint={t("Enter dodaje kod; puste komórki są brakami zawsze")}>
               <TagInput value={codes} onChange={setCodes} label={t("Kody braków danych")} suggestions={['-99', '-9', '99', '999', 'NA', t("nie wiem"), 'odmowa', t("brak")]} />
             </Field>

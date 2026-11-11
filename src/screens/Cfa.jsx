@@ -229,7 +229,7 @@ export default function CfaScreen() {
           <FitBlock res={r} />
           <Interpretation tone={interp.tone} title={interp.title} source={t("Progi: Hu i Bentler (1999)")}
             actions={<Button size="sm" variant="ghost" icon="copy" onClick={() => copyText(fitSentence(r.fit, r.estimator === 'MLM', 'en')).then(() => toast(t("Skopiowano zdanie APA.")))}>{t("Kopiuj APA")}</Button>}>
-            {interp.text} {t("Ładunki standaryzowane: od")} <b>{n2(Math.min(...lams))}</b> do <b>{n2(Math.max(...lams))}</b>.{highPhi.length ? t(" Korelacja czynników {0} przekracza 0,85 - skale mogą mierzyć to samo.", { 0: highPhi.map((x) => x.rel.replace(' ~~ ', '–') + ' = ' + n2(x.r)).join(', ') }) : ''}
+            {interp.text} {t("Ładunki standaryzowane: od")} <b>{n2(Math.min(...lams))}</b> {t("do")} <b>{n2(Math.max(...lams))}</b>.{highPhi.length ? t(" Korelacja czynników {0} przekracza 0,85 - skale mogą mierzyć to samo.", { 0: highPhi.map((x) => x.rel.replace(' ~~ ', '–') + ' = ' + n2(x.r)).join(', ') }) : ''}
           </Interpretation>
           <div className="cols">
             <Panel flush title={t("Wyniki")} subtitle={bootOk ? t("95% CI z bootstrapu ({0} prób)", { 0: boot.value.ok }) : t("95% CI metodą delta")}>

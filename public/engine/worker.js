@@ -38,7 +38,7 @@ async function ensureExcel() {
   status('packages', 0.5, 'Wczytywanie obsługi plików Excel');
   // openpyxl is not part of the Pyodide distribution packages - install from PyPI (pure Python)
   await py.loadPackage('micropip', { messageCallback: () => {}, errorCallback: () => {} });
-  await py.runPythonAsync("import micropip\nawait micropip.install('openpyxl')");
+  await py.runPythonAsync("import micropip\nawait micropip.install('openpyxl==3.1.5')");
   excelReady = true;
   status('ready', 1, 'Silnik gotowy');
 }

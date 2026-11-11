@@ -2,7 +2,7 @@
 
 # SEMplex - survey analysis in the browser
 
-SEMplex guides the researcher from a raw survey file through reliability, EFA, and CFA to a structural model and a ready-made Results section. Everything is computed **in the browser**: the Python engine (numpy, scipy, pandas) runs in WebAssembly via Pyodide, and no data is sent to any server. The interface is built on the `semplex-ui` library (the SEMplex design system, version 18).
+SEMplex guides the researcher from a raw survey file through reliability, EFA, and CFA to a structural model and a ready-made Results section. Everything is computed **in the browser**: the Python engine (numpy, scipy, pandas) runs in WebAssembly via Pyodide. The application has no server-side component, telemetry or analytics, and survey responses are not transmitted; this describes the data-flow design and is not an audited security guarantee. On first use the browser downloads the runtime and its packages from a public CDN (see Runtime dependencies below). The interface is built on the `semplex-ui` library (the SEMplex design system, version 18).
 
 The interface is available in Polish and English: a **PL / EN** switch in the top bar (also available in the Ctrl K command palette). The default language follows the browser settings, and the choice is remembered. The report has a separate language selector (Polish or English in APA 7 style).
 
@@ -19,13 +19,17 @@ The application is fully static, so it runs on **GitHub Pages** or any file host
 | CFA | lavaan syntax with identifiability checking; ML and MLM (Satorra-Bentler) estimators; χ², CFI, TLI, RMSEA with 90% CI, SRMR with thresholds and sources; loadings with CI (delta method or bootstrap); Heywood cases; modification indices with an "Add" suggestion; model comparison (scaled Δχ² only with confirmed nesting, same variables and rows; ΔCFI, AIC, BIC); path diagram (SVG); Python and lavaan code |
 | SEM - model editor | model canvas synchronized bidirectionally with the syntax, drag-and-drop of variables from the data, undo/redo; paths, R², defined effects (`:=`) with bootstrap |
 | Mediation and moderation | PROCESS templates 4 (on latent variables or on means), 7 and 14 (moderated mediation, path a or b) and 1 (moderation with Johnson-Neyman region); template 58 in release v1 |
-| Approach comparison | the same effect across 7 approaches: item means, factor scores, Croon's correction, single indicator with α correction, local SAM, ESEM approximation (target rotation), joint SEM; bootstrap intervals with the number of rejected draws; forest plot, pairwise differences (descriptive), heuristic suggestion and a paragraph for the Methods section (PL/EN) |
+| Approach comparison | the same effect across 7 approaches: item means, factor scores, Croon's correction, single indicator with α correction, local SAM, ESEM approximation (target rotation), joint SEM; bootstrap intervals with the number of rejected draws; forest plot, pairwise differences (descriptive), diagnostic notes (no approach is selected) and a paragraph for the Methods section (PL/EN) |
 | Report | Results section in Polish or in APA 7 in English with tables; export to HTML, Word (.doc), print/PDF |
 | Decision log | tracked changes to data and model (reversals, exclusions, scales, EFA suggestions, modifications from MI, missing-data handling mode in CFA, EFA runs with seed) with rationale and effect; researcher notes; undo with a list of modules to recompute; CSV and JSON export |
 
-The Group comparison, Power and sample size, PLS-SEM/IPMA/NCA (v1), and Multilevel models (v2) modules show a preview screen in the interface, in line with the release specification.
+The Group comparison, Power and sample size, PLS-SEM/IPMA/NCA (v1), and Multilevel models (v2) modules show a preview screen in the interface, in line with the release specification. They are not functional and are not described in the article.
 
 Common to all screens: Simple / Advanced / Code switch, command palette (Ctrl K), light and dark theme, background tasks with progress and cancellation, saving and loading `.sxp` project files (Ctrl S), inspector that collapses into a drawer below 1280 px.
+
+## Runtime dependencies
+
+Pyodide 0.29.5 and its NumPy, SciPy and pandas packages are loaded from a version-pinned jsDelivr URL (`public/engine/worker.js`, constant `PYODIDE_VERSION`); `openpyxl` is installed with micropip at a pinned version only when an XLSX file is opened. For an offline or self-hosted installation, download the matching Pyodide distribution, place it next to the application and change that constant to the local path; no other change is required.
 
 ## Running locally
 

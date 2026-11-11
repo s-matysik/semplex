@@ -144,7 +144,7 @@ export default function EfaScreen() {
       </Panel>
       {mode !== 'simple' ? (
         <div className="form">
-          <Field label={t("Korelacje")}><Select value={opt.corr} onChange={(e) => { const o = Object.assign({}, opt, { corr: e.target.value }); setOpt(o); compute(k, o); }} options={[{ value: 'auto', label: 'automatycznie' }, { value: 'polychoric', label: 'polichoryczne' }, { value: 'pearson', label: t("Pearsona") }]} /></Field>
+          <Field label={t("Korelacje")}><Select value={opt.corr} onChange={(e) => { const o = Object.assign({}, opt, { corr: e.target.value }); setOpt(o); compute(k, o); }} options={[{ value: 'auto', label: t("automatycznie") }, { value: 'polychoric', label: t("polichoryczne") }, { value: 'pearson', label: t("Pearsona") }]} /></Field>
           <Field label={t("Ekstrakcja")}><Select value={opt.extraction} onChange={(e) => { const o = Object.assign({}, opt, { extraction: e.target.value }); setOpt(o); compute(k, o); }} options={EXT} /></Field>
           <Field label={t("Rotacja")}><Select value={opt.rotation} onChange={(e) => { const o = Object.assign({}, opt, { rotation: e.target.value }); setOpt(o); compute(k, o); }} options={ROT} /></Field>
         </div>
