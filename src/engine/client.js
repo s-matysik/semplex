@@ -7,7 +7,7 @@ function statusText(s) {
   return m ? t(m[1] + '(Pyodide {0})', { 0: m[2] }) : t(s);
 }
 import { t } from '../i18n/index.js';
-export const ENGINE_VERSION = '1.4.0';
+export const ENGINE_VERSION = '1.4.1';
 
 export class EngineError extends Error {
   constructor(res) {
@@ -40,7 +40,10 @@ export function createEngine(onStatus) {
   worker.onerror = (e) => { onStatus && onStatus({ status: 'error', error: e.message || t("Wątek obliczeń zakończył się błędem.") }); };
 
   const engineUrl = new URL('engine/', document.baseURI).href;
-  worker.postMessage({ type: 'init', engineUrl, version: ENGINE_VERSION });
+  worker.postMessage({ type: 'init', engineUrl, version: ENGINE_VERSION,
+    /* optional self-hosting overrides set by the page; see README, Runtime dependencies */
+    indexURL: (typeof window !== 'undefined' && window.SEMPLEX_PYODIDE_URL) || null,
+    openpyxlUrl: (typeof window !== 'undefined' && window.SEMPLEX_OPENPYXL_URL) || null });
 
   function send(msg, transfer) {
     const id = ++seq;

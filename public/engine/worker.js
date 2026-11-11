@@ -7,12 +7,17 @@ const FILES = ['__init__', 'syntax', 'sem', 'efa', 'data', 'measure', 'bridge', 
 let py = null;
 let callPy = null;
 let excelReady = false;
+/* Self-hosting: the page may set window.SEMPLEX_PYODIDE_URL (base address of a local Pyodide
+   distribution) and window.SEMPLEX_OPENPYXL_URL (local openpyxl wheel for XLSX import);
+   client.js forwards both in the init message. */
+let wheelUrl = null;
 
 function post(msg) { self.postMessage(msg); }
 function status(stage, progress, text) { post({ type: 'status', stage, progress, text }); }
 
-async function init(engineUrl, version, indexURL, indexPath) {
+async function init(engineUrl, version, indexURL, indexPath, openpyxlUrl) {
   const base = indexURL || PYODIDE_URL;
+  wheelUrl = openpyxlUrl || null;
   status('runtime', 0.04, 'Pobieranie środowiska Python (Pyodide ' + PYODIDE_VERSION + ')');
   const { loadPyodide } = await import(/* @vite-ignore */ base + 'pyodide.mjs');
   py = await loadPyodide({ indexURL: indexPath || base });  // indexPath: Node test only
@@ -38,7 +43,8 @@ async function ensureExcel() {
   status('packages', 0.5, 'Wczytywanie obsługi plików Excel');
   // openpyxl is not part of the Pyodide distribution packages - install from PyPI (pure Python)
   await py.loadPackage('micropip', { messageCallback: () => {}, errorCallback: () => {} });
-  await py.runPythonAsync("import micropip\nawait micropip.install('openpyxl==3.1.5')");
+  const spec = wheelUrl ? JSON.stringify(wheelUrl) : "'openpyxl==3.1.5'";
+  await py.runPythonAsync("import micropip\nawait micropip.install(" + spec + ")");
   excelReady = true;
   status('ready', 1, 'Silnik gotowy');
 }
@@ -51,7 +57,7 @@ function run(fn, args) {
 self.onmessage = async (e) => {
   const m = e.data;
   if (m.type === 'init') {
-    try { await init(m.engineUrl, m.version, m.indexURL, m.indexPath); } catch (err) { post({ type: 'fatal', message: String(err && err.message || err) }); }
+    try { await init(m.engineUrl, m.version, m.indexURL, m.indexPath, m.openpyxlUrl); } catch (err) { post({ type: 'fatal', message: String(err && err.message || err) }); }
     return;
   }
   if (!callPy) { post({ type: 'result', id: m.id, ok: false, kind: 'engine', message: 'Silnik jeszcze się wczytuje.' }); return; }

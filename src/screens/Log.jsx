@@ -72,7 +72,7 @@ export default function LogScreen() {
 
   return (
     <Screen inspector={insp} inspectorTitle={cur ? cur.action : t("Decyzja")} inspectorOpen={!!sel} onInspectorClose={() => setSel(null)}>
-      <Head eyebrow={t("Dziennik decyzji")} title={t("Co zmieniono, dlaczego i z jakim skutkiem")} meta={[<Badge key="n">{decisions.filter((d) => !d.reverted).length} aktywnych</Badge>, <Badge key="r">{decisions.filter((d) => d.reverted).length} {t("cofniętych")}</Badge>]}>
+      <Head eyebrow={t("Dziennik decyzji")} title={t("Co zmieniono, dlaczego i z jakim skutkiem")} meta={[<Badge key="n">{decisions.filter((d) => !d.reverted).length} {t("aktywnych")}</Badge>, <Badge key="r">{decisions.filter((d) => d.reverted).length} {t("cofniętych")}</Badge>]}>
         <Button variant="secondary" icon="download" onClick={() => download(base + '_dziennik.csv', '\ufeff' + csvProvenance(provenance) + toCsv(decisions), 'text/csv;charset=utf-8')}>CSV</Button>
         <Button variant="secondary" icon="code" onClick={() => download(base + t("_dziennik.json"), JSON.stringify({ provenance, decisions: decisions.map(({ undo, ...d }) => d) }, null, 1), 'application/json')}>JSON</Button>
       </Head>

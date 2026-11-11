@@ -1,7 +1,7 @@
 {
   "name": "semplex-app",
   "private": true,
-  "version": "1.3.0",
+  "version": "1.4.1",
   "type": "module",
   "license": "MIT",
   "description": "SEMplex - survey analysis in the browser (Polish and English interface): data screening, reliability, EFA, CFA, SEM, mediation, approach comparison and APA report.",

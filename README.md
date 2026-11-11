@@ -29,7 +29,20 @@ Common to all screens: Simple / Advanced / Code switch, command palette (Ctrl K)
 
 ## Runtime dependencies
 
-Pyodide 0.29.5 and its NumPy, SciPy and pandas packages are loaded from a version-pinned jsDelivr URL (`public/engine/worker.js`, constant `PYODIDE_VERSION`); `openpyxl` is installed with micropip at a pinned version only when an XLSX file is opened. For an offline or self-hosted installation, download the matching Pyodide distribution, place it next to the application and change that constant to the local path; no other change is required.
+Pyodide 0.29.5 and its NumPy, SciPy and pandas packages are loaded from a version-pinned jsDelivr URL (`public/engine/worker.js`, constants `PYODIDE_VERSION` and `PYODIDE_URL`). `openpyxl` 3.1.5 is installed with micropip from PyPI the first time an XLSX file is opened; CSV, TXT and TSV import needs no extra package.
+
+**Self-hosting the runtime.** The page can point the engine at a local copy instead of the CDN. Download the matching Pyodide distribution, serve it next to the application, and set the two optional globals before the bundle loads (`index.html`):
+
+```html
+<script>
+  window.SEMPLEX_PYODIDE_URL = './pyodide/';  // base address of the local Pyodide distribution
+  window.SEMPLEX_OPENPYXL_URL = './wheels/openpyxl-3.1.5-py2.py3-none-any.whl';  // optional, XLSX import
+</script>
+```
+
+`SEMPLEX_PYODIDE_URL` is passed to Pyodide as `indexURL`, so the distribution's `pyodide.mjs` and package files must be reachable under that address. Without `SEMPLEX_OPENPYXL_URL`, opening an XLSX file still requires network access to PyPI.
+
+Version pinning, self-hosting and fully offline operation are three different things: the versions are pinned, self-hosting is supported through the globals above, and an end-to-end offline run (start-up plus CSV and XLSX import with the network blocked) has not been tested and is not claimed. The application does not verify a cryptographic digest of the downloaded runtime.
 
 ## Running locally
 

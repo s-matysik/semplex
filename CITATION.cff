@@ -3,8 +3,8 @@ message: "If you use this software, please cite it as below."
 title: "SEMplex: a browser-based tool for questionnaire-based structural equation modeling, sensitivity analysis, and decision logging"
 abstract: "Open-source browser application for questionnaire data: screening, reliability and validity, EFA, CFA, covariance-based SEM, mediation and moderation, a comparison of seven construct representations for one structural coefficient, and a reversible decision log. All computation runs client-side in Pyodide."
 type: software
-version: 1.4.0
-date-released: "2026-10-27"
+version: 1.4.1
+date-released: "2026-11-11"
 license: MIT
 repository-code: "https://github.com/s-matysik/semplex"
 url: "https://s-matysik.github.io/semplex/"

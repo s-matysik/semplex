@@ -171,6 +171,17 @@ const fatal = errors.filter((e) => !/Not implemented|happy-dom|getContext|scroll
 for (const r of results) console.log(`${r.ok ? 'OK  ' : 'BŁĄD'} ${r.name}${r.ok ? '' : '  - ' + (r.detail || '').replace(/\s+/g, ' ').slice(0, 240)}`);
 console.log(`\nWywołania silnika: ${calls.length} (${[...new Set(calls)].join(', ')})`);
 if (fatal.length) { console.log(`\nBłędy w konsoli (${fatal.length}):`); fatal.slice(0, 12).forEach((e) => console.log(' • ' + e.slice(0, 900))); }
+if (LANG === 'en') {
+  /* targeted assertions for the labels reported as untranslated in review round 1; the scripted path does not
+     open every option list, so this checks these strings specifically, not full localisation coverage */
+  for (const [pl, en] of [['kodowanie {0}', 'encoding {0}'], ['Importuj {0} zmiennych', 'Import {0} variables'],
+                          ['automatycznie', 'automatic'], ['polichoryczne', 'polychoric'], ['aktywnych', 'active'], ['do', 'to']]) {
+    check(`translation present: ${pl}`, EN[pl] === en, `${pl} -> ${EN[pl]}`);
+  }
+  const PL_STEMS = /\b(kodowanie|zmiennych|automatycznie|polichoryczne|aktywnych)\b/;
+  const leftover = (text().match(PL_STEMS) || [''])[0];
+  check('no Polish stem on screen (EN)', !leftover, leftover);
+}
 if (LANG === 'en') { fs.mkdirSync(path.join(ROOT, '.tmp'), { recursive: true }); fs.writeFileSync(path.join(ROOT, '.tmp', 'pl_left.json'), JSON.stringify([...PL_LEFT].sort(), null, 0)); console.log(`Polish words left in English UI: ${PL_LEFT.size}`); }
 const failed = results.filter((r) => !r.ok).length;
 console.log(`\n${results.length - failed}/${results.length} kontroli przeszło.`);

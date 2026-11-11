@@ -725,6 +725,7 @@ export default {
  "Zysk {0} warto zestawić z utratą treści: skala zostanie z {1} pozycjami.": "The gain of {0} is worth weighing against the loss of content: the scale will be left with {1} items.",
  "Zysk ω: +{0}": "Gain in ω: +{0}",
  "_dziennik.json": "_log.json",
+ "aktywnych": "active",
  "angielski (APA)": "English (APA)",
  "arkusz Excel": "Excel spreadsheet",
  "automatycznie": "automatic",
