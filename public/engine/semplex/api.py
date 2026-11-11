@@ -3,6 +3,7 @@
 Each public function takes a dictionary and returns a dictionary ready for JSON (no NaN).
 Long computations take the form of jobs: job_start → job_step (in chunks) → job_result.
 """
+import hashlib
 import json
 import math
 import time
@@ -78,6 +79,8 @@ def sniff(filename, raw=None, path=None, encoding="auto", sep="auto", decimal="a
     info, df = D.sniff(raw, filename, encoding, sep, decimal, header)
     STATE["raw"], STATE["info"], STATE["file"] = df, info, filename
     STATE["raw_bytes"] = raw
+    # provenance: the checksum identifies the imported file in the exported decision log
+    STATE["file_sha256"] = hashlib.sha256(raw).hexdigest()
     codes = D.DEFAULT_MISSING if missing_codes is None else missing_codes
     cols, code_counts = D.inspect(df, info, codes)
     preview = df.head(12).astype(str).values.tolist()
@@ -185,7 +188,7 @@ def summary():
             scales.append({"id": sname, "name": STATE["scale_names"].get(sname, sname), "items": it, "alpha": a,
                            "flag": [k for k, v in ir.items() if v is not None and v < 0]})
     total_cells = A.shape[0] * A.shape[1]
-    return {"file": STATE["file"], "n_total": len(df), "n": len(A), "n_excluded": len(STATE["excluded"]), "k": df.shape[1],
+    return {"file": STATE["file"], "sha256": STATE.get("file_sha256"), "n_total": len(df), "n": len(A), "n_excluded": len(STATE["excluded"]), "k": df.shape[1],
             "missing_pct": float(A.isna().to_numpy().sum() / max(total_cells, 1)), "variables": vars_, "scales": scales,
             "changes": STATE["changes"], "excluded": sorted(STATE["excluded"]), "complete_cases": int(A.dropna().shape[0])}
 
@@ -516,7 +519,6 @@ def fit(syntax, estimator="ML", part="cfa", missing="listwise", mi=True, std_lv=
     _require()
     d, C, n, obs, n_complete = _model_data(syntax, part, missing)
     est = estimator if d is not None else "ML"
-    import hashlib
     rows_id = hashlib.sha1(",".join(map(str, d.index.tolist())).encode()).hexdigest()[:16] if d is not None else None
     if d is not None:
         f = S.fit_model(syntax, data=d, estimator=est, mi=mi, std_lv=std_lv)

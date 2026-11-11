@@ -3,10 +3,18 @@ import { DecisionTimeline, Panel, Button, Switch, Input, Badge, Dialog, EmptySta
 import { useStore, revertDecision, go, logDecision } from '../store.js';
 import { Head, Screen } from '../ui.jsx';
 import { download } from '../lib/model.js';
+import { ENGINE_VERSION } from '../engine/client.js';
 import { t, lazy } from '../i18n/index.js';
 
 const MODULE_TARGET = { Dane: 'data', 'Opisowe i testy': 'stats', 'Rzetelność': 'rel', EFA: 'efa', CFA: 'cfa', SEM: 'sem', Mediacja: 'med', 'Porównanie podejść': 'bridge' };
 const AFFECTS = lazy(() => ({ Dane: [t("Rzetelność"), 'EFA', 'CFA', 'SEM', t("Mediacja"), t("Porównanie podejść")], 'Opisowe i testy': ['CFA', 'SEM'], 'Rzetelność': ['CFA', 'SEM', t("Porównanie podejść")], EFA: ['CFA', 'SEM'], CFA: ['SEM'], SEM: ['Porównanie podejść'] }));
+
+/* two comment lines identifying the data file and the runtime, so the log is self-describing */
+function csvProvenance(p) {
+  const esc = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+  return [['# file', 'sha256', 'semplex', 'pyodide', 'exported'].map(esc).join(';'),
+          [p.file, p.sha256, p.semplex, p.pyodide, p.exported].map(esc).join(';')].join('\n') + '\n';
+}
 
 function toCsv(rows) {
   const esc = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
@@ -17,6 +25,16 @@ function toCsv(rows) {
 export default function LogScreen() {
   const decisions = useStore((s) => s.decisions);
   const project = useStore((s) => s.project);
+  const data = useStore((s) => s.data);
+  const engineState = useStore((s) => s.engine);
+  /* provenance of the exported log: which file and which runtime the entries refer to */
+  const provenance = {
+    file: (data && data.file) || null,
+    sha256: (data && data.sha256) || null,
+    semplex: ((engineState && engineState.versions) || {}).semplex || ENGINE_VERSION,
+    pyodide: ((engineState && engineState.versions) || {}).pyodide || null,
+    exported: new Date().toISOString(),
+  };
   const [showReverted, setShowReverted] = useState(true);
   const [q, setQ] = useState('');
   const [origin, setOrigin] = useState('all');
@@ -40,7 +58,7 @@ export default function LogScreen() {
     <>
       <div className="eyebrow">{cur.module} · {cur.time}</div>
       <h2 className="sub">{cur.action}</h2>
-      <div className="chips"><Badge tone={cur.origin === 'proposal' ? 'brand' : 'neutral'}>{cur.origin === 'proposal' ? t("propozycja SEMplex") : cur.origin === 'auto' ? t("automatycznie") : t("ręcznie")}</Badge>{cur.reverted ? <Badge tone="ok" icon="undo">{t("cofnięta")}</Badge> : null}{cur.stale ? <Badge tone="ok" icon="refresh">{t("liczby do przeliczenia")}</Badge> : null}</div>
+      <div className="chips"><Badge tone={cur.origin === 'proposal' ? 'brand' : 'neutral'}>{cur.origin === 'proposal' ? t("propozycja SEMplex") : cur.origin === 'auto' ? 'automatycznie' : t("ręcznie")}</Badge>{cur.reverted ? <Badge tone="ok" icon="undo">{t("cofnięta")}</Badge> : null}{cur.stale ? <Badge tone="ok" icon="refresh">{t("liczby do przeliczenia")}</Badge> : null}</div>
       {cur.reason ? <p className="muted">{cur.reason}</p> : null}
       {cur.effects && cur.effects.length ? <table className="tbl"><tbody>{cur.effects.map((e, i) => <tr key={i}><td>{e.label}</td><td className="num">{e.from} → <b>{e.to}</b></td></tr>)}</tbody></table> : null}
       {AFFECTS[cur.module] ? <Interpretation tone="info" title={t("Zależne moduły")}>{AFFECTS[cur.module].join(', ')}</Interpretation> : null}
@@ -55,8 +73,8 @@ export default function LogScreen() {
   return (
     <Screen inspector={insp} inspectorTitle={cur ? cur.action : t("Decyzja")} inspectorOpen={!!sel} onInspectorClose={() => setSel(null)}>
       <Head eyebrow={t("Dziennik decyzji")} title={t("Co zmieniono, dlaczego i z jakim skutkiem")} meta={[<Badge key="n">{decisions.filter((d) => !d.reverted).length} aktywnych</Badge>, <Badge key="r">{decisions.filter((d) => d.reverted).length} {t("cofniętych")}</Badge>]}>
-        <Button variant="secondary" icon="download" onClick={() => download(base + '_dziennik.csv', '\ufeff' + toCsv(decisions), 'text/csv;charset=utf-8')}>CSV</Button>
-        <Button variant="secondary" icon="code" onClick={() => download(base + t("_dziennik.json"), JSON.stringify(decisions.map(({ undo, ...d }) => d), null, 1), 'application/json')}>JSON</Button>
+        <Button variant="secondary" icon="download" onClick={() => download(base + '_dziennik.csv', '\ufeff' + csvProvenance(provenance) + toCsv(decisions), 'text/csv;charset=utf-8')}>CSV</Button>
+        <Button variant="secondary" icon="code" onClick={() => download(base + t("_dziennik.json"), JSON.stringify({ provenance, decisions: decisions.map(({ undo, ...d }) => d) }, null, 1), 'application/json')}>JSON</Button>
       </Head>
       <Panel title={t("Notatka badacza")} subtitle={t("Decyzje, których program nie zapisuje sam (np. pozostawienie oznaczonych respondentów, odrzucenie sugestii liczby czynników)")}>
         <div className="row">
